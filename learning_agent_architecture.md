@@ -11,7 +11,7 @@ graph TD
     subgraph Frontend [前端 WebUI (Vite + React + React Flow)]
         UI[React Chat & Dashboard] <--> |WebSocket / API| Server[Node.js Server]
         Canvas[Dify-style 画板] <--> |可视化编辑| FlowJSON[workflow.json]
-        UI --> |展示| Dashboard[学习进度 & XP 看板]
+        UI --> |展示| Dashboard[学习进度看板]
         UI --> |展示| QuizModal[交互式测验弹窗]
     end
 

@@ -1,5 +1,5 @@
 import type { ImageContent } from "@earendil-works/pi-ai";
-import type { Args } from "./args.ts";
+import type { Args } from "./args.js";
 
 export interface InitialMessageInput {
 	parsed: Args;

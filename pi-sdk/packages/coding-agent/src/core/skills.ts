@@ -1,11 +1,11 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "fs";
 import ignore from "ignore";
 import { basename, dirname, join, relative, resolve, sep } from "path";
-import { CONFIG_DIR_NAME, getAgentDir } from "../config.ts";
-import { parseFrontmatter } from "../utils/frontmatter.ts";
-import { canonicalizePath, resolvePath } from "../utils/paths.ts";
-import type { ResourceDiagnostic } from "./diagnostics.ts";
-import { createSyntheticSourceInfo, type SourceInfo } from "./source-info.ts";
+import { CONFIG_DIR_NAME, getAgentDir } from "../config.js";
+import { parseFrontmatter } from "../utils/frontmatter.js";
+import { canonicalizePath, resolvePath } from "../utils/paths.js";
+import type { ResourceDiagnostic } from "./diagnostics.js";
+import { createSyntheticSourceInfo, type SourceInfo } from "./source-info.js";
 
 /** Max name length per spec */
 const MAX_NAME_LENGTH = 64;

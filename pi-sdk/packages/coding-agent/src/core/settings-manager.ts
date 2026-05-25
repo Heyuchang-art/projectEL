@@ -2,9 +2,9 @@ import type { Transport } from "@earendil-works/pi-ai";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
 import lockfile from "proper-lockfile";
-import { CONFIG_DIR_NAME, getAgentDir } from "../config.ts";
-import { normalizePath, resolvePath } from "../utils/paths.ts";
-import { DEFAULT_HTTP_IDLE_TIMEOUT_MS, parseHttpIdleTimeoutMs } from "./http-dispatcher.ts";
+import { CONFIG_DIR_NAME, getAgentDir } from "../config.js";
+import { normalizePath, resolvePath } from "../utils/paths.js";
+import { DEFAULT_HTTP_IDLE_TIMEOUT_MS, parseHttpIdleTimeoutMs } from "./http-dispatcher.js";
 
 export interface CompactionSettings {
 	enabled?: boolean; // default: true

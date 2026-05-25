@@ -1,7 +1,7 @@
 // Core session management
 
 // Config paths
-export { getAgentDir, VERSION } from "./config.ts";
+export { getAgentDir, VERSION } from "./config.js";
 export {
 	AgentSession,
 	type AgentSessionConfig,
@@ -12,7 +12,7 @@ export {
 	type PromptOptions,
 	parseSkillBlock,
 	type SessionStats,
-} from "./core/agent-session.ts";
+} from "./core/agent-session.js";
 // Auth and model registry
 export {
 	type ApiKeyCredential,
@@ -23,7 +23,7 @@ export {
 	FileAuthStorageBackend,
 	InMemoryAuthStorageBackend,
 	type OAuthCredential,
-} from "./core/auth-storage.ts";
+} from "./core/auth-storage.js";
 // Compaction
 export {
 	type BranchPreparation,
@@ -46,8 +46,8 @@ export {
 	prepareBranchEntries,
 	serializeConversation,
 	shouldCompact,
-} from "./core/compaction/index.ts";
-export { createEventBus, type EventBus, type EventBusController } from "./core/event-bus.ts";
+} from "./core/compaction/index.js";
+export { createEventBus, type EventBus, type EventBusController } from "./core/event-bus.js";
 // Extension system
 export type {
 	AgentEndEvent,
@@ -128,7 +128,7 @@ export type {
 	WidgetPlacement,
 	WorkingIndicatorOptions,
 	WriteToolCallEvent,
-} from "./core/extensions/index.ts";
+} from "./core/extensions/index.js";
 export {
 	createExtensionRuntime,
 	defineTool,
@@ -144,11 +144,11 @@ export {
 	isWriteToolResult,
 	wrapRegisteredTool,
 	wrapRegisteredTools,
-} from "./core/extensions/index.ts";
+} from "./core/extensions/index.js";
 // Footer data provider (git branch + extension statuses - data not otherwise available to extensions)
-export type { ReadonlyFooterDataProvider } from "./core/footer-data-provider.ts";
-export { convertToLlm } from "./core/messages.ts";
-export { ModelRegistry } from "./core/model-registry.ts";
+export type { ReadonlyFooterDataProvider } from "./core/footer-data-provider.js";
+export { convertToLlm } from "./core/messages.js";
+export { ModelRegistry } from "./core/model-registry.js";
 export type {
 	PackageManager,
 	PathMetadata,
@@ -156,10 +156,10 @@ export type {
 	ProgressEvent,
 	ResolvedPaths,
 	ResolvedResource,
-} from "./core/package-manager.ts";
-export { DefaultPackageManager } from "./core/package-manager.ts";
-export type { ResourceCollision, ResourceDiagnostic, ResourceLoader } from "./core/resource-loader.ts";
-export { DefaultResourceLoader, loadProjectContextFiles } from "./core/resource-loader.ts";
+} from "./core/package-manager.js";
+export { DefaultPackageManager } from "./core/package-manager.js";
+export type { ResourceCollision, ResourceDiagnostic, ResourceLoader } from "./core/resource-loader.js";
+export { DefaultResourceLoader, loadProjectContextFiles } from "./core/resource-loader.js";
 // SDK for programmatic usage
 export {
 	AgentSessionRuntime,
@@ -187,7 +187,7 @@ export {
 	createReadTool,
 	createWriteTool,
 	type PromptTemplate,
-} from "./core/sdk.ts";
+} from "./core/sdk.js";
 export {
 	type BranchSummaryEntry,
 	buildSessionContext,
@@ -210,14 +210,14 @@ export {
 	SessionManager,
 	type SessionMessageEntry,
 	type ThinkingLevelChangeEntry,
-} from "./core/session-manager.ts";
+} from "./core/session-manager.js";
 export {
 	type CompactionSettings,
 	type ImageSettings,
 	type PackageSource,
 	type RetrySettings,
 	SettingsManager,
-} from "./core/settings-manager.ts";
+} from "./core/settings-manager.js";
 // Skills
 export {
 	formatSkillsForPrompt,
@@ -227,8 +227,8 @@ export {
 	loadSkillsFromDir,
 	type Skill,
 	type SkillFrontmatter,
-} from "./core/skills.ts";
-export { createSyntheticSourceInfo } from "./core/source-info.ts";
+} from "./core/skills.js";
+export { createSyntheticSourceInfo } from "./core/source-info.js";
 // Tools
 export {
 	type BashOperations,
@@ -278,9 +278,9 @@ export {
 	type WriteToolInput,
 	type WriteToolOptions,
 	withFileMutationQueue,
-} from "./core/tools/index.ts";
+} from "./core/tools/index.js";
 // Main entry point
-export { type MainOptions, main } from "./main.ts";
+export { type MainOptions, main } from "./main.js";
 // Run modes for programmatic SDK usage
 export {
 	InteractiveMode,
@@ -295,7 +295,7 @@ export {
 	type RpcSessionState,
 	runPrintMode,
 	runRpcMode,
-} from "./modes/index.ts";
+} from "./modes/index.js";
 // UI components for extensions
 export {
 	ArminComponent,
@@ -334,7 +334,7 @@ export {
 	UserMessageComponent,
 	UserMessageSelectorComponent,
 	type VisualTruncateResult,
-} from "./modes/interactive/components/index.ts";
+} from "./modes/interactive/components/index.js";
 // Theme utilities for custom tools and extensions
 export {
 	getLanguageFromPath,
@@ -345,10 +345,10 @@ export {
 	initTheme,
 	Theme,
 	type ThemeColor,
-} from "./modes/interactive/theme/theme.ts";
+} from "./modes/interactive/theme/theme.js";
 // Clipboard utilities
-export { copyToClipboard } from "./utils/clipboard.ts";
-export { parseFrontmatter, stripFrontmatter } from "./utils/frontmatter.ts";
-export { formatDimensionNote, type ResizedImage, resizeImage } from "./utils/image-resize.ts";
+export { copyToClipboard } from "./utils/clipboard.js";
+export { parseFrontmatter, stripFrontmatter } from "./utils/frontmatter.js";
+export { formatDimensionNote, type ResizedImage, resizeImage } from "./utils/image-resize.js";
 // Shell utilities
-export { getShellConfig } from "./utils/shell.ts";
+export { getShellConfig } from "./utils/shell.js";

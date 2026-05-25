@@ -57,18 +57,6 @@ if defined OPENAI_API_KEY (
 )
 :oa_end
 
-:: ===== Google Gemini =====
-if defined GEMINI_API_KEY (
-    echo   [OK] Google Gemini  - found in system environment
-    goto go_end
-)
-for /f "usebackq delims=" %%k in (`node -e "try{const j=JSON.parse(require('fs').readFileSync('%~dp0.pi/auth.json','utf8'));if(j.google&&j.google.key)console.log(j.google.key);}catch{}"`) do set "GEMINI_API_KEY=%%k"
-if defined GEMINI_API_KEY (
-    echo   [OK] Google Gemini  - found in .pi/auth.json
-) else (
-    echo   [--] Google Gemini  - not configured
-)
-:go_end
 
 :: ===== Qwen (Alibaba DashScope) =====
 if defined DASHSCOPE_API_KEY (

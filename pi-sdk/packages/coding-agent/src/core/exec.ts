@@ -3,7 +3,7 @@
  */
 
 import { spawn } from "node:child_process";
-import { waitForChildProcess } from "../utils/child-process.ts";
+import { waitForChildProcess } from "../utils/child-process.js";
 
 /**
  * Options for executing shell commands.

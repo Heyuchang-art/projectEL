@@ -1,6 +1,6 @@
 import { Markdown, type MarkdownTheme } from "@earendil-works/pi-tui";
 import chalk from "chalk";
-import { selectConfig } from "./cli/config-selector.ts";
+import { selectConfig } from "./cli/config-selector.js";
 import {
 	APP_NAME,
 	detectInstallMethod,
@@ -11,15 +11,15 @@ import {
 	PACKAGE_NAME,
 	type SelfUpdateCommand,
 	VERSION,
-} from "./config.ts";
-import { DefaultPackageManager } from "./core/package-manager.ts";
-import { SettingsManager } from "./core/settings-manager.ts";
-import { spawnProcess } from "./utils/child-process.ts";
-import { getLatestPiRelease, isNewerPackageVersion } from "./utils/version-check.ts";
+} from "./config.js";
+import { DefaultPackageManager } from "./core/package-manager.js";
+import { SettingsManager } from "./core/settings-manager.js";
+import { spawnProcess } from "./utils/child-process.js";
+import { getLatestPiRelease, isNewerPackageVersion } from "./utils/version-check.js";
 import {
 	cleanupWindowsSelfUpdateQuarantine,
 	quarantineWindowsNativeDependencies,
-} from "./utils/windows-self-update.ts";
+} from "./utils/windows-self-update.js";
 
 export type PackageCommand = "install" | "remove" | "update" | "list";
 

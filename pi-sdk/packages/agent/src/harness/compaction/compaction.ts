@@ -1,14 +1,14 @@
 import type { AssistantMessage, ImageContent, Model, TextContent, Usage } from "@earendil-works/pi-ai";
 import { completeSimple } from "@earendil-works/pi-ai";
-import type { AgentMessage, ThinkingLevel } from "../../types.ts";
+import type { AgentMessage, ThinkingLevel } from "../../types.js";
 import {
 	convertToLlm,
 	createBranchSummaryMessage,
 	createCompactionSummaryMessage,
 	createCustomMessage,
-} from "../messages.ts";
-import { buildSessionContext } from "../session/session.ts";
-import { type CompactionEntry, CompactionError, err, ok, type Result, type SessionTreeEntry } from "../types.ts";
+} from "../messages.js";
+import { buildSessionContext } from "../session/session.js";
+import { type CompactionEntry, CompactionError, err, ok, type Result, type SessionTreeEntry } from "../types.js";
 import {
 	computeFileLists,
 	createFileOps,
@@ -16,7 +16,7 @@ import {
 	type FileOperations,
 	formatFileOperations,
 	serializeConversation,
-} from "./utils.ts";
+} from "./utils.js";
 
 /** File-operation details stored on generated compaction entries. */
 export interface CompactionDetails {
@@ -620,7 +620,7 @@ Summarize the prefix to provide context for the retained suffix:
 
 Be concise. Focus on what's needed to understand the kept suffix.`;
 
-export { serializeConversation } from "./utils.ts";
+export { serializeConversation } from "./utils.js";
 
 /** Generate compaction summary data from prepared session history. */
 export async function compact(

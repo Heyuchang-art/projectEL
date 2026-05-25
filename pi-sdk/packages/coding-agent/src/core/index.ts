@@ -10,13 +10,13 @@ export {
 	type ModelCycleResult,
 	type PromptOptions,
 	type SessionStats,
-} from "./agent-session.ts";
+} from "./agent-session.js";
 export {
 	AgentSessionRuntime,
 	type CreateAgentSessionRuntimeFactory,
 	type CreateAgentSessionRuntimeResult,
 	createAgentSessionRuntime,
-} from "./agent-session-runtime.ts";
+} from "./agent-session-runtime.js";
 export {
 	type AgentSessionRuntimeDiagnostic,
 	type AgentSessionServices,
@@ -24,10 +24,10 @@ export {
 	type CreateAgentSessionServicesOptions,
 	createAgentSessionFromServices,
 	createAgentSessionServices,
-} from "./agent-session-services.ts";
-export { type BashExecutorOptions, type BashResult, executeBashWithOperations } from "./bash-executor.ts";
-export type { CompactionResult } from "./compaction/index.ts";
-export { createEventBus, type EventBus, type EventBusController } from "./event-bus.ts";
+} from "./agent-session-services.js";
+export { type BashExecutorOptions, type BashResult, executeBashWithOperations } from "./bash-executor.js";
+export type { CompactionResult } from "./compaction/index.js";
+export { createEventBus, type EventBus, type EventBusController } from "./event-bus.js";
 // Extensions system
 export {
 	type AgentEndEvent,
@@ -73,5 +73,5 @@ export {
 	type TurnEndEvent,
 	type TurnStartEvent,
 	type WorkingIndicatorOptions,
-} from "./extensions/index.ts";
-export { createSyntheticSourceInfo } from "./source-info.ts";
+} from "./extensions/index.js";
+export { createSyntheticSourceInfo } from "./source-info.js";

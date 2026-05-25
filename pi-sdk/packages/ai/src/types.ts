@@ -1,7 +1,7 @@
-import type { AssistantMessageDiagnostic } from "./utils/diagnostics.ts";
-import type { AssistantMessageEventStream } from "./utils/event-stream.ts";
+import type { AssistantMessageDiagnostic } from "./utils/diagnostics.js";
+import type { AssistantMessageEventStream } from "./utils/event-stream.js";
 
-export type { AssistantMessageEventStream } from "./utils/event-stream.ts";
+export type { AssistantMessageEventStream } from "./utils/event-stream.js";
 
 export type KnownApi =
 	| "openai-completions"

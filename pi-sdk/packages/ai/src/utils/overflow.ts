@@ -1,4 +1,4 @@
-import type { AssistantMessage } from "../types.ts";
+import type { AssistantMessage } from "../types.js";
 
 /**
  * Regex patterns to detect context overflow errors from different providers.

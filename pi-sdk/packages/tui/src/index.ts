@@ -7,30 +7,30 @@ export {
 	type AutocompleteSuggestions,
 	CombinedAutocompleteProvider,
 	type SlashCommand,
-} from "./autocomplete.ts";
+} from "./autocomplete.js";
 // Components
-export { Box } from "./components/box.ts";
-export { CancellableLoader } from "./components/cancellable-loader.ts";
-export { Editor, type EditorOptions, type EditorTheme } from "./components/editor.ts";
-export { Image, type ImageOptions, type ImageTheme } from "./components/image.ts";
-export { Input } from "./components/input.ts";
-export { Loader, type LoaderIndicatorOptions } from "./components/loader.ts";
-export { type DefaultTextStyle, Markdown, type MarkdownTheme } from "./components/markdown.ts";
+export { Box } from "./components/box.js";
+export { CancellableLoader } from "./components/cancellable-loader.js";
+export { Editor, type EditorOptions, type EditorTheme } from "./components/editor.js";
+export { Image, type ImageOptions, type ImageTheme } from "./components/image.js";
+export { Input } from "./components/input.js";
+export { Loader, type LoaderIndicatorOptions } from "./components/loader.js";
+export { type DefaultTextStyle, Markdown, type MarkdownTheme } from "./components/markdown.js";
 export {
 	type SelectItem,
 	SelectList,
 	type SelectListLayoutOptions,
 	type SelectListTheme,
 	type SelectListTruncatePrimaryContext,
-} from "./components/select-list.ts";
-export { type SettingItem, SettingsList, type SettingsListTheme } from "./components/settings-list.ts";
-export { Spacer } from "./components/spacer.ts";
-export { Text } from "./components/text.ts";
-export { TruncatedText } from "./components/truncated-text.ts";
+} from "./components/select-list.js";
+export { type SettingItem, SettingsList, type SettingsListTheme } from "./components/settings-list.js";
+export { Spacer } from "./components/spacer.js";
+export { Text } from "./components/text.js";
+export { TruncatedText } from "./components/truncated-text.js";
 // Editor component interface (for custom editors)
-export type { EditorComponent } from "./editor-component.ts";
+export type { EditorComponent } from "./editor-component.js";
 // Fuzzy matching
-export { type FuzzyMatch, fuzzyFilter, fuzzyMatch } from "./fuzzy.ts";
+export { type FuzzyMatch, fuzzyFilter, fuzzyMatch } from "./fuzzy.js";
 // Keybindings
 export {
 	getKeybindings,
@@ -43,7 +43,7 @@ export {
 	KeybindingsManager,
 	setKeybindings,
 	TUI_KEYBINDINGS,
-} from "./keybindings.ts";
+} from "./keybindings.js";
 // Keyboard input handling
 export {
 	decodeKittyPrintable,
@@ -56,11 +56,11 @@ export {
 	matchesKey,
 	parseKey,
 	setKittyProtocolActive,
-} from "./keys.ts";
+} from "./keys.js";
 // Input buffering for batch splitting
-export { StdinBuffer, type StdinBufferEventMap, type StdinBufferOptions } from "./stdin-buffer.ts";
+export { StdinBuffer, type StdinBufferEventMap, type StdinBufferOptions } from "./stdin-buffer.js";
 // Terminal interface and implementations
-export { ProcessTerminal, type Terminal } from "./terminal.ts";
+export { ProcessTerminal, type Terminal } from "./terminal.js";
 // Terminal image support
 export {
 	allocateImageId,
@@ -88,7 +88,7 @@ export {
 	setCapabilities,
 	setCellDimensions,
 	type TerminalCapabilities,
-} from "./terminal-image.ts";
+} from "./terminal-image.js";
 export {
 	type Component,
 	Container,
@@ -101,6 +101,6 @@ export {
 	type OverlayOptions,
 	type SizeValue,
 	TUI,
-} from "./tui.ts";
+} from "./tui.js";
 // Utilities
-export { truncateToWidth, visibleWidth, wrapTextWithAnsi } from "./utils.ts";
+export { truncateToWidth, visibleWidth, wrapTextWithAnsi } from "./utils.js";

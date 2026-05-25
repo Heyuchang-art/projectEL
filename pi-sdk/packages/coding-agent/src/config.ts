@@ -2,8 +2,8 @@ import { accessSync, constants, existsSync, readFileSync, realpathSync } from "f
 import { homedir } from "os";
 import { basename, dirname, join, resolve, sep, win32 } from "path";
 import { fileURLToPath } from "url";
-import { spawnProcessSync } from "./utils/child-process.ts";
-import { normalizePath } from "./utils/paths.ts";
+import { spawnProcessSync } from "./utils/child-process.js";
+import { normalizePath } from "./utils/paths.js";
 
 // =============================================================================
 // Package Detection

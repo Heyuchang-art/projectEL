@@ -3,8 +3,8 @@ import { Box, Container, Spacer, Text } from "@earendil-works/pi-tui";
 import { constants } from "fs";
 import { access as fsAccess, readFile as fsReadFile, writeFile as fsWriteFile } from "fs/promises";
 import { type Static, Type } from "typebox";
-import { renderDiff } from "../../modes/interactive/components/diff.ts";
-import type { ToolDefinition } from "../extensions/types.ts";
+import { renderDiff } from "../../modes/interactive/components/diff.js";
+import type { ToolDefinition } from "../extensions/types.js";
 import {
 	applyEditsToNormalizedContent,
 	computeEditsDiff,
@@ -17,11 +17,11 @@ import {
 	normalizeToLF,
 	restoreLineEndings,
 	stripBom,
-} from "./edit-diff.ts";
-import { withFileMutationQueue } from "./file-mutation-queue.ts";
-import { resolveToCwd } from "./path-utils.ts";
-import { invalidArgText, shortenPath, str } from "./render-utils.ts";
-import { wrapToolDefinition } from "./tool-definition-wrapper.ts";
+} from "./edit-diff.js";
+import { withFileMutationQueue } from "./file-mutation-queue.js";
+import { resolveToCwd } from "./path-utils.js";
+import { invalidArgText, shortenPath, str } from "./render-utils.js";
+import { wrapToolDefinition } from "./tool-definition-wrapper.js";
 
 type EditPreview = EditDiffResult | EditDiffError;
 
@@ -193,7 +193,7 @@ function getRenderablePreviewInput(args: RenderableEditArgs | undefined): { path
 
 function formatEditCall(
 	args: RenderableEditArgs | undefined,
-	theme: typeof import("../../modes/interactive/theme/theme.ts").theme,
+	theme: typeof import("../../modes/interactive/theme/theme.js").theme,
 ): string {
 	const invalidArg = invalidArgText(theme);
 	const rawPath = str(args?.file_path ?? args?.path);
@@ -206,7 +206,7 @@ function formatEditResult(
 	args: RenderableEditArgs | undefined,
 	preview: EditPreview | undefined,
 	result: EditToolResultLike,
-	theme: typeof import("../../modes/interactive/theme/theme.ts").theme,
+	theme: typeof import("../../modes/interactive/theme/theme.js").theme,
 	isError: boolean,
 ): string | undefined {
 	const rawPath = str(args?.file_path ?? args?.path);
@@ -234,7 +234,7 @@ function formatEditResult(
 function getEditHeaderBg(
 	preview: EditPreview | undefined,
 	settledError: boolean | undefined,
-	theme: typeof import("../../modes/interactive/theme/theme.ts").theme,
+	theme: typeof import("../../modes/interactive/theme/theme.js").theme,
 ): (text: string) => string {
 	if (preview) {
 		if ("error" in preview) {
@@ -251,7 +251,7 @@ function getEditHeaderBg(
 function buildEditCallComponent(
 	component: EditCallRenderComponent,
 	args: RenderableEditArgs | undefined,
-	theme: typeof import("../../modes/interactive/theme/theme.ts").theme,
+	theme: typeof import("../../modes/interactive/theme/theme.js").theme,
 ): EditCallRenderComponent {
 	component.setBgFn(getEditHeaderBg(component.preview, component.settledError, theme));
 	component.clear();

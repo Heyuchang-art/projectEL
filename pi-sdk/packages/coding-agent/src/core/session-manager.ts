@@ -15,15 +15,15 @@ import {
 } from "fs";
 import { readdir, readFile, stat } from "fs/promises";
 import { join, resolve } from "path";
-import { getAgentDir as getDefaultAgentDir, getSessionsDir } from "../config.ts";
-import { normalizePath, resolvePath } from "../utils/paths.ts";
+import { getAgentDir as getDefaultAgentDir, getSessionsDir } from "../config.js";
+import { normalizePath, resolvePath } from "../utils/paths.js";
 import {
 	type BashExecutionMessage,
 	type CustomMessage,
 	createBranchSummaryMessage,
 	createCompactionSummaryMessage,
 	createCustomMessage,
-} from "./messages.ts";
+} from "./messages.js";
 
 export const CURRENT_SESSION_VERSION = 3;
 

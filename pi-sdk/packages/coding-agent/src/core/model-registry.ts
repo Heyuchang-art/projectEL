@@ -24,16 +24,16 @@ import { join } from "path";
 import { type Static, Type } from "typebox";
 import { Compile } from "typebox/compile";
 import type { TLocalizedValidationError } from "typebox/error";
-import { getAgentDir } from "../config.ts";
-import { normalizePath } from "../utils/paths.ts";
-import type { AuthStatus, AuthStorage } from "./auth-storage.ts";
-import { BUILT_IN_PROVIDER_DISPLAY_NAMES } from "./provider-display-names.ts";
+import { getAgentDir } from "../config.js";
+import { normalizePath } from "../utils/paths.js";
+import type { AuthStatus, AuthStorage } from "./auth-storage.js";
+import { BUILT_IN_PROVIDER_DISPLAY_NAMES } from "./provider-display-names.js";
 import {
 	clearConfigValueCache,
 	resolveConfigValueOrThrow,
 	resolveConfigValueUncached,
 	resolveHeadersOrThrow,
-} from "./resolve-config-value.ts";
+} from "./resolve-config-value.js";
 
 // Schema for OpenRouter routing preferences
 const PercentileCutoffsSchema = Type.Object({

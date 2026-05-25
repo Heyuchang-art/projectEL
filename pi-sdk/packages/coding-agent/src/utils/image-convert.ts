@@ -1,5 +1,5 @@
-import { applyExifOrientation } from "./exif-orientation.ts";
-import { loadPhoton } from "./photon.ts";
+import { applyExifOrientation } from "./exif-orientation.js";
+import { loadPhoton } from "./photon.js";
 
 /**
  * Convert image to PNG format for terminal display.

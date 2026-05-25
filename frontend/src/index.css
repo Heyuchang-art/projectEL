@@ -1,19 +1,24 @@
 :root {
-  --bg-color: #080c14;
-  --panel-bg: rgba(13, 20, 35, 0.45);
-  --panel-border: rgba(255, 255, 255, 0.07);
-  --text-main: #f3f4f6;
-  --text-muted: #9ca3af;
-  --primary: hsl(250, 85%, 65%);
-  --primary-glow: rgba(110, 68, 255, 0.45);
-  --secondary: hsl(180, 100%, 45%);
-  --secondary-glow: rgba(0, 242, 254, 0.3);
-  --accent: hsl(295, 85%, 60%);
-  --accent-glow: rgba(224, 86, 253, 0.3);
-  --success: #10b981;
-  --error: #ef4444;
-  --font-display: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --bg-color: #000000;
+  --panel-bg: #0c0c0c;
+  --panel-border: #222222;
+  --panel-border-active: #ffffff;
+  --text-main: #ffffff;
+  --text-muted: #7f7f7f;
+  
+  /* Neo-Brutalist Vibrant Accent Colors */
+  --primary: #daff3c;      /* Neon lime/yellow */
+  --secondary: #00f2fe;    /* Neon cyan */
+  --accent: #ff007f;       /* Neon pink/magenta */
+  --success: #39ff14;      /* Neon green */
+  --error: #ff073a;        /* Neon red */
+  
+  --neo-shadow: 5px 5px 0px #000000;
+  --neo-shadow-hover: 9px 9px 0px #000000;
+  --neo-shadow-active: 1px 1px 0px #000000;
+
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Fira Code", monospace;
+  --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -29,10 +34,11 @@ body {
   overflow: hidden;
   height: 100vh;
   width: 100vw;
+  /* Grid pattern instead of gradients */
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(110, 68, 255, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 80% 80%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(224, 86, 253, 0.04) 0%, transparent 50%);
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 #root {
@@ -40,216 +46,349 @@ body {
   width: 100%;
 }
 
-/* 玻璃透光背板 (Glassmorphism) */
+/* ================= Neo-Brutalist Cards & Panels ================= */
+
+/* Keep the class name glass-panel to avoid breaking styles, but make it Neo-Brutalist */
 .glass-panel {
   background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 3px solid var(--panel-border);
+  border-radius: 0px; /* Sharp corners */
+  box-shadow: var(--neo-shadow);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.15s ease;
 }
 
 .glass-panel:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px 0 rgba(110, 68, 255, 0.1);
+  border-color: var(--panel-border-active);
+  box-shadow: var(--neo-shadow-hover);
+  transform: translate(-4px, -4px);
 }
 
-/* 渐变标题 */
+/* Gradient Titles - Neo brutalist high-contrast style */
 .gradient-text {
-  font-family: var(--font-display);
-  background: linear-gradient(135deg, #fff 0%, #a5b4fc 50%, #00f2fe 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: var(--font-mono);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: none;
+  -webkit-text-fill-color: initial;
+  background-clip: initial;
+  letter-spacing: -0.5px;
 }
 
-/* 滚动条美化 */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #000000;
+  border-left: 2px solid var(--panel-border);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: var(--panel-border);
+  border: 2px solid #000000;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--text-muted);
 }
 
-/* 呼吸动画效果 */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 12px var(--primary-glow);
-  }
-  50% {
-    box-shadow: 0 0 24px rgba(110, 68, 255, 0.7);
-  }
+/* ================= Buttons ================= */
+
+.btn-premium {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #000000;
+  border: 2px solid #000000;
+  padding: 10px 18px;
+  border-radius: 0px; /* Sharp */
+  font-family: var(--font-mono);
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #000000;
+  transition: all 0.1s ease;
 }
 
-.pulse {
-  animation: pulse-glow 3s infinite ease-in-out;
+.btn-premium:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #000000;
+  background: #e6ff66; /* Slightly lighter neon yellow */
 }
 
-/* React Flow 画板特殊样式 */
+.btn-premium:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #000000;
+}
+
+.btn-premium:disabled {
+  background: #222222;
+  color: #666666;
+  border-color: #333333;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* Secondary Button variant */
+.btn-secondary {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid var(--panel-border);
+  box-shadow: 3px 3px 0px #1a1a1a;
+}
+.btn-secondary:hover {
+  border-color: #ffffff;
+  background: #111111;
+  box-shadow: 5px 5px 0px #222222;
+}
+
+/* ================= Inputs ================= */
+
+.input-premium {
+  background: #000000;
+  border: 2px solid var(--panel-border);
+  color: var(--text-main);
+  padding: 12px 16px;
+  border-radius: 0px; /* Sharp */
+  outline: none;
+  font-family: var(--font-mono);
+  transition: all 0.15s ease;
+}
+
+.input-premium:focus {
+  border-color: var(--secondary);
+  box-shadow: 3px 3px 0px var(--secondary);
+}
+
+/* ================= XP Progress Bar ================= */
+
+.progress-bar-container {
+  width: 100%;
+  background: #111111;
+  border-radius: 0px;
+  height: 12px;
+  overflow: hidden;
+  border: 2px solid #ffffff;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 0px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: none;
+  border-right: 2px solid #000000;
+}
+
+/* ================= React Flow Canvas styling ================= */
+
 .react-flow__background {
-  background-color: #0b111e !important;
+  background-color: #000000 !important;
 }
 
 .react-flow__minimap {
-  background-color: rgba(13, 20, 35, 0.8) !important;
-  border: 1px solid var(--panel-border) !important;
-  border-radius: 8px !important;
+  background-color: #0c0c0c !important;
+  border: 2px solid #222222 !important;
+  border-radius: 0px !important;
+}
+
+.react-flow__controls {
+  box-shadow: 3px 3px 0px #000000 !important;
+  border: 2px solid #222222 !important;
 }
 
 .react-flow__controls-button {
-  background: var(--panel-bg) !important;
+  background: #0c0c0c !important;
   color: var(--text-main) !important;
-  border: 1px solid var(--panel-border) !important;
+  border-bottom: 2px solid #222222 !important;
   fill: var(--text-main) !important;
+  border-radius: 0px !important;
 }
 
 .react-flow__controls-button:hover {
   background: var(--primary) !important;
-  color: #fff !important;
-  fill: #fff !important;
+  color: #000000 !important;
+  fill: #000000 !important;
 }
 
-/* 自定义节点样式 */
+.react-flow__edge-path {
+  stroke-width: 3 !important;
+  stroke: #ffffff !important;
+}
+
+/* Custom React Flow Node styling */
 .flow-node {
   padding: 12px 16px;
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0px;
+  background: #0c0c0c;
+  border: 3px solid #ffffff;
   color: var(--text-main);
-  min-width: 180px;
-  font-family: var(--font-sans);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s ease;
+  min-width: 200px;
+  font-family: var(--font-mono);
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.15s ease;
 }
 
 .flow-node.active {
-  border-color: var(--primary);
-  box-shadow: 0 0 15px var(--primary-glow);
+  box-shadow: 6px 6px 0px var(--primary);
 }
 
 .flow-node-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 900;
   margin-bottom: 8px;
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--panel-border);
+  padding-bottom: 6px;
 }
 
 .flow-node-body {
   font-size: 11px;
   color: var(--text-muted);
   word-break: break-all;
-  max-height: 40px;
+  max-height: 50px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .flow-node-handle {
-  width: 8px !important;
-  height: 8px !important;
-  background: var(--secondary) !important;
-  border: 2px solid #080c14 !important;
+  width: 10px !important;
+  height: 10px !important;
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0px !important; /* Sharp handles */
 }
 
-/* HSL 节点边框发光 */
-.node-bash { border-left: 4px solid var(--secondary); }
-.node-llm { border-left: 4px solid var(--primary); }
-.node-write { border-left: 4px solid var(--accent); }
+/* React Flow Nodes borders colors */
+.node-bash { border: 3px solid var(--secondary); }
+.node-llm { border: 3px solid var(--primary); }
+.node-write { border: 3px solid var(--accent); }
 
-/* 精美进度条 */
-.progress-bar-container {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 99px;
-  height: 8px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
+.node-bash.active { box-shadow: 5px 5px 0px var(--secondary); }
+.node-llm.active { box-shadow: 5px 5px 0px var(--primary); }
+.node-write.active { box-shadow: 5px 5px 0px var(--accent); }
 
-.progress-bar-fill {
+/* ================= Resizable Workspace Columns & Drag Drop ================= */
+
+.workspace-container {
+  display: flex;
   height: 100%;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-  border-radius: 99px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 10px var(--primary-glow);
+  width: 100%;
+  overflow: hidden;
+  background: #000000;
 }
 
-/* 打字机光标闪烁 */
-@keyframes blink {
-  50% { opacity: 0; }
+.workspace-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 250px;
+  position: relative;
+  transition: flex 0.05s ease;
+  gap: 16px;
 }
 
+.column-resizer {
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  background: #111111;
+  transition: background 0.15s ease;
+  position: relative;
+  z-index: 50;
+  flex-shrink: 0;
+}
+
+.column-resizer:hover, .column-resizer.resizing {
+  background: var(--secondary);
+}
+
+/* Draggable Card Header */
+.card-drag-header {
+  cursor: grab;
+  user-select: none;
+}
+
+.card-drag-header:active {
+  cursor: grabbing;
+}
+
+/* Drop-zone overlays */
+.drop-indicator {
+  height: 6px;
+  background: var(--primary);
+  margin: -3px 0;
+  border-radius: 0px;
+  transition: opacity 0.15s ease;
+  box-shadow: 0px 0px 8px var(--primary);
+}
+
+.column-drop-zone-active {
+  border: 2px dashed var(--primary) !important;
+  background: rgba(218, 255, 60, 0.02) !important;
+}
+
+/* ================= Slide Drawer ================= */
+
+.slide-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: none; /* Neo-brutalist: no blur */
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.slide-drawer-content {
+  width: 450px;
+  height: 100%;
+  background: #0c0c0c;
+  border-left: 3px solid var(--panel-border);
+  box-shadow: -6px 0px 0px #000000;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transform: translateX(100%);
+  animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideIn {
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* General Layout utilities */
 .typing-cursor {
   display: inline-block;
-  width: 2px;
+  width: 3px;
   height: 15px;
   background: var(--secondary);
   margin-left: 2px;
   animation: blink 0.8s infinite;
 }
 
-/* 按钮精美过渡 */
-.btn-premium {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, var(--primary) 0%, #583cd6 100%);
-  color: #fff;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 4px 14px 0 var(--primary-glow);
-  transition: all 0.2s ease;
-  font-family: var(--font-display);
+@keyframes blink {
+  50% { opacity: 0; }
 }
 
-.btn-premium:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px 0 rgba(110, 68, 255, 0.6);
-}
-
-.btn-premium:active {
-  transform: translateY(0);
-}
-
-.btn-premium:disabled {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-muted);
-  box-shadow: none;
-  cursor: not-allowed;
-}
-
-/* 输入框 */
-.input-premium {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--panel-border);
-  color: var(--text-main);
-  padding: 12px 16px;
-  border-radius: 12px;
-  outline: none;
-  font-family: var(--font-sans);
-  transition: all 0.2s ease;
-}
-
-.input-premium:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 8px var(--primary-glow);
-  background: rgba(255, 255, 255, 0.05);
+.pulse {
+  animation: none; /* Remove soft pulse glow */
 }

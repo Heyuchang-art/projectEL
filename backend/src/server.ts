@@ -33,10 +33,14 @@ async function startServer() {
   await fs.ensureDir(path.join(workspaceCwd, ".pi", "skills"));
   await fs.ensureDir(path.join(workspaceCwd, ".pi", "extensions"));
 
-  // 将我们的开发扩展复制到 .pi/extensions 目录下，以便 Pi 底层加载器自动发现并运行
+  // 将我们的开发扩展及依赖的编译器复制到 .pi/extensions 目录下，以便 Pi 底层加载器自动发现并运行
   const extSource = path.resolve(__dirname, "study-agent-extension.ts");
   const extDest = path.join(workspaceCwd, ".pi", "extensions", "study-agent-extension.ts");
   await fs.copy(extSource, extDest);
+
+  const compilerSource = path.resolve(__dirname, "compiler.ts");
+  const compilerDest = path.join(workspaceCwd, ".pi", "extensions", "compiler.ts");
+  await fs.copy(compilerSource, compilerDest);
 
   // 初始化 Pi 资源加载器 (加载本地的 skills, prompts, 扩展等)
   const loader = new DefaultResourceLoader({
@@ -124,7 +128,7 @@ async function startServer() {
         return {
           id: p,
           name: modelRegistry.getProviderDisplayName(p),
-          configured: authStatus.configured,
+          configured: authStatus.configured || !!authStatus.source,
           source: authStatus.source,
           baseUrl: configuredBaseUrl
         };
@@ -258,9 +262,9 @@ async function startServer() {
     });
 
     // 客户端发送新消息
-    socket.on("send-message", async (data: { text: string }) => {
+    socket.on("send-message", async (data: { text: string; images?: any[] }) => {
       try {
-        await session.prompt(data.text);
+        await session.prompt(data.text, { images: data.images });
       } catch (err: any) {
         socket.emit("pi-error", { message: err.message });
       }

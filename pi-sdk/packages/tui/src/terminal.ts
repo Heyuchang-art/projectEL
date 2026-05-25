@@ -2,9 +2,9 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { setKittyProtocolActive } from "./keys.ts";
-import { isNativeModifierPressed } from "./native-modifiers.ts";
-import { StdinBuffer } from "./stdin-buffer.ts";
+import { setKittyProtocolActive } from "./keys.js";
+import { isNativeModifierPressed } from "./native-modifiers.js";
+import { StdinBuffer } from "./stdin-buffer.js";
 
 const cjsRequire = createRequire(import.meta.url);
 

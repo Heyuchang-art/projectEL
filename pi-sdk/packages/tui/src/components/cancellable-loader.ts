@@ -1,5 +1,5 @@
-import { getKeybindings } from "../keybindings.ts";
-import { Loader } from "./loader.ts";
+import { getKeybindings } from "../keybindings.js";
+import { Loader } from "./loader.js";
 
 /**
  * Loader that can be cancelled with Escape.

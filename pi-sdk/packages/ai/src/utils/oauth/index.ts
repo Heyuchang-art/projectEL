@@ -8,8 +8,8 @@
  */
 
 // Anthropic
-export { anthropicOAuthProvider, loginAnthropic, refreshAnthropicToken } from "./anthropic.ts";
-export * from "./device-code.ts";
+export { anthropicOAuthProvider, loginAnthropic, refreshAnthropicToken } from "./anthropic.js";
+export * from "./device-code.js";
 // GitHub Copilot
 export {
 	getGitHubCopilotBaseUrl,
@@ -17,20 +17,20 @@ export {
 	loginGitHubCopilot,
 	normalizeDomain,
 	refreshGitHubCopilotToken,
-} from "./github-copilot.ts";
+} from "./github-copilot.js";
 // OpenAI Codex (ChatGPT OAuth)
-export { loginOpenAICodex, openaiCodexOAuthProvider, refreshOpenAICodexToken } from "./openai-codex.ts";
+export { loginOpenAICodex, openaiCodexOAuthProvider, refreshOpenAICodexToken } from "./openai-codex.js";
 
-export * from "./types.ts";
+export * from "./types.js";
 
 // ============================================================================
 // Provider Registry
 // ============================================================================
 
-import { anthropicOAuthProvider } from "./anthropic.ts";
-import { githubCopilotOAuthProvider } from "./github-copilot.ts";
-import { openaiCodexOAuthProvider } from "./openai-codex.ts";
-import type { OAuthCredentials, OAuthProviderId, OAuthProviderInfo, OAuthProviderInterface } from "./types.ts";
+import { anthropicOAuthProvider } from "./anthropic.js";
+import { githubCopilotOAuthProvider } from "./github-copilot.js";
+import { openaiCodexOAuthProvider } from "./openai-codex.js";
+import type { OAuthCredentials, OAuthProviderId, OAuthProviderInfo, OAuthProviderInterface } from "./types.js";
 
 const BUILT_IN_OAUTH_PROVIDERS: OAuthProviderInterface[] = [
 	anthropicOAuthProvider,

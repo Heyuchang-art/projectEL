@@ -1,4 +1,4 @@
-import { type KeyId, matchesKey } from "./keys.ts";
+import { type KeyId, matchesKey } from "./keys.js";
 
 /**
  * Global keybinding registry.

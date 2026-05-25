@@ -27,12 +27,12 @@ import type { Readable } from "node:stream";
 import { globSync } from "glob";
 import ignore from "ignore";
 import { minimatch } from "minimatch";
-import { CONFIG_DIR_NAME } from "../config.ts";
-import { spawnProcess, spawnProcessSync } from "../utils/child-process.ts";
-import { type GitSource, parseGitUrl } from "../utils/git.ts";
-import { canonicalizePath, isLocalPath, markPathIgnoredByCloudSync, resolvePath } from "../utils/paths.ts";
-import { isStdoutTakenOver } from "./output-guard.ts";
-import type { PackageSource, SettingsManager } from "./settings-manager.ts";
+import { CONFIG_DIR_NAME } from "../config.js";
+import { spawnProcess, spawnProcessSync } from "../utils/child-process.js";
+import { type GitSource, parseGitUrl } from "../utils/git.js";
+import { canonicalizePath, isLocalPath, markPathIgnoredByCloudSync, resolvePath } from "../utils/paths.js";
+import { isStdoutTakenOver } from "./output-guard.js";
+import type { PackageSource, SettingsManager } from "./settings-manager.js";
 
 const NETWORK_TIMEOUT_MS = 10000;
 const UPDATE_CHECK_CONCURRENCY = 4;

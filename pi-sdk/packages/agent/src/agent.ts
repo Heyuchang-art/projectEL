@@ -8,7 +8,7 @@ import {
 	type ThinkingBudgets,
 	type Transport,
 } from "@earendil-works/pi-ai";
-import { runAgentLoop, runAgentLoopContinue } from "./agent-loop.ts";
+import { runAgentLoop, runAgentLoopContinue } from "./agent-loop.js";
 import type {
 	AfterToolCallContext,
 	AfterToolCallResult,
@@ -24,9 +24,9 @@ import type {
 	QueueMode,
 	StreamFn,
 	ToolExecutionMode,
-} from "./types.ts";
+} from "./types.js";
 
-export type { QueueMode } from "./types.ts";
+export type { QueueMode } from "./types.js";
 
 function defaultConvertToLlm(messages: AgentMessage[]): Message[] {
 	return messages.filter(

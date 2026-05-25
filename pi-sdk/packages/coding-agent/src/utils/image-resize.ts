@@ -1,7 +1,7 @@
 import { Worker } from "node:worker_threads";
-import { type ImageResizeOptions, type ResizedImage, resizeImageInProcess } from "./image-resize-core.ts";
+import { type ImageResizeOptions, type ResizedImage, resizeImageInProcess } from "./image-resize-core.js";
 
-export type { ImageResizeOptions, ResizedImage } from "./image-resize-core.ts";
+export type { ImageResizeOptions, ResizedImage } from "./image-resize-core.js";
 
 interface ResizeImageWorkerResponse {
 	result?: ResizedImage | null;
@@ -89,7 +89,7 @@ export async function resizeImage(
 ): Promise<ResizedImage | null> {
 	const isTypeScriptRuntime = import.meta.url.endsWith(".ts");
 	const workerUrl = new URL(
-		isTypeScriptRuntime ? "./image-resize-worker.ts" : "./image-resize-worker.js",
+		isTypeScriptRuntime ? "./image-resize-worker.js" : "./image-resize-worker.js",
 		import.meta.url,
 	);
 
@@ -98,7 +98,7 @@ export async function resizeImage(
 	// release binary uses the embedded worker instead of falling back in-process.
 	if (typeof process.versions.bun === "string") {
 		try {
-			return await resizeImageInWorker("./src/utils/image-resize-worker.ts", inputBytes, mimeType, options);
+			return await resizeImageInWorker("./src/utils/image-resize-worker.js", inputBytes, mimeType, options);
 		} catch {}
 	}
 
