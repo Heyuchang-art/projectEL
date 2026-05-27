@@ -9,15 +9,19 @@
           "id": "deepseek-v4-pro",
           "name": "DeepSeek V4 Pro",
           "reasoning": true,
-          "input": ["text"],
+          "input": [
+            "text"
+          ],
           "contextWindow": 1000000,
           "maxTokens": 384000
         },
         {
           "id": "deepseek-v4-flash",
           "name": "DeepSeek V4 Flash",
-          "reasoning": true,
-          "input": ["text"],
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
           "contextWindow": 1000000,
           "maxTokens": 384000
         }
@@ -33,7 +37,10 @@
           "id": "qwen3.6-plus",
           "name": "Qwen3.6 Plus",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 1000000,
           "maxTokens": 8192
         },
@@ -41,7 +48,9 @@
           "id": "qwen-max-latest",
           "name": "Qwen Max (Latest)",
           "reasoning": true,
-          "input": ["text"],
+          "input": [
+            "text"
+          ],
           "contextWindow": 32768,
           "maxTokens": 8192
         },
@@ -49,7 +58,10 @@
           "id": "qwen-plus-latest",
           "name": "Qwen Plus (Latest)",
           "reasoning": false,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 131072,
           "maxTokens": 8192
         },
@@ -57,7 +69,9 @@
           "id": "qwen-flash",
           "name": "Qwen Flash",
           "reasoning": false,
-          "input": ["text"],
+          "input": [
+            "text"
+          ],
           "contextWindow": 131072,
           "maxTokens": 8192
         },
@@ -65,7 +79,10 @@
           "id": "qwen3.6-flash-2026-04-16",
           "name": "Qwen3.6 Flash (2026-04-16)",
           "reasoning": false,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 1000000,
           "maxTokens": 8192
         },
@@ -73,7 +90,10 @@
           "id": "qwen3.6-35b-a3b",
           "name": "Qwen3.6 35B A3B",
           "reasoning": false,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 1000000,
           "maxTokens": 8192
         }
@@ -88,7 +108,10 @@
           "id": "claude-opus-4-7",
           "name": "Claude Opus 4.7",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 1000000,
           "maxTokens": 128000
         },
@@ -96,7 +119,10 @@
           "id": "claude-sonnet-4-6",
           "name": "Claude Sonnet 4.6",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 1000000,
           "maxTokens": 64000
         },
@@ -104,7 +130,10 @@
           "id": "claude-haiku-4-5-20251001",
           "name": "Claude Haiku 4.5",
           "reasoning": false,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 200000,
           "maxTokens": 64000
         }
@@ -119,7 +148,10 @@
           "id": "gpt-5.4-mini",
           "name": "GPT-5.4 Mini",
           "reasoning": false,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 400000,
           "maxTokens": 128000
         },
@@ -127,7 +159,10 @@
           "id": "gpt-5.4",
           "name": "GPT-5.4",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 1050000,
           "maxTokens": 128000
         },
@@ -135,7 +170,10 @@
           "id": "gpt-4.1",
           "name": "GPT-4.1",
           "reasoning": false,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 1047576,
           "maxTokens": 32768
         }
@@ -150,7 +188,10 @@
           "id": "gemini-3.1-pro-preview",
           "name": "Gemini 3.1 Pro (Preview)",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 2000000,
           "maxTokens": 65536
         },
@@ -158,7 +199,10 @@
           "id": "gemini-3-flash-preview",
           "name": "Gemini 3 Flash (Preview)",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 2000000,
           "maxTokens": 65536
         },
@@ -166,7 +210,10 @@
           "id": "gemini-2.5-pro",
           "name": "Gemini 2.5 Pro",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 2000000,
           "maxTokens": 65536
         },
@@ -174,7 +221,10 @@
           "id": "gemini-2.5-flash",
           "name": "Gemini 2.5 Flash",
           "reasoning": false,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 2000000,
           "maxTokens": 65536
         }
@@ -189,7 +239,10 @@
           "id": "anthropic/claude-opus-4-7",
           "name": "Claude Opus 4.7 (via OpenRouter)",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 1000000,
           "maxTokens": 128000
         },
@@ -197,7 +250,10 @@
           "id": "anthropic/claude-sonnet-4-6",
           "name": "Claude Sonnet 4.6 (via OpenRouter)",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 1000000,
           "maxTokens": 64000
         },
@@ -205,7 +261,10 @@
           "id": "openai/gpt-5.4-mini",
           "name": "GPT-5.4 Mini (via OpenRouter)",
           "reasoning": false,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 400000,
           "maxTokens": 128000
         },
@@ -213,7 +272,10 @@
           "id": "google/gemini-2.5-pro",
           "name": "Gemini 2.5 Pro (via OpenRouter)",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 2000000,
           "maxTokens": 65536
         }

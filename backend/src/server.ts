@@ -194,7 +194,17 @@ async function startServer() {
     }
 
     // 检查该会话当前模型是否已配置凭证，否则采用已配置的可用模型作为保底
-    if (session.model) {
+    if (!session.model) {
+      const fallback = getConfiguredFallbackModel();
+      console.log(`[Session FinalCheck] No model found for session ${sessionId}, setting fallback to ${fallback?.provider}/${fallback?.id}`);
+      if (fallback) {
+        try {
+          await session.setModel(fallback);
+        } catch (err) {
+          console.error(`Failed to set fallback model for session ${sessionId}:`, err);
+        }
+      }
+    } else {
       const authStatus = modelRegistry.getProviderAuthStatus(session.model.provider);
       const isConfigured = authStatus.configured || !!authStatus.source;
       console.log(`[Session FinalCheck] session.model=${session.model.provider}/${session.model.id}, configured=${isConfigured}, authStatus:`, JSON.stringify(authStatus));
@@ -210,8 +220,6 @@ async function startServer() {
           }
         }
       }
-    } else {
-      console.log(`[Session FinalCheck] session has no model`);
     }
 
     sessions.set(sessionId, session);

@@ -95,10 +95,35 @@ if not exist "%~dp0napcat\node.exe" (
     echo.
     echo --------------------------------------------------------------------
     echo  [WARNING] NapCat binaries are missing.
-    echo  Downloading and installing NapCat Shell (v4.18.4) automatically...
+    echo  Downloading and installing NapCat Shell ^(v4.18.4^) automatically...
     echo --------------------------------------------------------------------
     powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\install-napcat.ps1"
 )
+
+:: ===== Dependency Pre-check =====
+echo.
+echo Checking project dependencies...
+if not exist "%~dp0node_modules\.bin\tsx.cmd" (
+    echo --------------------------------------------------------------------
+    echo  [ERROR] Backend dependency 'tsx' not found.
+    echo  Please run 'npm install' from the project root directory:
+    echo    cd /d "%~dp0"
+    echo    npm install
+    echo --------------------------------------------------------------------
+    pause
+    exit /b 1
+)
+if not exist "%~dp0node_modules\.bin\vite.cmd" (
+    echo --------------------------------------------------------------------
+    echo  [ERROR] Frontend dependency 'vite' not found.
+    echo  Please run 'npm install' from the project root directory:
+    echo    cd /d "%~dp0"
+    echo    npm install
+    echo --------------------------------------------------------------------
+    pause
+    exit /b 1
+)
+echo   [OK] All dependencies found.
 
 echo.
 echo Starting Backend Express Server (Port 3000)...
