@@ -76,6 +76,20 @@ export default function SettingsPanel() {
     fetchModelConfig();
   }, [sessionId]);
 
+  // Keep selectedModelId in sync with available models when selectedModelProvider changes
+  useEffect(() => {
+    if (!isLoading && availableModels.length > 0) {
+      const filtered = availableModels.filter(m => m.provider === selectedModelProvider);
+      if (filtered.length > 0) {
+        if (!filtered.some(m => m.id === selectedModelId)) {
+          setSelectedModelId(filtered[0].id);
+        }
+      } else {
+        setSelectedModelId('');
+      }
+    }
+  }, [selectedModelProvider, availableModels, isLoading, selectedModelId]);
+
   const handleDeepSeekAutoFill = () => {
     setBaseUrls(prev => ({ ...prev, deepseek: 'https://api.deepseek.com' }));
   };
@@ -207,11 +221,15 @@ export default function SettingsPanel() {
             ];
           }
           
-          await fetch('http://localhost:3000/api/models/configure', {
+          const configResponse = await fetch('http://localhost:3000/api/models/configure', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
+          if (!configResponse.ok) {
+            const errData = await configResponse.json();
+            throw new Error(errData.error || `配置 ${p.name || p.id} 失败`);
+          }
         }
       }
 

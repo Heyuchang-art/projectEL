@@ -90,6 +90,41 @@ echo  Tip: Configure missing keys via the Settings panel (gear icon)
 echo  or set env vars: DEEPSEEK_API_KEY, DASHSCOPE_API_KEY, etc.
 echo --------------------------------------------------------------------
 
+:: ===== Check and Download NapCat Binaries =====
+if not exist "%~dp0napcat\node.exe" (
+    echo.
+    echo --------------------------------------------------------------------
+    echo  [WARNING] NapCat binaries are missing.
+    echo  Downloading and installing NapCat Shell ^(v4.18.4^) automatically...
+    echo --------------------------------------------------------------------
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\install-napcat.ps1"
+)
+
+:: ===== Dependency Pre-check =====
+echo.
+echo Checking project dependencies...
+if not exist "%~dp0node_modules\.bin\tsx.cmd" (
+    echo --------------------------------------------------------------------
+    echo  [ERROR] Backend dependency 'tsx' not found.
+    echo  Please run 'npm install' from the project root directory:
+    echo    cd /d "%~dp0"
+    echo    npm install
+    echo --------------------------------------------------------------------
+    pause
+    exit /b 1
+)
+if not exist "%~dp0node_modules\.bin\vite.cmd" (
+    echo --------------------------------------------------------------------
+    echo  [ERROR] Frontend dependency 'vite' not found.
+    echo  Please run 'npm install' from the project root directory:
+    echo    cd /d "%~dp0"
+    echo    npm install
+    echo --------------------------------------------------------------------
+    pause
+    exit /b 1
+)
+echo   [OK] All dependencies found.
+
 echo.
 echo Starting Backend Express Server (Port 3000)...
 start "projectEL Backend" /D "%~dp0backend" cmd /k "title projectEL Backend Server && npx tsx src/server.ts"
@@ -99,8 +134,9 @@ start "projectEL Frontend" /D "%~dp0frontend" cmd /k "title projectEL Frontend P
 
 echo.
 echo ====================================================================
-echo  [SUCCESS] Both services launched!
-echo  - Frontend Web UI:  http://localhost:5173
-echo  - Backend API:      http://localhost:3000
+echo  [SUCCESS] All services launched!
+echo  - Frontend Web UI:   http://localhost:5173
+echo  - Backend API:       http://localhost:3000
+echo  - QQ WS (NapCat):    ws://127.0.0.1:3001/qq/ws
 echo ====================================================================
 pause

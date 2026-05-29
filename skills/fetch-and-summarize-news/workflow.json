@@ -1,0 +1,60 @@
+{
+  "id": "fetch-and-summarize-news",
+  "name": "fetch-and-summarize-news",
+  "description": "抓取科技新闻并自动整理为学习卡片",
+  "nodes": [
+    {
+      "id": "bash-1",
+      "type": "bash",
+      "position": {
+        "x": 100,
+        "y": 50
+      },
+      "data": {
+        "label": "抓取 Hacker News",
+        "description": "运行 bash 终端指令获取 Hacker News 首页 HTML",
+        "command": "curl -s https://news.ycombinator.com/"
+      }
+    },
+    {
+      "id": "llm-1",
+      "type": "llm",
+      "position": {
+        "x": 100,
+        "y": 200
+      },
+      "data": {
+        "label": "AI 新闻筛选与总结",
+        "description": "调用语言模型从抓取内容中筛选 AI 相关新闻并总结",
+        "prompt": "从中筛选出5条与AI相关的最热新闻并总结，以知识卡片格式输出。需包含YAML frontmatter（id, title, lifecycle: decay_fast, confidence_score, tags等字段）"
+      }
+    },
+    {
+      "id": "write-1",
+      "type": "write_file",
+      "position": {
+        "x": 100,
+        "y": 350
+      },
+      "data": {
+        "label": "写入知识库概念目录",
+        "description": "将生成的新闻卡片写入 wiki_core/concepts/，供 WebUI 知识库展示",
+        "path": "./wiki_core/concepts/ai-news-{日期}.md"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-bash-llm",
+      "source": "bash-1",
+      "target": "llm-1",
+      "label": "传递抓取内容"
+    },
+    {
+      "id": "edge-llm-write",
+      "source": "llm-1",
+      "target": "write-1",
+      "label": "传递总结结果"
+    }
+  ]
+}
