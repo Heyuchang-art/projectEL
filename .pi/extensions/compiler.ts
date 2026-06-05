@@ -3,16 +3,7 @@ import path from "path";
 
 export interface WorkflowNode {
   id: string;
-  type:
-    | "bash"
-    | "llm"
-    | "read_file"
-    | "write_file"
-    | "api_request"
-    | "condition"
-    | "loop"
-    | "subagent"
-    | string;
+  type: string;
   data: {
     command?: string;
     prompt?: string;
@@ -34,6 +25,14 @@ export interface WorkflowNode {
     outputKey?: string;
     cwd?: string;
     timeout?: number;
+    source?: string;
+    collection?: string;
+    title?: string;
+    format?: string;
+    goal?: string;
+    questionCount?: number;
+    target?: string;
+    messageTemplate?: string;
     [key: string]: any;
   };
 }
@@ -86,8 +85,7 @@ export async function compileWorkflowToSkill(jsonPath: string, outputPath: strin
     markdown += `- 当前工作流没有显式连线，请按节点列表顺序执行。\n\n`;
   } else {
     workflow.edges.forEach((edge) => {
-      markdown += `- ${edge.source} -> ${edge.target}`;
-      markdown += ` (${describeEdgeMode(edge)})`;
+      markdown += `- ${edge.source} -> ${edge.target} (${describeEdgeMode(edge)})`;
       if (edge.data?.note) markdown += `：${edge.data.note}`;
       markdown += `\n`;
     });
@@ -117,6 +115,14 @@ export async function compileWorkflowToSkill(jsonPath: string, outputPath: strin
 
 function renderNodeInstruction(node: WorkflowNode): string {
   switch (node.type) {
+    case "qq_message":
+      return renderQqMessageNode(node);
+    case "knowledge_write":
+      return renderKnowledgeWriteNode(node);
+    case "socratic":
+      return renderSocraticNode(node);
+    case "qq_push":
+      return renderQqPushNode(node);
     case "bash":
       return renderBashNode(node);
     case "llm":
@@ -137,6 +143,40 @@ function renderNodeInstruction(node: WorkflowNode): string {
     default:
       return `- **描述**：执行自定义操作（节点类型：${node.type}）。\n- **配置**：\`${JSON.stringify(node.data)}\`\n\n`;
   }
+}
+
+function renderQqMessageNode(node: WorkflowNode): string {
+  let markdown = `- **描述**：读取 QQ 群、课程群或通知群中的消息，作为学习流程输入。\n`;
+  markdown += `- **消息来源**：${node.data.source || ""}\n`;
+  if (node.data.outputKey) markdown += `- **输出变量**：\`${node.data.outputKey}\`\n`;
+  markdown += `- **执行要求**：优先保留时间、发送人、附件、deadline、地点和上下文。\n\n`;
+  return markdown;
+}
+
+function renderKnowledgeWriteNode(node: WorkflowNode): string {
+  let markdown = `- **描述**：将上一步结果写入个人知识库，形成可查询、可复习、可继续追问的学习记忆。\n`;
+  markdown += `- **知识库目录**：\`${node.data.collection || "wiki_core/concepts"}\`\n`;
+  markdown += `- **标题**：${node.data.title || ""}\n`;
+  markdown += `- **格式**：${node.data.format || "concept_card"}\n`;
+  markdown += `- **执行要求**：如果写入知识卡片，尽量包含 frontmatter、标签、置信度、创建时间和复习线索。\n\n`;
+  return markdown;
+}
+
+function renderSocraticNode(node: WorkflowNode): string {
+  let markdown = `- **描述**：基于上一步材料生成苏格拉底式追问、自测题或纠错提示。\n`;
+  markdown += `- **追问目标**：${node.data.goal || ""}\n`;
+  markdown += `- **问题数量**：${node.data.questionCount || 5}\n`;
+  if (node.data.outputKey) markdown += `- **输出变量**：\`${node.data.outputKey}\`\n`;
+  markdown += `- **执行要求**：不要只给答案，要通过由浅入深的问题帮助学生暴露理解漏洞，并在最后给出简短总结。\n\n`;
+  return markdown;
+}
+
+function renderQqPushNode(node: WorkflowNode): string {
+  let markdown = `- **描述**：将学习日报、待办提醒或自测结果推送到 QQ。\n`;
+  markdown += `- **推送目标**：${node.data.target || ""}\n`;
+  markdown += `- **消息模板**：\n\n`;
+  markdown += `\`\`\`text\n${node.data.messageTemplate || "{{content}}"}\n\`\`\`\n\n`;
+  return markdown;
 }
 
 function renderBashNode(node: WorkflowNode): string {
@@ -226,6 +266,10 @@ function renderSubagentNode(node: WorkflowNode): string {
 
 function getNodeTitle(node: WorkflowNode): string {
   const titles: Record<string, string> = {
+    qq_message: "QQ 群消息节点",
+    knowledge_write: "知识库写入节点",
+    socratic: "苏格拉底追问节点",
+    qq_push: "QQ 推送节点",
     bash: "Bash 执行节点",
     llm: "LLM 推理节点",
     read_file: "读取文件节点",

@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import {
   addEdge,
   Connection,
@@ -12,13 +12,24 @@ import {
   XYPosition
 } from '@xyflow/react';
 import confetti from 'canvas-confetti';
-import { getDefaultNodeData, WorkflowNodeType } from '../workflow/nodeRegistry';
+import {
+  canConnectNodeTypes,
+  getDefaultNodeData,
+  WorkflowNodeType
+} from '../workflow/nodeRegistry';
+import { getWorkflowTemplate, workflowTemplates } from '../workflow/workflowTemplates';
+import {
+  validateWorkflow,
+  WorkflowValidationResult
+} from '../workflow/workflowValidation';
 
 interface CanvasContextProps {
   nodes: Node[];
   edges: Edge[];
   selectedNode: Node | null;
   selectedEdge: Edge | null;
+  activeTemplateId: string;
+  validation: WorkflowValidationResult;
   setSelectedNode: (node: Node | null) => void;
   setSelectedEdge: (edge: Edge | null) => void;
   onNodesChange: OnNodesChange;
@@ -28,6 +39,7 @@ interface CanvasContextProps {
   deleteNode: (nodeId: string) => void;
   duplicateNode: (nodeId: string) => void;
   deleteEdge: (edgeId: string) => void;
+  applyTemplate: (templateId: string) => void;
   updateSelectedNodeData: (field: string, value: string | number) => void;
   updateSelectedEdgeData: (field: string, value: string) => void;
   saveAndCompile: (sessionId?: string) => Promise<void>;
@@ -35,47 +47,10 @@ interface CanvasContextProps {
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
 }
 
-const initialNodes: Node[] = [
-  {
-    id: 'node-1',
-    type: 'bash',
-    position: { x: 120, y: 80 },
-    data: getDefaultNodeData('bash')
-  },
-  {
-    id: 'node-2',
-    type: 'llm',
-    position: { x: 120, y: 250 },
-    data: getDefaultNodeData('llm')
-  },
-  {
-    id: 'node-3',
-    type: 'write_file',
-    position: { x: 120, y: 420 },
-    data: getDefaultNodeData('write_file')
-  }
-];
+const cloneNodes = (nodes: Node[]) => nodes.map((node) => ({ ...node, data: { ...node.data }, position: { ...node.position } }));
+const cloneEdges = (edges: Edge[]) => edges.map((edge) => ({ ...edge, data: { ...edge.data } }));
 
-const initialEdges: Edge[] = [
-  {
-    id: 'e-node-1-node-2',
-    source: 'node-1',
-    target: 'node-2',
-    sourceHandle: 'next',
-    type: 'smoothstep',
-    label: '顺序',
-    data: { mode: 'sequence', note: '' }
-  },
-  {
-    id: 'e-node-2-node-3',
-    source: 'node-2',
-    target: 'node-3',
-    sourceHandle: 'next',
-    type: 'smoothstep',
-    label: '顺序',
-    data: { mode: 'sequence', note: '' }
-  }
-];
+const defaultTemplate = workflowTemplates[0];
 
 const CanvasContext = createContext<CanvasContextProps | undefined>(undefined);
 
@@ -105,10 +80,13 @@ const getLabelFromMode = (mode: string) => {
 };
 
 export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [activeTemplateId, setActiveTemplateId] = useState(defaultTemplate.id);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(cloneNodes(defaultTemplate.nodes));
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(cloneEdges(defaultTemplate.edges));
   const [selectedNode, setSelectedNodeState] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdgeState] = useState<Edge | null>(null);
+
+  const validation = useMemo(() => validateWorkflow(nodes, edges), [nodes, edges]);
 
   const setSelectedNode = useCallback((node: Node | null) => {
     setSelectedNodeState(node);
@@ -122,7 +100,19 @@ export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const onConnect = useCallback(
     (params: Connection) => {
+      if (!params.source || !params.target) return;
+      if (params.source === params.target) {
+        alert('不能把节点连接到自身。');
+        return;
+      }
+
       const sourceType = nodes.find((node) => node.id === params.source)?.type;
+      const targetType = nodes.find((node) => node.id === params.target)?.type;
+      if (!canConnectNodeTypes(sourceType || undefined, params.sourceHandle, targetType || undefined)) {
+        alert('这条连线的数据类型不匹配，请换一个目标节点或使用 LLM 做中间转换。');
+        return;
+      }
+
       const mode = getModeFromHandle(params.sourceHandle, sourceType);
       setEdges((eds) =>
         addEdge(
@@ -188,6 +178,18 @@ export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setSelectedEdgeState((edge) => (edge?.id === edgeId ? null : edge));
     },
     [setEdges]
+  );
+
+  const applyTemplate = useCallback(
+    (templateId: string) => {
+      const template = getWorkflowTemplate(templateId);
+      setActiveTemplateId(template.id);
+      setNodes(cloneNodes(template.nodes));
+      setEdges(cloneEdges(template.edges));
+      setSelectedNodeState(null);
+      setSelectedEdgeState(null);
+    },
+    [setNodes, setEdges]
   );
 
   const updateSelectedNodeData = (field: string, value: string | number) => {
@@ -265,13 +267,24 @@ export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const saveAndCompile = async (sessionId?: string) => {
+    const currentValidation = validateWorkflow(nodes, edges);
+    if (!currentValidation.ok) {
+      const errorText = currentValidation.items
+        .filter((item) => item.level === 'error')
+        .map((item) => `- ${item.message}`)
+        .join('\n');
+      alert(`流程检查未通过，暂不能保存：\n${errorText}`);
+      return;
+    }
+
     try {
+      const template = getWorkflowTemplate(activeTemplateId);
       const response = await fetch('http://localhost:3000/api/workflow/fetch-and-summarize-news', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: '新闻抓取与总结',
-          description: '抓取科技新闻并自动整理为学习卡片',
+          name: template.name,
+          description: template.description,
           nodes: nodes.map((node) => ({
             id: node.id,
             type: node.type,
@@ -311,6 +324,8 @@ export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         edges,
         selectedNode,
         selectedEdge,
+        activeTemplateId,
+        validation,
         setSelectedNode,
         setSelectedEdge,
         onNodesChange,
@@ -320,6 +335,7 @@ export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         deleteNode,
         duplicateNode,
         deleteEdge,
+        applyTemplate,
         updateSelectedNodeData,
         updateSelectedEdgeData,
         saveAndCompile,

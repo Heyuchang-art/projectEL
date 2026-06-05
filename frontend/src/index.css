@@ -302,6 +302,45 @@ body {
   background: #050505;
 }
 
+.workflow-template-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 3px solid var(--panel-border);
+  background: #080808;
+}
+
+.workflow-template-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  font-family: var(--font-mono);
+}
+
+.workflow-template-copy span {
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.workflow-template-copy strong {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.workflow-template-copy em {
+  color: #ffffff;
+  font-size: 10px;
+  font-style: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .workflow-palette,
 .workflow-inspector {
   min-width: 0;
@@ -402,6 +441,45 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.workflow-validation-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--panel-border);
+}
+
+.workflow-validation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.workflow-validation-item {
+  padding: 7px 8px;
+  background: #000000;
+  border: 2px solid #333333;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.45;
+  color: #ffffff;
+}
+
+.workflow-validation-item.error {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.workflow-validation-item.warning {
+  border-color: #f59e0b;
+  color: #facc15;
+}
+
+.workflow-validation-item.success {
+  border-color: var(--success);
+  color: var(--success);
 }
 
 .workflow-empty-state p,

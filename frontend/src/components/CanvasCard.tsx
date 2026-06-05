@@ -11,13 +11,7 @@ import {
   ReactFlowInstance
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import {
-  Copy,
-  Layers,
-  Save,
-  Trash2,
-  X
-} from 'lucide-react';
+import { Copy, Layers, Save, ShieldCheck, Trash2, X } from 'lucide-react';
 import { useCanvas } from '../contexts/CanvasContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useChat } from '../contexts/ChatContext';
@@ -29,6 +23,7 @@ import {
   WorkflowNodeDefinition,
   WorkflowNodeType
 } from '../workflow/nodeRegistry';
+import { workflowTemplates } from '../workflow/workflowTemplates';
 
 const inputStyle: React.CSSProperties = {
   padding: '8px 10px',
@@ -90,7 +85,11 @@ const nodeTypes = {
   api_request: WorkflowNode,
   condition: WorkflowNode,
   loop: WorkflowNode,
-  subagent: WorkflowNode
+  subagent: WorkflowNode,
+  qq_message: WorkflowNode,
+  knowledge_write: WorkflowNode,
+  socratic: WorkflowNode,
+  qq_push: WorkflowNode
 };
 
 function FieldEditor({
@@ -176,6 +175,8 @@ export default function CanvasCard() {
     edges,
     selectedNode,
     selectedEdge,
+    activeTemplateId,
+    validation,
     setSelectedNode,
     setSelectedEdge,
     onNodesChange,
@@ -185,6 +186,7 @@ export default function CanvasCard() {
     deleteNode,
     duplicateNode,
     deleteEdge,
+    applyTemplate,
     updateSelectedNodeData,
     updateSelectedEdgeData,
     saveAndCompile
@@ -193,6 +195,7 @@ export default function CanvasCard() {
   const { toggleCard } = useWorkspace();
   const { sessionId } = useChat();
 
+  const activeTemplate = workflowTemplates.find((template) => template.id === activeTemplateId) || workflowTemplates[0];
   const selectedDefinition = useMemo(
     () => (selectedNode ? getNodeDefinition(selectedNode.type || undefined) : null),
     [selectedNode]
@@ -236,6 +239,9 @@ export default function CanvasCard() {
     },
     [addNode, reactFlowInstance]
   );
+
+  const errorCount = validation.items.filter((item) => item.level === 'error').length;
+  const warningCount = validation.items.filter((item) => item.level === 'warning').length;
 
   return (
     <div
@@ -300,6 +306,26 @@ export default function CanvasCard() {
         </div>
       </div>
 
+      <div className="workflow-template-bar">
+        <div className="workflow-template-copy">
+          <span>学习模板</span>
+          <strong>{activeTemplate.name}</strong>
+          <em>{activeTemplate.tagline}</em>
+        </div>
+        <select
+          value={activeTemplateId}
+          onChange={(event) => applyTemplate(event.target.value)}
+          className="input-premium"
+          style={{ width: '230px', padding: '7px 10px', fontSize: '11px' }}
+        >
+          {workflowTemplates.map((template) => (
+            <option key={template.id} value={template.id}>
+              {template.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="workflow-builder">
         <aside className="workflow-palette">
           <div style={panelTitleStyle}>节点库</div>
@@ -339,11 +365,31 @@ export default function CanvasCard() {
         </div>
 
         <aside className="workflow-inspector">
+          <div className="workflow-validation-card">
+            <div className="workflow-inspector-header">
+              <div>
+                <div style={panelTitleStyle}>流程检查</div>
+                <p>
+                  {validation.ok ? '可以保存' : '需要修复'} · {errorCount} 个错误 · {warningCount} 个提醒
+                </p>
+              </div>
+              <ShieldCheck size={18} style={{ color: validation.ok ? 'var(--success)' : 'var(--error)' }} />
+            </div>
+            <div className="workflow-validation-list">
+              {validation.items.slice(0, 5).map((item, index) => (
+                <div key={`${item.message}-${index}`} className={`workflow-validation-item ${item.level}`}>
+                  {item.level === 'error' ? '✗' : item.level === 'warning' ? '!' : '✓'} {item.message}
+                </div>
+              ))}
+            </div>
+          </div>
+
           {!selectedNode && !selectedEdge && (
             <div className="workflow-empty-state">
               <div style={panelTitleStyle}>工作流</div>
-              <p>从左侧拖拽节点到画布，连接节点后点击保存编译。</p>
+              <p>{activeTemplate.description}</p>
               <p>当前节点 {nodes.length} 个，连线 {edges.length} 条。</p>
+              <p>用户可以直接使用模板，也可以继续拖拽节点改造成自己的学习自动化流程。</p>
             </div>
           )}
 
