@@ -119,26 +119,75 @@ function toNoteFrontmatter(note: Partial<CuratedNote>): Record<string, any> {
     reps: note.reps,
     created_at: note.created_at,
     type: 'note',
+    source_card_id: note.source_card_id,
   };
 }
 
 export class KnowledgeBaseService {
-  readonly wikiRoot: string;
-  readonly conceptsDir: string;
-  readonly temporaryDir: string;
-  readonly archiveDir: string;
-  readonly curatedNotesDir: string;
-  readonly inboxDir: string;
-  readonly sourcesDir: string;
+  readonly workspaceCwd: string;
+  activeKbId: string = 'default';
+
+  get wikiRoot(): string {
+    return path.join(this.workspaceCwd, 'knowledge_bases', this.activeKbId, 'wiki_core');
+  }
+  get conceptsDir(): string {
+    return path.join(this.wikiRoot, 'concepts');
+  }
+  get temporaryDir(): string {
+    return path.join(this.wikiRoot, 'temporary');
+  }
+  get archiveDir(): string {
+    return path.join(this.wikiRoot, 'archive');
+  }
+  get curatedNotesDir(): string {
+    return path.join(this.workspaceCwd, 'knowledge_bases', this.activeKbId, 'curated_notes');
+  }
+  get inboxDir(): string {
+    return path.join(this.workspaceCwd, 'knowledge_bases', this.activeKbId, 'inbox');
+  }
+  get sourcesDir(): string {
+    return path.join(this.workspaceCwd, 'knowledge_bases', this.activeKbId, 'sources');
+  }
 
   constructor(workspaceCwd: string) {
-    this.wikiRoot = path.join(workspaceCwd, 'wiki_core');
-    this.conceptsDir = path.join(this.wikiRoot, 'concepts');
-    this.temporaryDir = path.join(this.wikiRoot, 'temporary');
-    this.archiveDir = path.join(this.wikiRoot, 'archive');
-    this.curatedNotesDir = path.join(workspaceCwd, 'curated_notes');
-    this.inboxDir = path.join(workspaceCwd, 'inbox');
-    this.sourcesDir = path.join(workspaceCwd, 'sources');
+    this.workspaceCwd = workspaceCwd;
+  }
+
+  async migrateOldPaths(): Promise<void> {
+    const oldWiki = path.join(this.workspaceCwd, 'wiki_core');
+    const oldNotes = path.join(this.workspaceCwd, 'curated_notes');
+    const oldSources = path.join(this.workspaceCwd, 'sources');
+    const oldInbox = path.join(this.workspaceCwd, 'inbox');
+
+    const defaultKbRoot = path.join(this.workspaceCwd, 'knowledge_bases', 'default');
+
+    if (
+      await fs.pathExists(oldWiki) ||
+      await fs.pathExists(oldNotes) ||
+      await fs.pathExists(oldSources) ||
+      await fs.pathExists(oldInbox)
+    ) {
+      console.log('[KB Migration] Detecting old knowledge base layout. Migrating to knowledge_bases/default/...');
+      await fs.ensureDir(defaultKbRoot);
+
+      if (await fs.pathExists(oldWiki)) {
+        await fs.move(oldWiki, path.join(defaultKbRoot, 'wiki_core'), { overwrite: true });
+        console.log('[KB Migration] Moved wiki_core.');
+      }
+      if (await fs.pathExists(oldNotes)) {
+        await fs.move(oldNotes, path.join(defaultKbRoot, 'curated_notes'), { overwrite: true });
+        console.log('[KB Migration] Moved curated_notes.');
+      }
+      if (await fs.pathExists(oldSources)) {
+        await fs.move(oldSources, path.join(defaultKbRoot, 'sources'), { overwrite: true });
+        console.log('[KB Migration] Moved sources.');
+      }
+      if (await fs.pathExists(oldInbox)) {
+        await fs.move(oldInbox, path.join(defaultKbRoot, 'inbox'), { overwrite: true });
+        console.log('[KB Migration] Moved inbox.');
+      }
+      console.log('[KB Migration] Migration completed successfully.');
+    }
   }
 
   async ensureDirectories(): Promise<void> {
@@ -238,6 +287,7 @@ export class KnowledgeBaseService {
       type: 'note',
       body: parsed.body,
       filename: path.basename(filePath),
+      source_card_id: fm.source_card_id,
     };
   }
 
@@ -441,6 +491,7 @@ export class KnowledgeBaseService {
       type: 'note',
       body: input.body || `# ${input.title}\n\n`,
       filename: `${slugify(input.title)}.md`,
+      source_card_id: input.source_card_id,
     };
 
     const frontmatter = toNoteFrontmatter(note);
@@ -468,6 +519,7 @@ export class KnowledgeBaseService {
     if (input.body !== undefined) parsed.body = input.body;
     if (input.tags !== undefined) fm.tags = input.tags;
     if (input.lifecycle !== undefined) fm.lifecycle = input.lifecycle;
+    if (input.source_card_id !== undefined) fm.source_card_id = input.source_card_id;
 
     const content = `---\n${serializeFrontmatter(fm)}\n---\n\n${parsed.body}`;
     await fs.writeFile(filePath, content, 'utf-8');
@@ -585,8 +637,15 @@ export class KnowledgeBaseService {
 
     // Rewrite [[links]] in remaining wiki files
     if (moved > 0) {
-      const archivedFiles = await fs.readdir(this.archiveDir);
-      const archivedNames = new Set(archivedFiles.map(f => f.replace(/\.md$/, '')));
+      const archivedCards: WikiCard[] = [];
+      if (await fs.pathExists(this.archiveDir)) {
+        const archivedFiles = await fs.readdir(this.archiveDir);
+        for (const file of archivedFiles) {
+          if (!file.endsWith('.md')) continue;
+          const card = await this.readFileAsCard(path.join(this.archiveDir, file));
+          if (card) archivedCards.push(card);
+        }
+      }
 
       for (const dir of [this.conceptsDir, this.temporaryDir] as const) {
         if (!await fs.pathExists(dir)) continue;
@@ -597,10 +656,19 @@ export class KnowledgeBaseService {
           let content = await fs.readFile(filePath, 'utf-8');
           let modified = false;
 
-          for (const archivedName of archivedNames) {
-            const linkPattern = new RegExp(`\\[\\[${archivedName}\\]\\]`, 'g');
-            if (linkPattern.test(content)) {
-              content = content.replace(linkPattern, `**${archivedName}[已归档]**`);
+          for (const archivedCard of archivedCards) {
+            const nameWithoutExt = archivedCard.filename.replace(/\.md$/, '');
+            const escapeRegex = (s: string) => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            
+            const titlePattern = new RegExp(`\\[\\[\\s*${escapeRegex(archivedCard.title)}\\s*\\]\\]`, 'gi');
+            const namePattern = new RegExp(`\\[\\[\\s*${escapeRegex(nameWithoutExt)}\\s*\\]\\]`, 'gi');
+            
+            if (titlePattern.test(content)) {
+              content = content.replace(titlePattern, `**${archivedCard.title}[已归档]**`);
+              modified = true;
+              linksRewritten++;
+            } else if (namePattern.test(content)) {
+              content = content.replace(namePattern, `**${archivedCard.title}[已归档]**`);
               modified = true;
               linksRewritten++;
             }

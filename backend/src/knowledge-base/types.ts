@@ -29,6 +29,7 @@ export interface CuratedNote {
   type: 'note';
   body: string;
   filename: string;
+  source_card_id?: string;
 }
 
 export interface CreateCardInput {
@@ -50,6 +51,7 @@ export interface CreateNoteInput {
   body: string;
   tags?: string[];
   lifecycle?: Lifecycle;
+  source_card_id?: string;
 }
 
 export interface UpdateNoteInput {
@@ -57,6 +59,7 @@ export interface UpdateNoteInput {
   body?: string;
   tags?: string[];
   lifecycle?: Lifecycle;
+  source_card_id?: string;
 }
 
 export interface ArchiveCandidate {

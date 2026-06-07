@@ -6,7 +6,7 @@
     "websocketServers": [],
     "websocketClients": [
       {
-        "name": "projectEL",
+        "name": "Snapshot Pi",
         "enable": true,
         "url": "ws://127.0.0.1:3001/qq/ws",
         "reportSelfMessage": false,

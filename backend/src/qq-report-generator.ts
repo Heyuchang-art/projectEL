@@ -214,7 +214,7 @@ export class ReportGenerator {
   }
 
   private async loadCheckinLogs(): Promise<CheckinLogEntry[]> {
-    const logPath = path.join(this.workspaceCwd, 'inbox', 'checkin_logs.jsonl');
+    const logPath = path.join(this.kbService.inboxDir, 'checkin_logs.jsonl');
     if (!(await fs.pathExists(logPath))) return [];
 
     try {

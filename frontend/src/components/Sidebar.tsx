@@ -45,7 +45,7 @@ export default function Sidebar() {
           cursor: 'default',
           marginBottom: '12px'
         }}
-        title="Socrates Learning Workspace"
+        title="Xaihi Learning Workspace"
       >
         <Cpu size={20} style={{ color: 'var(--primary)' }} />
       </div>

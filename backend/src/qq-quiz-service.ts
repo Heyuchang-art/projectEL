@@ -452,8 +452,8 @@ ${cardDescriptions.join('\n\n')}
 
   private async logCheckin(result: QuizResult): Promise<void> {
     try {
-      const logPath = path.join(this.workspaceCwd, 'inbox', 'checkin_logs.jsonl');
-      await fs.ensureDir(path.join(this.workspaceCwd, 'inbox'));
+      const logPath = path.join(this.kbService.inboxDir, 'checkin_logs.jsonl');
+      await fs.ensureDir(this.kbService.inboxDir);
       const line = JSON.stringify(result) + '\n';
       await fs.appendFile(logPath, line, 'utf-8');
     } catch (err) {

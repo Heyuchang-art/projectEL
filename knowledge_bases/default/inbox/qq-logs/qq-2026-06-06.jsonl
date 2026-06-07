@@ -1,0 +1,23 @@
+{"timestamp":"2026-06-06T07:18:10.371Z","level":"info","category":"logger","message":"QQLogger initialized"}
+{"timestamp":"2026-06-06T07:18:10.380Z","level":"info","category":"server","message":"QQ WebSocket server listening on port 3001"}
+{"timestamp":"2026-06-06T07:38:09.306Z","level":"info","category":"server","message":"QQWebSocketServer shutting down..."}
+{"timestamp":"2026-06-06T07:38:09.309Z","level":"info","category":"server","message":"QQWebSocketServer closed"}
+{"timestamp":"2026-06-06T07:48:56.384Z","level":"info","category":"server","message":"QQ WebSocket server listening on port 3001"}
+{"timestamp":"2026-06-06T07:49:08.345Z","level":"info","category":"server","message":"QQWebSocketServer shutting down..."}
+{"timestamp":"2026-06-06T07:49:08.347Z","level":"info","category":"server","message":"QQWebSocketServer closed"}
+{"timestamp":"2026-06-06T07:49:28.139Z","level":"info","category":"server","message":"QQ WebSocket server listening on port 3001"}
+{"timestamp":"2026-06-06T07:49:46.384Z","level":"info","category":"connection","message":"Account 3970918605 connected","data":{"selfId":3970918605}}
+{"timestamp":"2026-06-06T07:50:15.326Z","level":"info","category":"message","message":"Group message from 2553324747 in 966967250","data":{"userId":2553324747,"groupId":966967250,"textLength":3}}
+{"timestamp":"2026-06-06T07:54:11.764Z","level":"info","category":"message","message":"Group message from 2553324747 in 966967250","data":{"userId":2553324747,"groupId":966967250,"textLength":9}}
+{"timestamp":"2026-06-06T07:55:26.414Z","level":"info","category":"connection","message":"Account 3970918605 connection closed"}
+{"timestamp":"2026-06-06T07:55:26.433Z","level":"info","category":"connection","message":"Account 3970918605 disconnected","data":{"selfId":3970918605}}
+{"timestamp":"2026-06-06T07:55:28.406Z","level":"info","category":"server","message":"QQWebSocketServer shutting down..."}
+{"timestamp":"2026-06-06T07:55:28.409Z","level":"info","category":"server","message":"QQWebSocketServer closed"}
+{"timestamp":"2026-06-06T08:01:19.062Z","level":"info","category":"server","message":"QQ WebSocket server listening on port 3001"}
+{"timestamp":"2026-06-06T08:01:22.834Z","level":"info","category":"connection","message":"Account 3970918605 connected","data":{"selfId":3970918605}}
+{"timestamp":"2026-06-06T08:07:41.642Z","level":"info","category":"connection","message":"Account 3970918605 connection closed"}
+{"timestamp":"2026-06-06T08:07:41.642Z","level":"info","category":"connection","message":"Account 3970918605 disconnected","data":{"selfId":3970918605}}
+{"timestamp":"2026-06-06T08:07:46.827Z","level":"info","category":"connection","message":"Account 3970918605 connected","data":{"selfId":3970918605}}
+{"timestamp":"2026-06-06T08:14:52.298Z","level":"info","category":"connection","message":"Account 3970918605 connection closed"}
+{"timestamp":"2026-06-06T08:14:52.298Z","level":"info","category":"connection","message":"Account 3970918605 disconnected","data":{"selfId":3970918605}}
+{"timestamp":"2026-06-06T08:30:43.676Z","level":"info","category":"connection","message":"Account 3970918605 connected","data":{"selfId":3970918605}}

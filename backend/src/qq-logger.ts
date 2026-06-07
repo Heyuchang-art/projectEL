@@ -22,6 +22,7 @@ export class QQLogger {
   private maxBufferSize = 100;
 
   constructor(workspaceCwd: string, level: LogLevel = 'info') {
+    // 默认路径，后续会通过 setLogDir 重定向到记忆库内
     this.logDir = path.join(workspaceCwd, 'inbox', 'qq-logs');
     this.level = level;
     this.flushTimer = setInterval(() => this.flush(), this.flushIntervalMs);
@@ -30,6 +31,18 @@ export class QQLogger {
     process.on('exit', () => this.flushSync());
     process.on('SIGINT', () => { this.flushSync(); process.exit(); });
     process.on('SIGTERM', () => { this.flushSync(); process.exit(); });
+  }
+
+  /**
+   * 重定向日志目录到记忆库的 inbox 路径下。
+   * 应在 kbService 初始化后调用，使 QQ 日志与知识库储存在一起。
+   */
+  setLogDir(newLogDir: string): void {
+    this.logDir = newLogDir;
+  }
+
+  getLogDir(): string {
+    return this.logDir;
   }
 
   private levelPriority(l: LogLevel): number {

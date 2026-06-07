@@ -77,6 +77,7 @@ export function useKnowledgeBase() {
     socket.on('knowledge:note-updated', () => { fetchNotes(); });
     socket.on('knowledge:archive-lint', () => {});
     socket.on('knowledge:archive-done', () => { fetchCards(); });
+    socket.on('knowledge:library-switched', () => { fetchCards(); fetchNotes(); });
 
     return () => {
       socket.removeAllListeners();
@@ -230,6 +231,32 @@ export function useKnowledgeBase() {
     return apiCall(`/sources/${encodeURIComponent(filename)}`);
   }, [apiCall]);
 
+  const fetchLibraries = useCallback(async (): Promise<{ libraries: string[], active: string }> => {
+    return apiCall<{ libraries: string[], active: string }>('/libraries');
+  }, [apiCall]);
+
+  const switchLibrary = useCallback(async (kbId: string): Promise<void> => {
+    await apiCall(`/libraries/switch`, {
+      method: 'POST',
+      body: JSON.stringify({ kbId }),
+    });
+    await fetchCards();
+    await fetchNotes();
+  }, [apiCall, fetchCards, fetchNotes]);
+
+  const createLibrary = useCallback(async (kbId: string): Promise<void> => {
+    await apiCall(`/libraries/create`, {
+      method: 'POST',
+      body: JSON.stringify({ kbId }),
+    });
+  }, [apiCall]);
+
+  const deleteLibrary = useCallback(async (kbId: string): Promise<void> => {
+    await apiCall(`/libraries/${kbId}`, {
+      method: 'DELETE',
+    });
+  }, [apiCall]);
+
   return {
     cards, notes, loading, error,
     fetchCards, fetchCard, createCard, updateCard, deleteCard, boostCard, searchCards,
@@ -237,5 +264,6 @@ export function useKnowledgeBase() {
     runArchiveLint, executeArchive, fetchArchiveReview, fetchArchivedCards,
     fetchStats,
     fetchSources, fetchSource,
+    fetchLibraries, switchLibrary, createLibrary, deleteLibrary,
   };
 }

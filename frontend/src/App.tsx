@@ -7,6 +7,7 @@ import ChatCard from './components/ChatCard';
 import CanvasCard from './components/CanvasCard';
 import KnowledgeCard from './components/KnowledgeCard/KnowledgeCard';
 import QQBotCard from './components/QQBotCard';
+import Header from './components/Header';
 
 import { ChatProvider } from './contexts/ChatContext';
 import { WorkspaceProvider, useWorkspace } from './contexts/WorkspaceContext';
@@ -36,16 +37,19 @@ function MainLayout() {
       <Sidebar />
 
       {/* 2. Main Flex Workspace */}
-      <div style={{ flex: 1, height: '100%', overflow: 'hidden' }}>
-        <Workspace
-          activeCards={activeCards}
-          cardLayout={cardLayout}
-          onUpdateLayout={updateLayout}
-          renderCard={(cardId, onClose) => renderCard(cardId, () => {
-            toggleCard(cardId);
-            onClose();
-          })}
-        />
+      <div style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Header />
+        <div style={{ flex: 1, width: '100%', overflow: 'hidden' }}>
+          <Workspace
+            activeCards={activeCards}
+            cardLayout={cardLayout}
+            onUpdateLayout={updateLayout}
+            renderCard={(cardId, onClose) => renderCard(cardId, () => {
+              toggleCard(cardId);
+              onClose();
+            })}
+          />
+        </div>
       </div>
 
       {/* 3. Global Slide Drawers */}

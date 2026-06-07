@@ -1,8 +1,8 @@
 @echo off
-title projectEL Dev Server Launcher
+title Snapshot Pi Dev Server Launcher
 cls
 echo ====================================================================
-echo           projectEL - AI Learning Agent Launcher
+echo           Snapshot Pi - AI Learning Agent Launcher
 echo ====================================================================
 echo.
 echo Scanning API keys from environment and local config...
@@ -100,37 +100,58 @@ if not exist "%~dp0napcat\node.exe" (
     powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\install-napcat.ps1"
 )
 
-:: ===== Dependency Pre-check =====
+:: ===== Dependency Pre-check & Auto-Install =====
 echo.
 echo Checking project dependencies...
-if not exist "%~dp0node_modules\.bin\tsx.cmd" (
+
+where node >nul 2>&1
+if errorlevel 1 (
     echo --------------------------------------------------------------------
-    echo  [ERROR] Backend dependency 'tsx' not found.
-    echo  Please run 'npm install' from the project root directory:
-    echo    cd /d "%~dp0"
-    echo    npm install
-    echo --------------------------------------------------------------------
-    pause
-    exit /b 1
-)
-if not exist "%~dp0node_modules\.bin\vite.cmd" (
-    echo --------------------------------------------------------------------
-    echo  [ERROR] Frontend dependency 'vite' not found.
-    echo  Please run 'npm install' from the project root directory:
-    echo    cd /d "%~dp0"
-    echo    npm install
+    echo  [ERROR] Node.js is not installed or not in your PATH.
+    echo  Please install Node.js v18+ to run this project.
     echo --------------------------------------------------------------------
     pause
     exit /b 1
 )
-echo   [OK] All dependencies found.
+
+node "%~dp0scripts\check-deps.js"
+if errorlevel 1 (
+    echo.
+    echo --------------------------------------------------------------------
+    echo  [WARNING] Missing dependencies detected!
+    echo  Running 'npm install' automatically to install them...
+    echo --------------------------------------------------------------------
+    echo.
+    cd /d "%~dp0"
+    call npm install
+    if errorlevel 1 (
+        echo.
+        echo --------------------------------------------------------------------
+        echo  [ERROR] 'npm install' failed. Please run it manually to check.
+        echo --------------------------------------------------------------------
+        pause
+        exit /b 1
+    )
+    echo.
+    echo Re-checking dependencies...
+    node "%~dp0scripts\check-deps.js"
+    if errorlevel 1 (
+        echo --------------------------------------------------------------------
+        echo  [ERROR] Dependency check still failed after running npm install.
+        echo --------------------------------------------------------------------
+        pause
+        exit /b 1
+    )
+) else (
+    echo   [OK] All workspace dependencies are installed.
+)
 
 echo.
 echo Starting Backend Express Server (Port 3000)...
-start "projectEL Backend" /D "%~dp0backend" cmd /k "title projectEL Backend Server && npx tsx src/server.ts"
+start "Snapshot Pi Backend" /D "%~dp0backend" cmd /k "title Snapshot Pi Backend Server && npx tsx src/server.ts"
 
 echo Starting Frontend Vite Server (Port 5173)...
-start "projectEL Frontend" /D "%~dp0frontend" cmd /k "title projectEL Frontend Page && npm run dev"
+start "Snapshot Pi Frontend" /D "%~dp0frontend" cmd /k "title Snapshot Pi Frontend Page && npm run dev"
 
 echo.
 echo ====================================================================

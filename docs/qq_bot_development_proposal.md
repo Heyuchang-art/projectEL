@@ -1,6 +1,6 @@
-# projectEL × NapCat OneBot v11 开源智能助教系统开发建议报告 (公式与运营周报强化版)
+# Snapshot Pi × NapCat OneBot v11 开源智能助教系统开发建议报告 (公式与运营周报强化版)
 
-本报告详细说明了如何将 `projectEL` 的核心能力与 **NapCat OneBot v11 (QQ 机器人协议端)** 开源架构整合，打造一款面向个人及学习社群的纯开源辅助学习助教系统。系统完全去除了所有商业化限制，聚焦于**开源共享、无缝嵌入、自生长学习知识网**三大核心原则。
+本报告详细说明了如何将 `Snapshot Pi` 的核心能力与 **NapCat OneBot v11 (QQ 机器人协议端)** 开源架构整合，打造一款面向个人及学习社群的纯开源辅助学习助教系统。系统完全去除了所有商业化限制，聚焦于**开源共享、无缝嵌入、自生长学习知识网**三大核心原则。
 
 同时，为了支持**双边服务模式**，系统不仅在 QQ 群内辅助群成员学习，还为群主在 WebUI 后端管理面板中提供**自动化群运营周报**（包含高频问题、活跃排行和打卡趋势），其数据源完全由本地知识库底座驱动。
 
@@ -18,7 +18,7 @@ graph TD
     QQ[QQ 客户端 / 群聊终端] <-->|OneBot v11 协议包| NC[NapCat OneBot v11 本地容器]
     
     %% 本地服务
-    subgraph projectEL_Backend ["projectEL 后端网关 (Node.js)"]
+    subgraph SnapshotPi_Backend ["Snapshot Pi 后端网关 (Node.js)"]
         QA[qq-adapter.ts] <-->|反向 WS 连接| NC
         
         %% 格式化组件
@@ -36,7 +36,7 @@ graph TD
         KB -->|自动聚类高频概念| ReportGen[运营周报生成器]
     end
 
-    subgraph projectEL_Frontend ["projectEL 前端管理面板 (Vite)"]
+    subgraph SnapshotPi_Frontend ["Snapshot Pi 前端管理面板 (Vite)"]
         UI[QQ 机器人监控卡片] <-->|Socket.io| Svr
         WebUI[群主运营周报 WebUI 卡片] <-->|HTTP GET /api/knowledge/weekly-report| Svr
     end
