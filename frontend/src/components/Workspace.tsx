@@ -60,7 +60,7 @@ export default function Workspace({ activeCards, cardLayout, onUpdateLayout, ren
   const handleDragStart = (cardId: string, e: React.DragEvent) => {
     const target = e.target as HTMLElement | null;
     if (!target?.closest('.card-drag-header')) {
-      e.preventDefault();
+      // Let nested tools, such as React Flow palette items, handle their own drag behavior.
       return;
     }
     setDraggedCardId(cardId);
