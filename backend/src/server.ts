@@ -12,13 +12,15 @@ import { compileWorkflowToSkill } from "./compiler.js";
 import { KnowledgeBaseService } from "./knowledge-base/knowledge-base-service.js";
 import { createKnowledgeRoutes } from "./knowledge-base/knowledge-routes.js";
 import { buildAgentKnowledgeContext } from "./knowledge-base/agent-context.js";
+import { createWikiRoutes } from "./wiki-manager.js";
 import { getQQServer, initQQAdapter, stopQQAdapter } from "./qq-adapter.js";
 import { ReportGenerator } from "./qq-report-generator.js";
+import { getQQLogger } from "./qq-logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// workspaceCwd 指向 projectEL 的根目录
+// workspaceCwd 指向 Snapshot Pi 的根目录
 const workspaceCwd = path.resolve(__dirname, "../../");
 const PORT = 3000;
 
@@ -233,9 +235,57 @@ async function startServer() {
 
   // 初始化知识库模块
   const kbService = new KnowledgeBaseService(workspaceCwd);
+  
+  // 运行旧布局自动迁移到 knowledge_bases/default
+  await kbService.migrateOldPaths();
+  
+  // 初始化激活库状态文件以供 Agent 使用（如果已有则沿用上次选择，否则初始化为 default）
+  const activeKbPath = path.join(workspaceCwd, '.pi', 'active_kb.json');
+  await fs.ensureDir(path.dirname(activeKbPath));
+  if (await fs.pathExists(activeKbPath)) {
+    try {
+      const saved = await fs.readJson(activeKbPath);
+      if (saved.activeKbId && typeof saved.activeKbId === 'string') {
+        kbService.activeKbId = saved.activeKbId;
+      }
+    } catch {
+      // 文件损坏则回退到 default
+      await fs.writeJson(activeKbPath, { activeKbId: 'default' }, { spaces: 2 });
+    }
+  } else {
+    await fs.writeJson(activeKbPath, { activeKbId: 'default' }, { spaces: 2 });
+  }
+  
   await kbService.ensureDirectories();
-  const kbRouter = createKnowledgeRoutes(kbService, io);
+  const kbRouter = createKnowledgeRoutes(() => kbService, io);
   app.use('/api/knowledge', kbRouter);
+
+  const wikiRouter = createWikiRoutes(() => kbService, io);
+  app.use('/api/wiki', wikiRouter);
+
+  // ── 迁移遗留的根目录 inbox/qq-logs 到记忆库中 ──────────────────────
+  const oldInboxQQLogs = path.join(workspaceCwd, 'inbox', 'qq-logs');
+  const newInboxQQLogs = path.join(kbService.inboxDir, 'qq-logs');
+  if (await fs.pathExists(oldInboxQQLogs)) {
+    await fs.ensureDir(newInboxQQLogs);
+    const oldLogFiles = await fs.readdir(oldInboxQQLogs);
+    for (const file of oldLogFiles) {
+      const src = path.join(oldInboxQQLogs, file);
+      const dest = path.join(newInboxQQLogs, file);
+      if (await fs.pathExists(dest)) {
+        // 合并 JSONL 日志：将旧文件内容追加到新文件末尾
+        const oldContent = await fs.readFile(src, 'utf-8');
+        if (oldContent.trim()) {
+          await fs.appendFile(dest, '\n' + oldContent.trim() + '\n', 'utf-8');
+        }
+      } else {
+        await fs.move(src, dest);
+      }
+    }
+    // 清理旧目录
+    await fs.remove(path.join(workspaceCwd, 'inbox'));
+    console.log('[KB Migration] Migrated root inbox/qq-logs into memory library.');
+  }
 
   // ── QQ Bot ──────────────────────────────────────────────────────────
   let napcatProcess: ChildProcess | null = null;
@@ -251,6 +301,10 @@ async function startServer() {
       console.log('[QQ] Config loaded (disabled, adapter not auto-started)');
     }
   }
+
+  // 将 QQ 日志器重定向到记忆库的 inbox 目录中，使日志与知识库储存在一起
+  const qqLogger = getQQLogger(workspaceCwd);
+  qqLogger.setLogDir(path.join(kbService.inboxDir, 'qq-logs'));
 
   const reportGen = new ReportGenerator(kbService, workspaceCwd);
 
@@ -848,6 +902,20 @@ async function startServer() {
       res.status(500).json({ error: err.message });
     }
   });
+
+  // 静态托管前端打包后的静态资源 (如果是生产一键包环境)
+  const frontendDistPath = path.join(workspaceCwd, "frontend", "dist");
+  if (await fs.pathExists(frontendDistPath)) {
+    app.use(express.static(frontendDistPath));
+    // 拦截所有非 API 请求，返回前端 Single Page Application 的 index.html
+    app.get("*", (req, res, next) => {
+      if (req.path.startsWith("/api")) {
+        return next();
+      }
+      res.sendFile(path.join(frontendDistPath, "index.html"));
+    });
+    console.log(`[Server] Statically hosting frontend dist from ${frontendDistPath}`);
+  }
 
   // ----------------- Socket.io 实时通信 -----------------
   io.on("connection", (socket) => {

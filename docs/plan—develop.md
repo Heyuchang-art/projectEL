@@ -1,4 +1,4 @@
-# projectEL 全面开发计划与架构建议
+# Snapshot Pi 全面开发计划与架构建议
 
 ## 项目现状 (V0.1)
 
@@ -123,7 +123,7 @@ session.prompt(text)
     │     (当前 Qwen-VL 在此处注入图片描述)
     │
     ├─ ② `before_agent_start` ──── return { systemPrompt } → 覆盖 LLM 的 System Prompt
-    │     (在此处注入苏格拉底预设、角色设定、行为规则)
+    │     (在此处注入 Xaihi 预设、角色设定、行为规则)
     │     ↓
     │     this.agent.state.systemPrompt = result.systemPrompt
     │
@@ -168,7 +168,7 @@ pi.on("before_agent_start", async (event, ctx) => {
 ```
 要注入的内容属于：
 ├─ 告诉 Agent "如何思考/你是谁" → before_agent_start
-│  例：苏格拉底教学法、代码审查规范、翻译风格指南
+│  例：启发式教学法、代码审查规范、翻译风格指南
 │
 ├─ 告诉 Agent "回答什么" → input transform
 │  例：知识库文档、图片描述、错误日志
@@ -180,10 +180,10 @@ pi.on("before_agent_start", async (event, ctx) => {
 **多会话场景下的绑定流程**：
 
 ```
-前端请求新建会话 (POST /api/sessions/create { presetId: "socrates" })
+前端请求新建会话 (POST /api/sessions/create { presetId: "xaihi" })
   │
   ▼
-后端 createSessionWithPreset("socrates")
+后端 createSessionWithPreset("xaihi")
   │
   ├─ ① 查找 preset 配置（systemPrompt, model, skills, docs）
   │
@@ -349,9 +349,9 @@ ChatCard 左侧添加可收缩面板：
 - 模糊搜索会话标题
 - 双击修改标题，右键删除
 
-### 3.7 Socrates 参数卡片
+### 3.7 Agent 参数卡片
 
-新建 `frontend/src/components/SocratesSettingsCard.tsx`：
+新建 `frontend/src/components/AgentSettingsCard.tsx`：
 
 **标签页 1: Session Tuning**
 - 绑定智能体下拉选择
@@ -415,7 +415,7 @@ ChatCard 左侧添加可收缩面板：
 
 ---
 
-## Phase 5: 学习闭环与苏格拉底教学
+## Phase 5: 学习闭环与 Xaihi 教学
 
 ### 5.1 trigger_quiz 工具
 
@@ -578,7 +578,7 @@ Supervisor Agent(综合决策 → 最终输出)
         ├── [编程问题] → CodeExpert Agent
         ├── [数学问题] → MathTutor Agent
         ├── [历史问题] → HistoryScholar Agent
-        └── [通用问题] → Default Socrates Agent
+        └── [通用问题] → Default Xaihi Agent
 ```
 根据输入内容自动分派到最合适的专用子代理。
 
@@ -649,8 +649,8 @@ Supervisor Agent(综合决策 → 最终输出)
 
 - **QQWebSocketServer**: `noServer: true` 模式 WSS，通过 `httpServer.on('upgrade')` 路由共享 3000 端口，accessToken 校验
 - **QQConnection**: WebSocket 封装，心跳超时检测 (60s)，API 调用 echo 匹配 + 3 次指数退避重试
-- **OneBotMessageHandler**: 滑动窗口限流，@提及/关键词触发，命令路由 (`/quiz`, `/help`, `/stats`)
-- **QQAIService**: Pi Agent 会话桥接，群上下文管理 (最近 20 条消息)，`/quiz` 命令处理
+- **OneBotMessageHandler**: 滑动窗口限流，私聊触发或前缀触发，命令路由 (`/quiz`, `/help`, `/stats`)
+- **QQAIService**: Pi Agent 会话桥接，私聊上下文管理 (最近 20 条消息)，`/quiz` 个人自测命令处理
 - **markdownToPlainText()**: Markdown → QQ 纯文本转换 (标题→emoji, 粗体→【】, 列表→数字 emoji)
 - **chunkMessage()**: 段落边界感知的智能分段 (1500 字/段)
 - **sanitizeInput()**: 控制字符过滤 + 8000 字截断
@@ -665,29 +665,29 @@ Supervisor Agent(综合决策 → 最终输出)
 - **ContentRouter**: Track A (纯文本 ≤1500 字) / Track B (含公式 → 渲染为图片 + CQ 码)
 - **detectLatexFormulas()**: `$$...$$` 和 `$...$` 模式检测
 
-### 7.3 Phase 3 — 群聊知识提取
+### 7.3 Phase 3 — 个人对话知识提取
 
 新建 `backend/src/qq-chat-refiner.ts`：
 
-- **ChatRefiner**: 15 条消息阈值 + 5 分钟冷却触发知识提取
-- 发送最近 ~30 条消息给 AI，解析 JSON 概念列表
+- **ChatRefiner**: 对话字数阈值触发知识提取
+- 发送最近的对话记录给 AI，解析 JSON 概念列表
 - 自动调用 `kbService.createCard()` 创建 wiki 卡片，添加 `[[wikilinks]]`
 
-### 7.4 Phase 4 — 测验系统
+### 7.4 Phase 4 — 个人自测系统
 
 新建 `backend/src/qq-quiz-service.ts`：
 
-- AI 根据置信度最低的知识卡片生成选择题
+- AI 根据个人置信度最低的知识卡片生成自测选择题
 - SM-2 算法联动：答对提升置信度，答错降低
-- XP 评分 (S: +100, A: +75, B: +50, C: +25, D: +10)
+- 个人 XP 经验值计算与累加记录
 - 答题日志持久化到 `inbox/checkin_logs.jsonl`
 
-### 7.5 Phase 5 — 运营周报 + 前端监控面板
+### 7.5 Phase 5 — 个人学习报告与前端监控面板
 
 新建 `backend/src/qq-report-generator.ts` + 修改 `frontend/src/components/QQBotCard.tsx`：
 
-- **ReportGenerator**: 读取 wiki_core/concepts/ + checkin_logs.jsonl，生成高频话题、薄弱知识、排行榜、打卡趋势
-- **QQBotCard**: 5 个可折叠面板 (连接状态 / 答题统计+趋势图 / 活跃排行 / 薄弱知识点 / 热门话题标签云)
+- **ReportGenerator**: 读取 wiki_core/concepts/ + checkin_logs.jsonl，生成个人薄弱知识、学习进度与打卡趋势分析
+- **QQBotCard**: 4 个可折叠面板 (连接状态 / 答题统计+趋势图 / 个人进度与XP / 薄弱知识点)
 - 30s 自动轮询 + 手动刷新
 - 侧边栏新增 QQ Bot 图标入口
 

@@ -1,6 +1,6 @@
-# projectEL 开发者架构与技术栈说明书
+# Snapshot Pi 开发者架构与技术栈说明书
 
-本指南面向 `projectEL` 系统的日常维护与二次开发人员，旨在详细阐述系统的技术栈配置、微架构交互时序、数据通信协议、运行时目录结构，以及本地联调与环境排错指南。
+本指南面向 `Snapshot Pi` 系统的日常维护与二次开发人员，旨在详细阐述系统的技术栈配置、微架构交互时序、数据通信协议、运行时目录结构，以及本地联调与环境排错指南。
 
 ---
 
@@ -24,7 +24,7 @@
 ### 2.1 Monorepo 物理结构
 
 ```
-projectEL/
+snapshot-pi/
 ├── package.json                          # Monorepo 根配置与 npm workspaces 定义
 ├── tsconfig.base.json                    # 共享的 TypeScript 基础配置
 ├── start.bat                             # Windows 一键自诊断与双端启动脚本
@@ -49,7 +49,7 @@ projectEL/
 ├── sources/                              # L1 知识库：只读的外部源材料
 ├── inbox/                                # 暂存区目录，存放生成的 archive_review.md
 ├── skills/                               # 前后端共享的工作流源配置文件与智能体预设
-│   └── agent-presets.json                # 预设配置文件（苏格拉底导师、代码专家等）
+│   └── agent-presets.json                # 预设配置文件（Xaihi 导师、代码专家等）
 └── .pi/                                  # Pi Agent SDK 运行时目录（自动生成）
 ```
 
@@ -170,13 +170,13 @@ sequenceDiagram
         ```json
         {
           "sessions": [
-            { "id": "default-session", "name": "C++ STL 探讨", "preset": { "id": "socrates", "name": "苏格拉底导师" }, "createdAt": "...", "modifiedAt": "...", "messageCount": 5 }
+            { "id": "default-session", "name": "C++ STL 探讨", "preset": { "id": "xaihi", "name": "Xaihi 导师" }, "createdAt": "...", "modifiedAt": "...", "messageCount": 5 }
           ]
         }
         ```
 *   **`POST /api/sessions/create`**
     *   **作用**：基于预设或空白状态创建新会话。
-    *   **请求体**：`{ "presetId": "socrates", "sessionId": "optional-uuid" }`
+    *   **请求体**：`{ "presetId": "xaihi", "sessionId": "optional-uuid" }`
     *   **返回参数**：`{ "success": true, "sessionId": "...", "presetId": "...", "model": "...", "thinkingLevel": "..." }`
 *   **`POST /api/sessions/switch`**
     *   **作用**：切换当前激活的会话。

@@ -113,7 +113,7 @@ export default function ChatCard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2 style={{ fontSize: '14px', fontWeight: 900, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: '#ffffff' }}>
-              💬 Socrates Learning Console
+              💬 Xaihi Learning Console
             </h2>
             <div style={{ display: 'flex', gap: '12px', marginTop: '4px', fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
               <span>模型: <strong style={{ color: 'var(--secondary)' }}>{activeModel}</strong></span>
@@ -302,7 +302,7 @@ export default function ChatCard() {
           <div style={{ margin: 'auto', textAlign: 'center', maxWidth: '340px', color: 'var(--text-muted)', padding: '20px' }}>
             <Cpu size={32} style={{ color: 'var(--primary)', marginBottom: '12px' }} />
             <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', lineHeight: '1.6' }}>
-              欢迎来到 AI 学习控制台！您在此处可以同 Socrates 智能体直接对话。上传图像将触发 Qwen 识图子智能体进行前端细节识别，之后主模型会据此作出解答。
+              欢迎来到 AI 学习控制台！您在此处可以同 Xaihi 智能体直接对话。上传图像将触发 Qwen 识图子智能体进行前端细节识别，之后主模型会据此作出解答。
             </p>
           </div>
         )}
@@ -351,7 +351,7 @@ export default function ChatCard() {
             >
               {/* Message Header */}
               <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginBottom: '4px', textAlign: isUser ? 'right' : 'left' }}>
-                {m.role === 'user' ? 'YOU' : m.role === 'assistant' ? 'SOCRATES AGENT' : 'SYSTEM'}
+                {m.role === 'user' ? 'YOU' : m.role === 'assistant' ? 'XAIHI AGENT' : 'SYSTEM'}
               </span>
               
               {/* Message Content */}

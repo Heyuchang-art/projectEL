@@ -1,10 +1,10 @@
-# projectEL - 基于 Pi Agent 内核的辅助学习智能体系统
+# Snapshot Pi - 基于 Pi Agent 内核的辅助学习智能体系统
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-blue.svg)](https://nodejs.org/)
 [![React Version](https://img.shields.io/badge/react-%3E%3D18.0.0-emerald.svg)](https://reactjs.org/)
 
-`projectEL` 是一款专为**开发者与终身学习者**打造的智能辅助学习系统。它基于 **Pi Agent** 开发套件，深度融合了"苏格拉底教学智能体"、可视化低代码工作流画板（React Flow），并实现了创新的**双轨遗忘曲线**常青记忆知识库体系。
+`Snapshot Pi` 是一款专为**开发者与终身学习者**打造的智能辅助学习系统。它基于 **Pi Agent** 开发套件，深度融合了"苏格拉底教学智能体"、可视化低代码工作流画板（React Flow），并实现了创新的**双轨遗忘曲线**常青记忆知识库体系。
 
 ---
 
@@ -15,17 +15,17 @@
 ### 目录结构
 
 ```
-projectEL/
+snapshot-pi/
 ├── backend/                          # Node.js Express 后端网关服务
 │   └── src/
 │       ├── server.ts                 # WebSocket/HTTP 网关，多会话管理、Pi Session 生命周期
 │       ├── compiler.ts               # 工作流 JSON → SKILL.md 编译器 (拓扑排序)
 │       ├── study-agent-extension.ts  # Pi Agent 扩展：预设 System Prompt 注入、Qwen 识图拦截器、write_workflow 工具
-│       ├── qq-adapter.ts             # QQ Bot 核心适配器 (OneBot v11 WS 服务端、AI 桥接、限流)
+│       ├── qq-adapter.ts             # QQ Bot 个人学习助手适配器 (OneBot v11 WS 服务端、AI 桥接、限流)
 │       ├── qq-renderer.ts            # Puppeteer 浏览器池 + KaTeX 公式渲染
-│       ├── qq-chat-refiner.ts        # 群聊知识提取 → 自动创建 wiki 卡片
-│       ├── qq-quiz-service.ts        # AI 出题测验系统 (XP 评分 + SM-2 置信度联动)
-│       ├── qq-report-generator.ts    # 运营周报生成器 (热门话题/薄弱知识/活跃排行)
+│       ├── qq-chat-refiner.ts        # 对话知识提取 → 自动创建 wiki 卡片
+│       ├── qq-quiz-service.ts        # AI 个人自测系统 (SM-2 置信度与个人学习反馈联动)
+│       ├── qq-report-generator.ts    # 个人学习分析报告生成器 (薄弱知识/学习趋势分析)
 │       ├── qq-logger.ts              # 结构化 JSONL 日志器 (日轮转 + 缓冲区刷新)
 │       └── knowledge-base/           # 知识库后端模块
 │           ├── types.ts              # Wiki 卡片 / 笔记 / 归档类型定义
@@ -51,7 +51,7 @@ projectEL/
 │       │   ├── Workspace.tsx         # 多卡片工作区 (拖拽分栏 / 大小调整)
 │       │   ├── SlideDrawer.tsx       # 全局滑出抽屉
 │       │   ├── SettingsPanel.tsx     # 模型与 API 凭证配置面板
-│       │   └── QQBotCard.tsx         # QQ Bot 监控面板 (启停控制 + 统计 + 排行榜)
+│       │   └── QQBotCard.tsx         # QQ Bot 监控面板 (启停控制 + 个人学习状态监控)
 │       └── hooks/
 │           └── useKnowledgeBase.ts   # 知识库 API 请求 Hook
 ├── wiki_core/                        # Layer 3: LLM 动态知识网 (Markdown)
@@ -198,17 +198,17 @@ graph TD
 | **QQ Bot** | NapCat WebSocket 桥接 + AI 消息处理 | ✅ 已完成 | `qq-adapter.ts` |
 | | Markdown→QQ 纯文本转换 | ✅ 已完成 | `qq-adapter.ts` |
 | | LaTeX 公式渲染 (Puppeteer + KaTeX) | ✅ 已完成 | `qq-renderer.ts` |
-| | 群聊知识提取 → 知识库卡片 | ✅ 已完成 | `qq-chat-refiner.ts` |
-| | 测验系统 (AI 出题 + XP 评分) | ✅ 已完成 | `qq-quiz-service.ts` |
-| | 运营周报 + 薄弱知识点分析 | ✅ 已完成 | `qq-report-generator.ts` |
+| | 个人对话知识提取 → 知识库卡片 | ✅ 已完成 | `qq-chat-refiner.ts` |
+| | 个人自测系统 (AI 出题 + 个人学习反馈) | ✅ 已完成 | `qq-quiz-service.ts` |
+| | 个人学习分析 + 薄弱知识点整理 | ✅ 已完成 | `qq-report-generator.ts` |
 | | 结构化日志 + 日常轮转 | ✅ 已完成 | `qq-logger.ts` |
 | | WebUI 服务启停按钮 + 进程管理 | ✅ 已完成 | `QQBotCard.tsx`, `server.ts` |
 
 ---
 
-## QQ Bot 集成
+## QQ Bot 集成 (个人学习智能助理)
 
-projectEL 通过 **NapCatQQ 框架**（独立模式）实现 QQ 群聊 AI 回复、自动知识提取、测验系统与运营周报。
+Snapshot Pi 通过 **NapCatQQ 框架**（独立模式）实现 QQ 个人助理 AI 聊天交互、对话知识提取、个人自测系统与个人学习分析报告。
 
 ### 架构
 
@@ -218,12 +218,12 @@ NapCatQQ (独立模式, 内嵌 Node.js)
        └─ ws://127.0.0.1:3001/qq/ws
             └─ QQWebSocketServer (backend, port 3001)
                  ├─ QQConnection       心跳检测 + API 调用重试
-                 ├─ OneBotMessageHandler  限流 + 触发词过滤 + 命令路由
+                 ├─ OneBotMessageHandler  限流 + 私聊过滤 + 命令路由
                  └─ QQAIService        Pi Agent AI 桥接
-                      ├─ ChatRefiner      → 群聊知识提取 → wiki_core/
-                      ├─ QuizService      → AI 出题测验 → checkin_logs.jsonl
+                      ├─ ChatRefiner      → 个人对话知识提取 → wiki_core/
+                      ├─ QuizService      → AI 出题自测 → checkin_logs.jsonl
                       ├─ ContentRouter    → Puppeteer KaTeX 公式渲染
-                      └─ ReportGenerator  → 运营周报
+                      └─ ReportGenerator  → 个人学习报告
 ```
 
 ### 端口分配
@@ -245,55 +245,52 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 | `wsPath` | WebSocket 路径 | `/qq/ws` |
 | `accessToken` | 接入令牌（留空不校验） | `""` |
 | `dedicatedPresetId` | 绑定的 AI 预设 | `"qq-tutor"` |
-| `maxGroupContextMessages` | 群聊上下文消息数 | `20` |
+| `maxGroupContextMessages` | 个人会话上下文消息数 | `20` |
 | `rateLimit.maxMessages` | 限流窗口内最大消息数 | `5` |
 | `rateLimit.windowSeconds` | 限流窗口（秒） | `10` |
-| `triggerKeywords` | 触发 AI 的关键词 | `["@bot", "/ai", "/ask"]` |
-| `quiz.enabled` | 启用测验功能 | `true` |
-| `quiz.questionsPerRound` | 每轮题目数 | `3` |
-| `quiz.xpPerGrade` | 评分→XP 映射 | `{"0":0,"1":1,"2":3,"3":5,"4":10}` |
+| `triggerKeywords` | 触发 AI 的关键词（适用于私聊或特定前缀） | `["/ai", "/ask"]` |
+| `quiz.enabled` | 启用个人自测功能 | `true` |
+| `quiz.questionsPerRound` | 每轮自测题目数 | `3` |
+| `quiz.xpPerGrade` | 自测评分→XP 映射 | `{"0":0,"1":1,"2":3,"3":5,"4":10}` |
 | `rendering.formulaImageWidth` | 公式渲染宽度 (px) | `800` |
 | `rendering.maxMessageLength` | 单条消息最大字数 | `1500` |
 | `rendering.messageChunkOverlap` | 长消息分块重叠字数 | `100` |
-| `groupSync.enabled` | 群聊同步 | `true` |
-| `groupSync.allowedGroupIds` | 允许的群号列表（空=所有群） | `[]` |
 
 ### 使用步骤
 
-1. 配置 `qq-bot-config.json`（至少确认 `enabled: true` 和正确的 `triggerKeywords`）
-2. 启动 projectEL 后端服务（`npm run dev` 或 `start.bat`）
+1. 配置 `qq-bot-config.json`（确认 `enabled: true`）
+2. 启动 Snapshot Pi 后端服务（`npm run dev` 或 `start.bat`）
 3. 打开 WebUI，点击侧边栏 **QQ Bot** 图标
 4. 在卡片页头点击 **▶ 启动** 按钮
-5. 系统调用 NapCatQQ 推荐的官方入口 `napcat.bat`（**独立模式**：内嵌 Node.js，**无需 QQ.exe、管理员权限或 DLL 注入**）
+5. 系统调用 NapCatQQ 推荐的官方入口 `napcat.bat`（**独立模式**：内嵌 Node.js，无需 QQ.exe 或管理员权限）
 6. 在弹出的 NapCat 命令行窗口中扫码登录 QQ
-7. 登录成功后，卡片显示 **QQ xxx 在线**，Bot 开始响应群聊消息
+7. 登录成功后，卡片显示 **QQ xxx 在线**，Bot 开始响应私聊消息
 
-### 群聊触发方式
+### 个人聊天触发方式
 
 | 方式 | 行为 |
 |------|------|
-| `@Bot` + 提问 | AI 使用 Pi Agent 智能回复（Markdown → QQ 纯文本，公式自动渲染为图片） |
-| `/ai <问题>` | 同上（不 @Bot 也可触发，需配置在 `triggerKeywords` 中） |
+| 私聊提问 | AI 使用 Pi Agent 智能回复（Markdown → QQ 纯文本，公式自动渲染为图片） |
+| `/ai <问题>` | 强制调用 AI 助理回答 |
 | `/ask <问题>` | 同上 |
-| 自然群聊 ≥ 15 条消息 | 后台自动提取知识 → 创建 wiki 卡片到知识库 |
+| 私聊学习对话自动分析 | 对话沉淀一定字数后，后台自动提炼知识 → 创建 wiki 卡片到知识库 |
 
-### QQ 群聊命令
+### QQ 个人助理指令
 
-所有命令以 `/` 开头，在群聊中发送即可：
+所有指令以 `/` 开头，在与 Bot 私聊中发送即可：
 
-#### 测验系统 (`/quiz`)
+#### 个人自测系统 (`/quiz`)
 
 | 命令 | 说明 |
 |------|------|
-| `/quiz start` | 开始一轮 AI 出题测验（默认 3 题，30 秒答题窗口） |
-| `/quiz stop` | 提前终止当前测验 |
-| `/quiz stats` | 查看本群测验统计数据（总答题次数、正确率等） |
+| `/quiz start` | 开始一轮 AI 针对薄弱知识点的出题自测（默认 3 题） |
+| `/quiz stop` | 提前终止当前自测 |
 
 #### 个人统计 (`/stats`)
 
 | 命令 | 说明 |
 |------|------|
-| `/stats` | 查看个人在本群的测验成绩（XP 总分、正确数/总题数、准确率） |
+| `/stats` | 查看个人目前的自测成绩与累积的个人学习 XP 积分 |
 
 #### 帮助 (`/help`)
 
@@ -301,11 +298,11 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 |------|------|
 | `/help` | 显示所有可用命令列表 |
 
-#### 评分标准
+#### 评分与 XP 奖励标准
 
-测验答题按正确性结合置信度评分：
+自测答题按正确性结合置信度评分，并奖励个人学习经验值（XP）：
 
-| Grade | 说明 | XP |
+| Grade | 说明 | 奖励 XP |
 |:-----:|------|:--:|
 | 0 | 完全错误 | 0 |
 | 1 | 接近但错误 | 1 |
@@ -321,8 +318,8 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 | GET | `/api/qq/health` | 健康检查（在线数 / 运行时长） |
 | POST | `/api/qq/start` | 启动 QQ 服务（初始化 WebSocket 适配器 + 拉起 napcat.bat） |
 | POST | `/api/qq/stop` | 停止 QQ 服务（关闭适配器 + 终止 NapCat 进程） |
-| GET | `/api/qq/report/weekly` | 运营周报（热门话题 / 薄弱知识 / 排行榜 / 趋势） |
-| GET | `/api/qq/report/weekly/text` | 运营周报 QQ 纯文本格式（可直接发到群聊） |
+| GET | `/api/qq/report/weekly` | 个人学习分析周报（薄弱知识 / 自测打卡趋势） |
+| GET | `/api/qq/report/weekly/text` | 个人学习分析周报纯文本格式（可直接发送至个人收藏/设备） |
 
 ### WebUI 监控面板
 
@@ -330,11 +327,10 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 
 | 面板 | 内容 |
 |------|------|
-| **连接状态** | 各 QQ 账号在线/离线状态 + 昵称 |
-| **答题统计** | 总答题次数 + 每日趋势迷你柱状图 |
-| **活跃排行** | Top 5 用户 XP 排行榜 + 正确率 |
-| **薄弱知识点** | AI 分析置信度最低的知识卡片 |
-| **热门话题** | 群聊高频讨论标签云 |
+| **连接状态** | 个人 QQ 账号在线/离线状态 + 昵称 |
+| **答题统计** | 个人自测答题总次数 + 每日趋势迷你柱状图 |
+| **个人进度** | 个人自测总正确率与当前学习 XP 积分 |
+| **薄弱知识点** | AI 根据置信度分析出的最薄弱知识卡片 |
 
 ---
 
@@ -394,7 +390,7 @@ Windows 下也可直接双击 `start.bat`，脚本会自动扫描环境变量和
 1. 访问 [阿里云百炼平台](https://bailian.console.aliyun.com/) 开通 DashScope 服务
 2. 在 **业务空间 → 模型广场** 中，手动开启你需要使用的模型授权（如 qwen3.6-plus、qwen3.6-flash 等），新开通的百炼账号默认不启用所有模型
 3. 获取 API Key：百炼控制台右上角 → API-KEY 管理 → 创建 AccessKey
-4. 在 projectEL 的 ⚙️ 设置面板中找到 **QWEN**，填入 API Key，点击"填官方参数"自动填入 Base URL，保存即可
+4. 在 Snapshot Pi 的 ⚙️ 设置面板中找到 **QWEN**，填入 API Key，点击"填官方参数"自动填入 Base URL，保存即可
 
 > **注意**：仅获取 API Key 不足以调用所有模型，必须在百炼平台业务空间中**逐模型开启授权**，否则 API 会返回模型未开通的错误。识图功能建议启用 `qwen3.6-flash` 或 `qwen-plus-latest` 等多模态模型。
 
@@ -545,7 +541,7 @@ Windows 下也可直接双击 `start.bat`，脚本会自动扫描环境变量和
 
 | 预设 ID | 名称 | 默认模型 | 思考等级 | 描述 |
 |:---|:---|:---|:---:|:---|
-| `socrates` | 苏格拉底导师 | DeepSeek V4 Flash | High | 通过追问启发思考，不直接给答案 |
+| `xaihi` | Xaihi | DeepSeek V4 Flash | High | 通过追问启发思考，不直接给答案 |
 | `coder` | 代码专家 | DeepSeek V4 Pro | X-High | 高质量代码、架构设计与安全审查 |
 
 预设支持自定义 System Prompt、绑定知识库上下文文档 (contextDocs)、关联技能工作流 (linkedSkills)。在侧边栏中可一键创建带预设的新会话。
@@ -559,3 +555,18 @@ Windows 下也可直接双击 `start.bat`，脚本会自动扫描环境变量和
 - [ ] **视觉重构**: Neo-Brutalist → Apple Glassmorphism (CSS 变量体系 + 弥散流光背景)
 - [ ] **2D 知识图谱**: 粒子力导向拓扑网络渲染 `[[双链]]` 关系
 - [ ] **子代理编排**: Sub-Agent 抽象层 (Chain/Parallel/Supervisor/Router)
+
+---
+
+## 开源许可与版权声明
+
+本项目基于多个优秀的开源软件和组件构建，并完全遵守其各自的开源许可协议：
+
+* **Snapshot Pi** (本项目): [MIT License](https://opensource.org/licenses/MIT)
+* **Pi Agent SDK**: [MIT License](https://opensource.org/licenses/MIT)
+* **NapCatQQ** (QQNT 机器人协议端): [混合开源协议 (非商业学习交流用途)](https://github.com/NapNeko/NapCatQQ)
+* **React Flow** (可视化画布): [MIT License](https://opensource.org/licenses/MIT)
+* **Express & Socket.io**: [MIT License](https://opensource.org/licenses/MIT)
+* **KaTeX** (数学公式渲染): [MIT License](https://opensource.org/licenses/MIT)
+* **Puppeteer** (无头浏览器内核): [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
