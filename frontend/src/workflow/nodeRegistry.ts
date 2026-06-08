@@ -11,7 +11,8 @@ import {
   MessageSquareText,
   Repeat2,
   Sparkles,
-  Terminal
+  Terminal,
+  Wrench
 } from 'lucide-react';
 
 export type WorkflowNodeType =
@@ -20,6 +21,7 @@ export type WorkflowNodeType =
   | 'read_file'
   | 'write_file'
   | 'api_request'
+  | 'mcp_tool'
   | 'condition'
   | 'loop'
   | 'subagent'
@@ -282,6 +284,30 @@ export const workflowNodeDefinitions: WorkflowNodeDefinition[] = [
       { key: 'headers', label: 'Headers', type: 'textarea', placeholder: 'Authorization: Bearer ...' },
       { key: 'body', label: 'Body', type: 'textarea', placeholder: '{"query":"..."}' },
       { key: 'outputKey', label: '输出变量', type: 'text', placeholder: 'api_response' }
+    ],
+    outputs: [{ id: 'next', label: 'next', outputType: 'json' }]
+  },
+  {
+    type: 'mcp_tool',
+    label: 'MCP Tool',
+    group: '工具',
+    description: '调用已连接的 MCP 服务和工具，接入 GitHub、浏览器、数据库等外部能力',
+    color: '#14b8a6',
+    icon: Wrench,
+    defaultData: {
+      server: 'github',
+      tool: 'search_repositories',
+      params: '{\n  "query": "NJU AI education"\n}',
+      outputKey: 'mcp_result'
+    },
+    summaryField: 'tool',
+    requiredFields: ['server', 'tool'],
+    inputTypes: ['text', 'json', 'message', 'card', 'task', 'any'],
+    fields: [
+      { key: 'server', label: 'MCP 服务', type: 'text', placeholder: 'github / browser / database' },
+      { key: 'tool', label: '工具名称', type: 'text', placeholder: 'search_repositories' },
+      { key: 'params', label: '参数 JSON', type: 'textarea', placeholder: '{\n  "query": "{{input}}"\n}' },
+      { key: 'outputKey', label: '输出变量', type: 'text', placeholder: 'mcp_result' }
     ],
     outputs: [{ id: 'next', label: 'next', outputType: 'json' }]
   },

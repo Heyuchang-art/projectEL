@@ -41,6 +41,14 @@ const edge = (
 
 export const workflowTemplates: WorkflowTemplate[] = [
   {
+    id: 'blank-workflow',
+    name: '空白工作流',
+    tagline: '从零开始拖拽节点，自由搭建自己的自动化流程',
+    description: '适合新建流程：先从左侧节点库拖入起点，再逐步连接 LLM、MCP、知识库和 QQ 推送等节点。',
+    nodes: [],
+    edges: []
+  },
+  {
     id: 'course-group-todo',
     name: '群消息变待办',
     tagline: '从课程群里提取 deadline、地点、附件和待办',

@@ -13,6 +13,9 @@ export interface WorkflowNode {
     url?: string;
     headers?: string;
     body?: string;
+    server?: string;
+    tool?: string;
+    params?: string;
     expression?: string;
     trueLabel?: string;
     falseLabel?: string;
@@ -134,6 +137,8 @@ function renderNodeInstruction(node: WorkflowNode): string {
       return renderWriteFileNode(node);
     case "api_request":
       return renderApiRequestNode(node);
+    case "mcp_tool":
+      return renderMcpToolNode(node);
     case "condition":
       return renderConditionNode(node);
     case "loop":
@@ -240,6 +245,17 @@ function renderApiRequestNode(node: WorkflowNode): string {
   return markdown;
 }
 
+function renderMcpToolNode(node: WorkflowNode): string {
+  let markdown = `- **描述**：调用 MCP 服务提供的外部工具，并将结果作为后续节点上下文。\n`;
+  markdown += `- **MCP 服务**：\`${node.data.server || ""}\`\n`;
+  markdown += `- **工具名称**：\`${node.data.tool || ""}\`\n`;
+  if (node.data.outputKey) markdown += `- **输出变量**：\`${node.data.outputKey}\`\n`;
+  markdown += `- **参数 JSON**：\n\n`;
+  markdown += `\`\`\`json\n${node.data.params || "{}"}\n\`\`\`\n\n`;
+  markdown += `- **执行要求**：如果当前运行时已连接该 MCP 服务，优先调用对应工具；如果服务不可用，请说明缺失的 MCP server/tool，并给出可替代的手动执行方案。\n\n`;
+  return markdown;
+}
+
 function renderConditionNode(node: WorkflowNode): string {
   let markdown = `- **描述**：根据表达式选择 true 或 false 分支。\n`;
   markdown += `- **判断条件**：${node.data.expression || ""}\n`;
@@ -276,6 +292,7 @@ function getNodeTitle(node: WorkflowNode): string {
     write_file: "写入文件节点",
     write: "写入文件节点",
     api_request: "API 请求节点",
+    mcp_tool: "MCP 工具节点",
     condition: "条件分支节点",
     loop: "循环节点",
     subagent: "子代理节点"

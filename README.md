@@ -193,6 +193,7 @@ graph TD
 | | SM-2 间隔重复笔记复习 | ✅ 已完成 | `knowledge-base-service.ts` |
 | | 归档审查 (Lint + Veto + 链接重写) | ✅ 已完成 | `ArchiveReview.tsx` |
 | | REST API + Socket.io 实时同步 | ✅ 已完成 | `knowledge-routes.ts` |
+| | Agent 自动检索知识库并注入上下文 | ✅ 已完成 | `agent-context.ts`, `server.ts`, `ChatContext.tsx` |
 | | 置信度徽章 (绿/黄/红/灰) | ✅ 已完成 | `ConfidenceBadge.tsx` |
 | **QQ Bot** | NapCat WebSocket 桥接 + AI 消息处理 | ✅ 已完成 | `qq-adapter.ts` |
 | | Markdown→QQ 纯文本转换 | ✅ 已完成 | `qq-adapter.ts` |
@@ -455,6 +456,30 @@ Windows 下也可直接双击 `start.bat`，脚本会自动扫描环境变量和
 | POST | `/api/knowledge/archive/execute` | 执行归档 |
 | GET | `/api/knowledge/stats` | 统计数据 |
 
+#### 知识库能做什么
+
+知识库不是单纯的资料仓库，而是 projectEL 的“学习记忆系统”。它把 QQ 群消息、课件摘要、人工整理笔记和 Agent 对话连接起来，让智能体可以基于用户自己的学习资料回答问题。
+
+核心能力包括：
+
+- **保存学习资料**：支持 Wiki 知识卡片和人工整理笔记两类内容。Wiki 卡片适合快速沉淀概念、群聊结论和临时知识；整理笔记适合长期复习与结构化学习。
+- **检索知识内容**：按标题、正文、标签检索知识卡片和整理笔记。Agent 聊天时会自动检索相关内容，而不是只依赖模型通用知识。
+- **Agent 知识库问答**：用户在聊天框提问后，后端会先构建知识库上下文，再注入给 Pi Agent。命中时前端会显示“已检索并注入 N 条知识库上下文”，方便确认回答来源。
+- **工作流写入知识库**：React Flow 画板提供“写入知识库”节点，可以把 QQ 群消息、课件总结、学习日报或 LLM 结构化结果沉淀为知识。
+- **复习与记忆管理**：整理笔记支持 SM-2 间隔重复，记录复习次数、稳定性、难度和下次复习时间。
+- **置信度与归档**：Wiki 卡片会随时间发生置信度衰减；低置信度内容进入归档审查，可被归档并自动重写引用链路。
+
+#### 在网页中如何使用
+
+1. 启动项目后打开 `http://localhost:5173` 或 `http://127.0.0.1:5173`。
+2. 点击左侧“知识库”图标，可以查看 Wiki 卡片、整理笔记、归档审查和统计信息。
+3. 在聊天卡片中直接向 Agent 提问，例如：`动态规划核心思想是什么？`
+4. 如果命中知识库，聊天区会先出现系统提示：`已检索并注入 1 条知识库上下文`。
+5. 继续查看 Agent 回复，回答会优先基于命中的本地知识卡片或整理笔记。
+6. 在低代码工作流画板中，可以使用“写入知识库”节点，把自动化流程的结果沉淀回知识库。
+
+当前 v1 使用本地关键词/标签/正文匹配完成检索，已经覆盖 Wiki 卡片和整理笔记。后续可升级为 embedding 向量检索，以支持语义相近但关键词不同的问题。
+
 ### QQ Bot 服务 (QQ Bot Service)
 
 | 方法 | 路径 | 说明 |
@@ -482,6 +507,7 @@ Windows 下也可直接双击 `start.bat`，脚本会自动扫描环境变量和
 |:---|:---|
 | `session-state` | 会话状态同步 (消息历史 / 模型 / 思考等级) |
 | `pi-event` | Pi Agent 流式事件 (agent_start / message_start / message_update / message_end / tool_execution_*) |
+| `knowledge:context-used` | Agent 回答前命中知识库时触发，返回本轮注入的卡片/笔记引用 |
 | `pi-error` | Pi 内核错误通知 |
 
 ---

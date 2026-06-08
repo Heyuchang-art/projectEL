@@ -11,7 +11,7 @@ import {
   ReactFlowInstance
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Copy, Layers, Save, ShieldCheck, Trash2, X } from 'lucide-react';
+import { Copy, FilePlus2, Layers, Save, ShieldCheck, Trash2, X } from 'lucide-react';
 import { useCanvas } from '../contexts/CanvasContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import { useChat } from '../contexts/ChatContext';
@@ -83,6 +83,7 @@ const nodeTypes = {
   read_file: WorkflowNode,
   write_file: WorkflowNode,
   api_request: WorkflowNode,
+  mcp_tool: WorkflowNode,
   condition: WorkflowNode,
   loop: WorkflowNode,
   subagent: WorkflowNode,
@@ -170,12 +171,18 @@ function PaletteItem({ definition }: { definition: WorkflowNodeDefinition }) {
 export default function CanvasCard() {
   const reactFlowWrapper = useRef<HTMLDivElement | null>(null);
   const [reactFlowInstance, setReactFlowInstance] = React.useState<ReactFlowInstance | null>(null);
+  const [isNewWorkflowModalOpen, setIsNewWorkflowModalOpen] = React.useState(false);
+  const [isDeleteWorkflowModalOpen, setIsDeleteWorkflowModalOpen] = React.useState(false);
+  const [newWorkflowName, setNewWorkflowName] = React.useState('我的学习工作流');
   const {
     nodes,
     edges,
     selectedNode,
     selectedEdge,
     activeTemplateId,
+    workflowId,
+    workflowName,
+    workflowOptions,
     validation,
     setSelectedNode,
     setSelectedEdge,
@@ -187,6 +194,8 @@ export default function CanvasCard() {
     duplicateNode,
     deleteEdge,
     applyTemplate,
+    createBlankWorkflow,
+    deleteWorkflow,
     updateSelectedNodeData,
     updateSelectedEdgeData,
     saveAndCompile
@@ -196,6 +205,8 @@ export default function CanvasCard() {
   const { sessionId } = useChat();
 
   const activeTemplate = workflowTemplates.find((template) => template.id === activeTemplateId) || workflowTemplates[0];
+  const currentWorkflowOption = workflowOptions.find((workflow) => workflow.id === workflowId);
+  const canDeleteCurrentWorkflow = currentWorkflowOption?.source === 'saved' || currentWorkflowOption?.source === 'draft';
   const selectedDefinition = useMemo(
     () => (selectedNode ? getNodeDefinition(selectedNode.type || undefined) : null),
     [selectedNode]
@@ -243,6 +254,17 @@ export default function CanvasCard() {
   const errorCount = validation.items.filter((item) => item.level === 'error').length;
   const warningCount = validation.items.filter((item) => item.level === 'warning').length;
 
+  const confirmCreateWorkflow = () => {
+    createBlankWorkflow(newWorkflowName);
+    setIsNewWorkflowModalOpen(false);
+    setNewWorkflowName('我的学习工作流');
+  };
+
+  const confirmDeleteWorkflow = async () => {
+    await deleteWorkflow(workflowId, sessionId);
+    setIsDeleteWorkflowModalOpen(false);
+  };
+
   return (
     <div
       className="glass-panel"
@@ -288,6 +310,14 @@ export default function CanvasCard() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
+            onClick={() => setIsNewWorkflowModalOpen(true)}
+            className="btn-premium btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '10px', boxShadow: '2px 2px 0px #000000' }}
+            type="button"
+          >
+            <FilePlus2 size={12} /> 新建
+          </button>
+          <button
             onClick={() => saveAndCompile(sessionId)}
             className="btn-premium"
             style={{ padding: '6px 12px', fontSize: '10px', boxShadow: '2px 2px 0px #000000' }}
@@ -295,6 +325,16 @@ export default function CanvasCard() {
           >
             <Save size={12} /> 保存编译
           </button>
+          {canDeleteCurrentWorkflow && (
+            <button
+              onClick={() => setIsDeleteWorkflowModalOpen(true)}
+              className="btn-premium btn-secondary"
+              style={{ padding: '6px 12px', fontSize: '10px', boxShadow: '2px 2px 0px #000000' }}
+              type="button"
+            >
+              <Trash2 size={12} /> 删除
+            </button>
+          )}
           <button
             onClick={() => toggleCard('canvas')}
             className="workflow-icon-button"
@@ -311,16 +351,20 @@ export default function CanvasCard() {
           <span>学习模板</span>
           <strong>{activeTemplate.name}</strong>
           <em>{activeTemplate.tagline}</em>
+          <small style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+            当前保存为：{workflowName} / {workflowId}
+          </small>
         </div>
         <select
-          value={activeTemplateId}
+          value={workflowId}
           onChange={(event) => applyTemplate(event.target.value)}
           className="input-premium"
           style={{ width: '230px', padding: '7px 10px', fontSize: '11px' }}
         >
-          {workflowTemplates.map((template) => (
-            <option key={template.id} value={template.id}>
-              {template.name}
+          {workflowOptions.map((workflow) => (
+            <option key={workflow.id} value={workflow.id}>
+              {workflow.source === 'template' ? '' : workflow.source === 'saved' ? '已保存 · ' : '草稿 · '}
+              {workflow.name}
             </option>
           ))}
         </select>
@@ -388,6 +432,7 @@ export default function CanvasCard() {
             <div className="workflow-empty-state">
               <div style={panelTitleStyle}>工作流</div>
               <p>{activeTemplate.description}</p>
+              <p>保存目标：{workflowName}（{workflowId}）。</p>
               <p>当前节点 {nodes.length} 个，连线 {edges.length} 条。</p>
               <p>用户可以直接使用模板，也可以继续拖拽节点改造成自己的学习自动化流程。</p>
             </div>
@@ -482,6 +527,121 @@ export default function CanvasCard() {
           )}
         </aside>
       </div>
+
+      {isNewWorkflowModalOpen && (
+        <div
+          className="workflow-modal-backdrop"
+          onClick={() => setIsNewWorkflowModalOpen(false)}
+        >
+          <div
+            className="workflow-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="workflow-modal-header">
+              <div>
+                <div style={panelTitleStyle}>新建工作流</div>
+                <p>创建一个独立保存目标，从空白画板开始搭建。</p>
+              </div>
+              <button
+                className="workflow-icon-button"
+                type="button"
+                onClick={() => setIsNewWorkflowModalOpen(false)}
+                title="关闭"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <label className="workflow-field">
+              <span>工作流名称</span>
+              <input
+                className="input-premium"
+                style={inputStyle}
+                value={newWorkflowName}
+                onChange={(event) => setNewWorkflowName(event.target.value)}
+                autoFocus
+                placeholder="例如：课程群待办提醒"
+              />
+            </label>
+
+            {(nodes.length > 0 || edges.length > 0) && (
+              <div className="workflow-modal-warning">
+                当前画板有 {nodes.length} 个节点、{edges.length} 条连线。创建新工作流会清空当前画板，但不会删除已经保存过的技能文件。
+              </div>
+            )}
+
+            <div className="workflow-modal-actions">
+              <button
+                className="btn-premium btn-secondary"
+                type="button"
+                onClick={() => setIsNewWorkflowModalOpen(false)}
+              >
+                取消
+              </button>
+              <button
+                className="btn-premium"
+                type="button"
+                disabled={!newWorkflowName.trim()}
+                onClick={confirmCreateWorkflow}
+              >
+                创建
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isDeleteWorkflowModalOpen && (
+        <div
+          className="workflow-modal-backdrop"
+          onClick={() => setIsDeleteWorkflowModalOpen(false)}
+        >
+          <div
+            className="workflow-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="workflow-modal-header">
+              <div>
+                <div style={panelTitleStyle}>删除工作流</div>
+                <p>
+                  {currentWorkflowOption?.source === 'draft'
+                    ? '这个草稿还没有保存，删除后只会从当前画板列表移除。'
+                    : '这个已保存工作流会从本地 skills 和 .pi/skills 中删除。'}
+                </p>
+              </div>
+              <button
+                className="workflow-icon-button"
+                type="button"
+                onClick={() => setIsDeleteWorkflowModalOpen(false)}
+                title="关闭"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <div className="workflow-modal-warning">
+              即将删除：{workflowName}
+            </div>
+
+            <div className="workflow-modal-actions">
+              <button
+                className="btn-premium btn-secondary"
+                type="button"
+                onClick={() => setIsDeleteWorkflowModalOpen(false)}
+              >
+                取消
+              </button>
+              <button
+                className="btn-premium"
+                type="button"
+                onClick={confirmDeleteWorkflow}
+              >
+                确认删除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

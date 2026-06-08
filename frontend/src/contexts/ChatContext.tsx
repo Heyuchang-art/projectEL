@@ -6,10 +6,31 @@ export interface ChatMessage {
   role: 'user' | 'assistant' | 'toolCall' | 'toolResult' | string;
   text: string;
   images?: { type: string; data: string; mimeType: string }[];
+  attachments?: ChatAttachment[];
   toolName?: string;
   args?: any;
   isError?: boolean;
   customType?: string;
+}
+
+export interface ChatAttachment {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  kind: 'image' | 'text' | 'file';
+  data?: string;
+  text?: string;
+  previewUrl?: string;
+}
+
+interface KnowledgeReference {
+  id: string;
+  title: string;
+  tags: string[];
+  sourceType: 'card' | 'note';
+  directory?: string;
+  confidence: number;
 }
 
 export interface AgentPreset {
@@ -30,7 +51,8 @@ interface ChatContextProps {
   isStreaming: boolean;
   activeModel: string;
   thinkingLevel: string;
-  selectedImages: { data: string; mimeType: string; previewUrl: string }[];
+  selectedImages: ChatAttachment[];
+  selectedAttachments: ChatAttachment[];
   sessionId: string;
   sessions: any[];
   presets: AgentPreset[];
@@ -38,8 +60,10 @@ interface ChatContextProps {
   sendMessage: (e: React.FormEvent) => void;
   abort: () => void;
   clearSession: () => void;
+  uploadAttachment: (e: React.ChangeEvent<HTMLInputElement>) => void;
   uploadImage: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeImage: (index: number) => void;
+  removeAttachment: (index: number) => void;
   switchSession: (sessionId: string) => Promise<void>;
   createSession: (presetId?: string) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
@@ -57,11 +81,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeModel, setActiveModel] = useState('获取中...');
   const [thinkingLevel, setThinkingLevel] = useState('medium');
-  const [selectedImages, setSelectedImages] = useState<{ data: string; mimeType: string; previewUrl: string }[]>([]);
+  const [selectedAttachments, setSelectedAttachments] = useState<ChatAttachment[]>([]);
   const [sessionId, setSessionId] = useState('default-session');
   const [sessions, setSessions] = useState<any[]>([]);
   const [presets, setPresets] = useState<AgentPreset[]>([]);
   const [activePresetId, setActivePresetId] = useState<string | null>(null);
+  const selectedImages = selectedAttachments.filter(
+    (attachment): attachment is ChatAttachment & { kind: 'image'; data: string } =>
+      attachment.kind === 'image' && Boolean(attachment.data)
+  );
 
   const socketRef = useRef<Socket | null>(null);
   const mountedRef = useRef(true);
@@ -261,6 +289,27 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
+    socket.on('knowledge:context-used', (data: { sessionId: string; references: KnowledgeReference[] }) => {
+      if (!mountedRef.current) return;
+      if (data.sessionId !== sessionIdRef.current) return;
+      if (!data.references?.length) return;
+
+      const titles = data.references
+        .slice(0, 5)
+        .map((ref, index) => `${index + 1}. ${ref.title}`)
+        .join('\n');
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `kb-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+          role: 'system',
+          text: `已检索并注入 ${data.references.length} 条知识库上下文：\n${titles}`,
+          customType: 'knowledge-context'
+        }
+      ]);
+    });
+
     socket.on('pi-error', (data: { message: string }) => {
       if (!mountedRef.current) return;
       alert(`Pi Core Error: ${data.message}`);
@@ -291,7 +340,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const sendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim() && selectedImages.length === 0) return;
+    if (!inputText.trim() && selectedAttachments.length === 0) return;
     if (!socketRef.current) return;
 
     const imagesPayload = selectedImages.map(img => ({
@@ -299,6 +348,19 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       data: img.data,
       mimeType: img.mimeType
     }));
+    const fileAttachments = selectedAttachments.filter((attachment) => attachment.kind !== 'image');
+    const attachmentContext = fileAttachments
+      .map((attachment, index) => {
+        const header = `[附件 ${index + 1}] ${attachment.name} (${attachment.mimeType || 'unknown'}, ${attachment.size} bytes)`;
+        if (attachment.text) {
+          return `${header}\n\`\`\`\n${attachment.text}\n\`\`\``;
+        }
+        return `${header}\n该文件不是可直接读取的文本文件，请根据文件名和类型判断是否需要用户补充内容。`;
+      })
+      .join('\n\n');
+    const outgoingText = attachmentContext
+      ? `${inputText.trim() || '请阅读并分析附件。'}\n\n${attachmentContext}`
+      : inputText;
 
     setMessages((prev) => [
       ...prev,
@@ -306,18 +368,19 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: String(Date.now()),
         role: 'user',
         text: inputText,
-        images: imagesPayload.length > 0 ? imagesPayload : undefined
+        images: imagesPayload.length > 0 ? imagesPayload : undefined,
+        attachments: fileAttachments.length > 0 ? fileAttachments : undefined
       }
     ]);
 
     socketRef.current.emit('send-message', { 
-      text: inputText,
+      text: outgoingText,
       images: imagesPayload.length > 0 ? imagesPayload : undefined,
       sessionId
     });
     setInputText('');
-    setSelectedImages(prev => {
-      prev.forEach(img => { if (img.previewUrl) URL.revokeObjectURL(img.previewUrl); });
+    setSelectedAttachments(prev => {
+      prev.forEach(attachment => { if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl); });
       return [];
     });
   };
@@ -332,41 +395,113 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (socketRef.current) {
       socketRef.current.emit('clear-session', { sessionId });
       setMessages([]);
-      setSelectedImages(prev => {
-        prev.forEach(img => { if (img.previewUrl) URL.revokeObjectURL(img.previewUrl); });
+      setSelectedAttachments(prev => {
+        prev.forEach(attachment => { if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl); });
         return [];
       });
     }
   };
 
-  const uploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const isReadableTextFile = (file: File) => {
+    if (file.type.startsWith('text/')) return true;
+    const readableExtensions = [
+      '.md',
+      '.txt',
+      '.json',
+      '.csv',
+      '.tsv',
+      '.js',
+      '.jsx',
+      '.ts',
+      '.tsx',
+      '.py',
+      '.java',
+      '.c',
+      '.cpp',
+      '.h',
+      '.hpp',
+      '.css',
+      '.html',
+      '.xml',
+      '.yaml',
+      '.yml',
+      '.toml',
+      '.ini',
+      '.log'
+    ];
+    const lowerName = file.name.toLowerCase();
+    return readableExtensions.some((extension) => lowerName.endsWith(extension));
+  };
+
+  const uploadAttachment = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files);
     
     files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        const commaIndex = result.indexOf(',');
-        const mimeType = file.type || 'image/png';
-        const data = result.slice(commaIndex + 1);
-        
-        setSelectedImages(prev => [
-          ...prev,
-          {
-            data,
-            mimeType,
-            previewUrl: URL.createObjectURL(file)
-          }
-        ]);
-      };
-      reader.readAsDataURL(file);
+      const id = `attachment-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      const mimeType = file.type || 'application/octet-stream';
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          const commaIndex = result.indexOf(',');
+          const data = result.slice(commaIndex + 1);
+
+          setSelectedAttachments(prev => [
+            ...prev,
+            {
+              id,
+              name: file.name,
+              size: file.size,
+              kind: 'image',
+              data,
+              mimeType,
+              previewUrl: URL.createObjectURL(file)
+            }
+          ]);
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      if (isReadableTextFile(file) && file.size <= 1024 * 1024) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSelectedAttachments(prev => [
+            ...prev,
+            {
+              id,
+              name: file.name,
+              size: file.size,
+              kind: 'text',
+              text: String(reader.result || ''),
+              mimeType
+            }
+          ]);
+        };
+        reader.readAsText(file);
+        return;
+      }
+
+      setSelectedAttachments(prev => [
+        ...prev,
+        {
+          id,
+          name: file.name,
+          size: file.size,
+          kind: 'file',
+          mimeType
+        }
+      ]);
     });
     e.target.value = '';
   };
 
-  const removeImage = (index: number) => {
-    setSelectedImages(prev => {
+  const uploadImage = uploadAttachment;
+
+  const removeAttachment = (index: number) => {
+    setSelectedAttachments(prev => {
       const updated = [...prev];
       const removed = updated.splice(index, 1)[0];
       if (removed && removed.previewUrl) {
@@ -375,6 +510,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return updated;
     });
   };
+
+  const removeImage = removeAttachment;
 
   const switchSession = async (sId: string) => {
     try {
@@ -465,6 +602,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       activeModel,
       thinkingLevel,
       selectedImages,
+      selectedAttachments,
       sessionId,
       sessions,
       presets,
@@ -472,8 +610,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sendMessage,
       abort,
       clearSession,
+      uploadAttachment,
       uploadImage,
       removeImage,
+      removeAttachment,
       switchSession,
       createSession,
       deleteSession,
