@@ -8,5 +8,5 @@
 | Present design | [x] | User approved the design approach |
 | Write design doc | [x] | Created design doc at `docs/plans/2026-06-09-wiki-markdown-design.md` and implementation plan at `docs/plans/2026-06-09-wiki-markdown.md` |
 | Transition to implementation | [x] | Committed design docs and preparing to execute the plan |
-| Task 1: Add `.wiki-markdown` styling | [ ] | |
-| Task 2: Update WikiDetailView to render Markdown | [ ] | |
+| Task 1: Add `.wiki-markdown` styling | [x] | Styles appended to index.css and committed |
+| Task 2: Update WikiDetailView to render Markdown | [/] | Modifying WikiDetailView.tsx to use ReactMarkdown |
