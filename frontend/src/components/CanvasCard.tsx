@@ -400,6 +400,12 @@ export default function CanvasCard() {
             onEdgeClick={onEdgeClick}
             onPaneClick={onPaneClick}
             onInit={setReactFlowInstance}
+            onNodesDelete={(deletedNodes) => {
+              deletedNodes.forEach((node) => deleteNode(node.id));
+            }}
+            onEdgesDelete={(deletedEdges) => {
+              deletedEdges.forEach((edge) => deleteEdge(edge.id));
+            }}
             fitView
           >
             <MiniMap zoomable pannable />
