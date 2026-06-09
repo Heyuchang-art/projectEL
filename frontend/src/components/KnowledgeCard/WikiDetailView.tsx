@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import type { WikiCard, useKnowledgeBase } from '../../hooks/useKnowledgeBase';
 import ConfidenceBadge from './ConfidenceBadge';
 import { ArrowLeft, Edit3, Zap } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
+import remarkGfm from 'remark-gfm';
 
 interface Props {
   cardId: string;
@@ -66,11 +69,13 @@ export default function WikiDetailView({ cardId, kb, onBack, onEdit }: Props) {
       </div>
 
       {/* Body */}
-      <div style={{
+      <div className="wiki-markdown" style={{
         padding: '14px', backgroundColor: '#000000', border: '2px solid #222222',
-        fontSize: '12px', lineHeight: '1.7', whiteSpace: 'pre-wrap', color: '#ddd',
+        color: '#ddd',
       }}>
-        {card.body}
+        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
+          {card.body}
+        </ReactMarkdown>
       </div>
     </div>
   );
