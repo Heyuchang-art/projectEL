@@ -16,7 +16,7 @@ interface WorkspaceProps {
 export default function Workspace({ activeCards, cardLayout, onUpdateLayout, renderCard }: WorkspaceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
-  const [widths, setWidths] = useState<Record<number, number>>({ 0: 33.33, 1: 33.33, 2: 33.33 });
+  const [widths, setWidths] = useState<Record<number, number>>({ 0: 50, 1: 50, 2: 25 });
   const [isResizing, setIsResizing] = useState<number | null>(null); // Index of column currently resizing
 
   // 1. Group active cards by column
