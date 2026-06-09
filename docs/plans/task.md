@@ -9,4 +9,4 @@
 | Write design doc | [x] | Created `docs/plans/2026-06-09-ignore-files-design.md` |
 | Transition to implementation | [x] | Created implementation plan at `docs/plans/2026-06-09-ignore-files.md` |
 | Task 1: Update `.gitignore` | [x] | Modified and committed `.gitignore` changes |
-| Task 2: Untrack existing custom skill files | [/] | Untracking `.pi/skills/fetch-and-summarize-news/SKILL.md` and `skills/fetch-and-summarize-news/workflow.json` |
+| Task 2: Untrack existing custom skill files | [x] | Untracked and committed custom skill files from git index |
