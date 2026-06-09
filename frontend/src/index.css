@@ -298,7 +298,7 @@ body {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 188px minmax(320px, 1fr) 286px;
+  grid-template-columns: 130px minmax(320px, 1fr) 280px;
   background: #050505;
 }
 
@@ -353,7 +353,8 @@ body {
 
 .workflow-palette {
   border-right: 3px solid var(--panel-border);
-  padding: 14px 12px;
+  padding: 10px 8px;
+  gap: 8px !important;
 }
 
 .workflow-inspector {
@@ -385,20 +386,20 @@ body {
 
 .workflow-palette-item {
   width: 100%;
-  min-height: 38px;
+  min-height: 32px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: #000000;
   color: #ffffff;
   border: 2px solid var(--panel-border);
   box-shadow: 3px 3px 0px #000000;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   text-transform: uppercase;
   cursor: grab;
-  padding: 8px 9px;
+  padding: 6px 8px;
 }
 
 .workflow-palette-item:hover {
