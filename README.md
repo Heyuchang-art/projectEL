@@ -242,6 +242,7 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 | 字段 | 说明 | 默认值 |
 |------|------|--------|
 | `enabled` | 是否随服务启动 | `false` |
+| `qqPath` | 自定义 NapCat 启动脚本路径。当不同版本的 NapCat 启动脚本不同（例如 `launcher.bat`、`launcher-user.bat` 或 `napcat.bat`）时，可通过此字段指定正确的启动 Shell。若留空，则默认调用 `napcat/napcat.bat`。 | `""` |
 | `wsPath` | WebSocket 路径 | `/qq/ws` |
 | `accessToken` | 接入令牌（留空不校验） | `""` |
 | `dedicatedPresetId` | 绑定的 AI 预设 | `"qq-tutor"` |
@@ -265,6 +266,13 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 5. 系统调用 NapCatQQ 推荐的官方入口 `napcat.bat`（**独立模式**：内嵌 Node.js，无需 QQ.exe 或管理员权限）
 6. 在弹出的 NapCat 命令行窗口中扫码登录 QQ
 7. 登录成功后，卡片显示 **QQ xxx 在线**，Bot 开始响应私聊消息
+
+> ⚠️ **关于不同 NapCat/QQ Shell 版本启动不匹配的问题**
+> 
+> 随着 NapCatQQ 版本的更迭，官方提供的启动脚本名称可能会有所不同（如 `napcat.bat`、`launcher.bat`、`launcher-user.bat` 等）。若在 WebUI 点击启动后出现闪退或无法启动，请按照以下步骤排查：
+> 1. 打开本地的 `napcat` 目录，确认实际存在的启动脚本文件名。
+> 2. 打开 `qq-bot-config.json`，将 `"qqPath"` 配置为您实际要运行的脚本文件名称或绝对路径，例如：`"qqPath": "launcher-user.bat"`。
+> 3. 重新在 WebUI 卡片中点击“启动”即可。
 
 ### 个人聊天触发方式
 
@@ -481,8 +489,8 @@ Windows 下也可直接双击 `start.bat`，脚本会自动扫描环境变量和
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/qq/status` | 连接状态 (在线账号 / 运行状态) |
-| GET | `/api/qq/report/weekly` | 运营周报 (热门话题 / 薄弱知识 / 排行榜) |
-| GET | `/api/qq/report/weekly/text` | 运营周报 QQ 纯文本格式 |
+| GET | `/api/qq/report/weekly` | 个人学习周报 (个人自测统计 / 薄弱知识点 / XP 积分趋势) |
+| GET | `/api/qq/report/weekly/text` | 个人学习周报 QQ 纯文本格式 (适合保存或转发给自己) |
 | GET | `/api/qq/health` | 健康检查 (在线数 / 运行时长) |
 | POST | `/api/qq/start` | 启动 QQ 服务 (初始化适配器 + 拉起 NapCat 进程) |
 | POST | `/api/qq/stop` | 停止 QQ 服务 (关闭适配器 + 终止 NapCat 进程) |
