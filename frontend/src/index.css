@@ -973,3 +973,29 @@ body {
   margin: 10px 0;
 }
 
+/* Custom Delete Button for Canvas Flow Nodes */
+.flow-node-delete-btn {
+  margin-left: auto;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  padding: 0;
+  z-index: 10;
+}
+
+.flow-node:hover .flow-node-delete-btn {
+  opacity: 1;
+}
+
+.flow-node-delete-btn:hover {
+  color: var(--error) !important;
+}
+

@@ -40,7 +40,8 @@ const panelTitleStyle: React.CSSProperties = {
   textTransform: 'uppercase'
 };
 
-function WorkflowNode({ data, type }: { data: Record<string, any>; type?: string }) {
+function WorkflowNode({ id, data, type }: { id: string; data: Record<string, any>; type?: string }) {
+  const { deleteNode } = useCanvas();
   const definition = getNodeDefinition(type);
   const Icon = definition.icon;
   const summary = data?.[definition.summaryField] || definition.description;
@@ -51,6 +52,17 @@ function WorkflowNode({ data, type }: { data: Record<string, any>; type?: string
       <div className="flow-node-header">
         <Icon size={14} style={{ color: definition.color }} />
         <span>{definition.label}</span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteNode(id);
+          }}
+          className="flow-node-delete-btn"
+          title="删除节点"
+          type="button"
+        >
+          <X size={11} />
+        </button>
       </div>
       <div className="flow-node-body">
         <code style={{ fontSize: '9px', fontFamily: 'var(--font-mono)' }}>
