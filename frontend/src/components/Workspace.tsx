@@ -58,6 +58,11 @@ export default function Workspace({ activeCards, cardLayout, onUpdateLayout, ren
 
   // 2. Drag & Drop Handlers
   const handleDragStart = (cardId: string, e: React.DragEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (!target?.closest('.card-drag-header')) {
+      // Let nested tools, such as React Flow palette items, handle their own drag behavior.
+      return;
+    }
     setDraggedCardId(cardId);
     e.dataTransfer.setData('text/plain', cardId);
     e.dataTransfer.effectAllowed = 'move';
@@ -248,6 +253,15 @@ export default function Workspace({ activeCards, cardLayout, onUpdateLayout, ren
                   {/* Card wrapper */}
                   <div
                     draggable
+                    onMouseDown={(e) => {
+                      e.currentTarget.draggable = Boolean((e.target as HTMLElement | null)?.closest('.card-drag-header'));
+                    }}
+                    onMouseUp={(e) => {
+                      e.currentTarget.draggable = true;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.draggable = true;
+                    }}
                     onDragStart={(e) => handleDragStart(item.id, e)}
                     style={{
                       display: 'flex',

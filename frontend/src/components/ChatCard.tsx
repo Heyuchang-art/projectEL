@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Cpu, Send, Paperclip, XCircle, X, Trash2, Plus } from 'lucide-react';
+import { Cpu, Send, Paperclip, XCircle, X, Trash2, Plus, FileText } from 'lucide-react';
 import { useChat } from '../contexts/ChatContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import MarkdownMessage from './MarkdownMessage';
@@ -12,7 +12,7 @@ export default function ChatCard() {
     isStreaming,
     activeModel,
     thinkingLevel,
-    selectedImages,
+    selectedAttachments,
     sessionId,
     sessions,
     presets,
@@ -20,8 +20,8 @@ export default function ChatCard() {
     sendMessage,
     abort,
     clearSession,
-    uploadImage,
-    removeImage,
+    uploadAttachment,
+    removeAttachment,
     switchSession,
     createSession,
     deleteSession
@@ -30,12 +30,60 @@ export default function ChatCard() {
   const { toggleCard } = useWorkspace();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const textInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const submitChat = () => {
+    if (!isStreaming) {
+      formRef.current?.requestSubmit();
+    }
+  };
+
+  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      submitChat();
+    }
+  };
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTypingTarget = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable;
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        textInputRef.current?.focus();
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        submitChat();
+        return;
+      }
+
+      if (event.key === 'Escape' && isStreaming) {
+        event.preventDefault();
+        abort();
+        return;
+      }
+
+      if (!isTypingTarget && event.key === '/') {
+        event.preventDefault();
+        textInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, [abort, isStreaming]);
 
   return (
     <div 
@@ -308,6 +356,7 @@ export default function ChatCard() {
               
               {/* Message Content */}
               <div 
+                className="chat-message-content"
                 style={{
                   padding: '12px 14px',
                   fontFamily: 'var(--font-sans)',
@@ -351,6 +400,16 @@ export default function ChatCard() {
                     ))}
                   </div>
                 )}
+                {isUser && m.attachments && m.attachments.length > 0 && (
+                  <div className="chat-attachment-list">
+                    {m.attachments.map((attachment) => (
+                      <div key={attachment.id} className="chat-attachment-chip">
+                        <FileText size={13} />
+                        <span>{attachment.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -370,18 +429,26 @@ export default function ChatCard() {
         }}
       >
         {/* Upload previews */}
-        {selectedImages.length > 0 && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', paddingBottom: '6px' }}>
-            {selectedImages.map((img, idx) => (
-              <div key={idx} style={{ position: 'relative', display: 'inline-block' }}>
-                <img 
-                  src={img.previewUrl} 
-                  alt="preview" 
-                  style={{ width: '48px', height: '48px', objectFit: 'cover', border: '2px solid #222222' }} 
-                />
+        {selectedAttachments.length > 0 && (
+          <div className="chat-upload-preview">
+            {selectedAttachments.map((attachment, idx) => (
+              <div key={attachment.id} className="chat-upload-item">
+                {attachment.kind === 'image' && attachment.previewUrl ? (
+                  <img
+                    src={attachment.previewUrl}
+                    alt={attachment.name}
+                    className="chat-upload-thumb"
+                  />
+                ) : (
+                  <div className="chat-upload-file">
+                    <FileText size={16} />
+                    <span>{attachment.name}</span>
+                    <small>{Math.max(1, Math.round(attachment.size / 1024))} KB</small>
+                  </div>
+                )}
                 <button 
                   type="button"
-                  onClick={() => removeImage(idx)}
+                  onClick={() => removeAttachment(idx)}
                   style={{
                     position: 'absolute',
                     top: '-6px',
@@ -406,12 +473,11 @@ export default function ChatCard() {
           </div>
         )}
 
-        <form onSubmit={sendMessage} style={{ display: 'flex', gap: '8px', width: '100%' }}>
+        <form ref={formRef} onSubmit={sendMessage} style={{ display: 'flex', gap: '8px', width: '100%' }}>
           <input 
             type="file" 
             ref={fileInputRef} 
-            onChange={uploadImage} 
-            accept="image/*" 
+            onChange={uploadAttachment} 
             multiple 
             style={{ display: 'none' }} 
           />
@@ -431,14 +497,15 @@ export default function ChatCard() {
           </button>
 
           {/* Text Input */}
-          <input 
-            type="text" 
+          <textarea
+            ref={textInputRef}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={handleInputKeyDown}
             disabled={isStreaming}
-            placeholder={isStreaming ? "正在推理分析中..." : "向智能体提问（可附加图片）..."}
+            placeholder={isStreaming ? "正在推理分析中..." : "向智能体提问（可附加文件）..."}
             className="input-premium"
-            style={{ flex: 1, fontSize: '12px' }}
+            style={{ flex: 1, fontSize: '12px', minHeight: '44px', maxHeight: '130px', resize: 'vertical', lineHeight: 1.5 }}
           />
 
           {/* Send Button */}

@@ -11,6 +11,7 @@ import { spawn, type ChildProcess } from "child_process";
 import { compileWorkflowToSkill } from "./compiler.js";
 import { KnowledgeBaseService } from "./knowledge-base/knowledge-base-service.js";
 import { createKnowledgeRoutes } from "./knowledge-base/knowledge-routes.js";
+import { buildAgentKnowledgeContext } from "./knowledge-base/agent-context.js";
 import { createWikiRoutes } from "./wiki-manager.js";
 import { getQQServer, initQQAdapter, stopQQAdapter } from "./qq-adapter.js";
 import { ReportGenerator } from "./qq-report-generator.js";
@@ -653,6 +654,37 @@ async function startServer() {
 
   // ----------------- HTTP 技能与模型路由 -----------------
 
+  // 获取所有已保存的可视化工作流
+  app.get("/api/workflows", async (_req, res) => {
+    try {
+      const skillsDir = path.join(workspaceCwd, "skills");
+      const entries = await fs.readdir(skillsDir).catch(() => []);
+      const workflows = [];
+
+      for (const entry of entries) {
+        const workflowPath = path.join(skillsDir, entry, "workflow.json");
+        if (!await fs.pathExists(workflowPath)) continue;
+        try {
+          const workflow = await fs.readJson(workflowPath);
+          workflows.push({
+            id: workflow.id || entry,
+            name: workflow.name || entry,
+            description: workflow.description || "",
+            nodeCount: Array.isArray(workflow.nodes) ? workflow.nodes.length : 0,
+            edgeCount: Array.isArray(workflow.edges) ? workflow.edges.length : 0
+          });
+        } catch (err) {
+          console.warn(`Failed to read workflow ${entry}:`, err);
+        }
+      }
+
+      workflows.sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
+      res.json({ workflows });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // 获取特定技能的可视化工作流 JSON
   app.get("/api/workflow/:id", async (req, res) => {
     const jsonPath = path.join(workspaceCwd, "skills", req.params.id, "workflow.json");
@@ -661,6 +693,48 @@ async function startServer() {
       res.json(data);
     } else {
       res.status(404).json({ error: "Workflow json not found" });
+    }
+  });
+
+  // 删除用户保存的可视化工作流，内置模板不允许删除
+  app.delete("/api/workflow/:id", async (req, res) => {
+    const protectedWorkflowIds = new Set([
+      "blank-workflow",
+      "course-group-todo",
+      "courseware-card",
+      "socratic-quiz",
+      "daily-briefing"
+    ]);
+    const workflowId = req.params.id;
+    if (protectedWorkflowIds.has(workflowId)) {
+      res.status(400).json({ error: "Built-in workflow templates cannot be deleted" });
+      return;
+    }
+
+    const skillDir = path.join(workspaceCwd, "skills", workflowId);
+    const piSkillDir = path.join(workspaceCwd, ".pi", "skills", workflowId);
+
+    try {
+      if (!await fs.pathExists(skillDir) && !await fs.pathExists(piSkillDir)) {
+        res.status(404).json({ error: "Workflow not found" });
+        return;
+      }
+
+      await fs.remove(skillDir);
+      await fs.remove(piSkillDir);
+
+      try {
+        const targetSessionId = (req.query.sessionId as string) || defaultSessionId;
+        const s = await getOrCreateSession(targetSessionId);
+        await s.prompt("/reload");
+      } catch (reloadErr) {
+        console.warn("Workflow delete reload skipped:", reloadErr);
+      }
+
+      res.json({ success: true });
+    } catch (err: any) {
+      console.error("Workflow delete error:", err);
+      res.status(500).json({ error: err.message });
     }
   });
 
@@ -878,7 +952,19 @@ async function startServer() {
       const sId = data.sessionId || defaultSessionId;
       try {
         const s = await getOrCreateSession(sId);
-        await s.prompt(data.text, { images: data.images });
+        const knowledgeContext = await buildAgentKnowledgeContext(kbService, data.text);
+        const promptText = knowledgeContext
+          ? `${knowledgeContext.promptPrefix}\n\n---\n\n[用户问题]\n${data.text}`
+          : data.text;
+
+        if (knowledgeContext) {
+          socket.emit("knowledge:context-used", {
+            sessionId: sId,
+            references: knowledgeContext.references
+          });
+        }
+
+        await s.prompt(promptText, { images: data.images });
       } catch (err: any) {
         socket.emit("pi-error", { message: err.message });
       }
