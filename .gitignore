@@ -1,6 +1,6 @@
 node_modules/
 .pi/auth.json
-.env
+.env*
 dist/
 build/
 .DS_Store
@@ -19,8 +19,10 @@ wiki_core/temporary/*
 wiki_core/archive/*
 !wiki_core/archive/.gitkeep
 
-# QQ Bot Logger output
+# QQ Bot Logger output & checkin logs in knowledge bases
 inbox/qq-logs/
+knowledge_bases/*/inbox/qq-logs/
+**/inbox/checkin_logs.jsonl
 
 # NapCat QQ Bot runtime caches, databases, logs, and account-specific settings
 napcat/*.db*
@@ -33,3 +35,7 @@ napcat/napcat/config/onebot11_*.json
 napcat/**/*.exe
 napcat/**/*.dll
 napcat/**/*.node
+
+# Custom (non-preset) skills under skills/ and .pi/skills/
+skills/*/
+.pi/skills/*/
