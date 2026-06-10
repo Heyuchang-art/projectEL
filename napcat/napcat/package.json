@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.0.1",
+  "license": "SEE LICENSE IN https://github.com/NapNeko/NapCatQQ/blob/main/LICENSE",
   "scripts": {
     "build:shell": "pnpm --filter napcat-shell run build || exit 1",
     "build:shell:dev": "pnpm --filter napcat-shell run build:dev || exit 1",

@@ -4,7 +4,7 @@
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-blue.svg)](https://nodejs.org/)
 [![React Version](https://img.shields.io/badge/react-%3E%3D18.0.0-emerald.svg)](https://reactjs.org/)
 
-`Snapshot Pi` 是一款专为**开发者与终身学习者**打造的智能辅助学习系统。它基于 **Pi Agent** 开发套件，深度融合了"苏格拉底教学智能体"、可视化低代码工作流画板（React Flow），并实现了创新的**双轨遗忘曲线**常青记忆知识库体系。
+`Snapshot Pi` 是一款专为**开发者与终身学习者**打造的智能辅助学习系统。它基于 **Pi Agent** 开发套件，深度融合了"启发式教学智能体"、可视化低代码工作流画板（React Flow），并实现了创新的**双轨遗忘曲线**常青记忆知识库体系。
 
 ---
 
