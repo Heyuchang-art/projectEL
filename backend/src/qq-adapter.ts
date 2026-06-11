@@ -20,6 +20,11 @@ interface QQBotConfig {
   maxGroupContextMessages: number;
   rateLimit: { maxMessages: number; windowSeconds: number };
   triggerKeywords: string[];
+  quiz?: {
+    enabled: boolean;
+    questionsPerRound: number;
+    xpPerGrade: Record<string, number>;
+  };
   rendering: {
     formulaImageWidth: number;
     maxMessageLength: number;
