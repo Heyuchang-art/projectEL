@@ -1,0 +1,18 @@
+{
+  "network": {
+    "websocketClients": [
+      {
+        "name": "Snapshot Pi",
+        "enable": true,
+        "url": "ws://127.0.0.1:3001/qq/ws",
+        "token": "",
+        "messagePostFormat": "array",
+        "reportSelfMessage": false,
+        "reconnectInterval": 5000,
+        "heartInterval": 30000
+      }
+    ]
+  },
+  "enableLocalFile2Url": true,
+  "parseMultMsg": false
+}
