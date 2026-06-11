@@ -305,7 +305,7 @@ async function startServer() {
   };
 
   let qqConfig: any = null;
-  const qqConfigPath = path.join(workspaceCwd, 'qq-bot-config.json');
+  const qqConfigPath = path.join(workspaceCwd, 'config', 'qq-bot-config.json');
 
   if (await fs.pathExists(qqConfigPath)) {
     qqConfig = await fs.readJson(qqConfigPath);
@@ -350,14 +350,8 @@ async function startServer() {
       };
     }
 
-    // Strip BOM from JSON files (known issue: NapCat JSONs with UTF-8 BOM crash on parse)
-    const stripBom = path.join(workspaceCwd, 'scripts', 'strip-bom.js');
-    if (await fs.pathExists(stripBom)) {
-      try {
-        const { execSync } = await import('child_process');
-        execSync(`node "${stripBom}"`, { cwd: dir, timeout: 5000, windowsHide: true });
-      } catch { /* strip-bom failure is non-blocking */ }
-    }
+    // Note: BOM cleanup no longer needed — config templates are clean UTF-8 without BOM.
+    // strip-bom.js is kept under scripts/ for other use cases.
     return { ok: true };
   }
 
@@ -371,8 +365,19 @@ async function startServer() {
   }
 
   function spawnNapCat(): ChildProcess {
-    const napcatDir = path.join(workspaceCwd, 'napcat');
-    const proc = spawn('napcat.bat', [], {
+    const napcatScriptRel = qqConfig?.napcat?.path || 'napcat/napcat.bat';
+    const napcatScript = path.join(workspaceCwd, napcatScriptRel);
+
+    if (!fs.existsSync(napcatScript)) {
+      const msg =
+        `NapCat 启动脚本不存在: ${napcatScriptRel}\n` +
+        `请先运行部署: scripts\\setup.bat`;
+      console.error(`[QQ] ${msg}`);
+      throw new Error(msg);
+    }
+
+    const napcatDir = path.dirname(napcatScript);
+    const proc = spawn(napcatScript, [], {
       cwd: napcatDir,
       shell: true,
       stdio: 'pipe',
@@ -461,7 +466,7 @@ async function startServer() {
       }
 
       if (!qqConfig) {
-        return res.status(400).json({ success: false, error: '未找到 qq-bot-config.json 配置文件' });
+        return res.status(400).json({ success: false, error: '未找到 config/qq-bot-config.json 配置文件' });
       }
 
       // 预检：确保 NapCat 运行环境完整
