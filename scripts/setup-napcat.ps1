@@ -4,8 +4,12 @@
 .DESCRIPTION
     1. Download NapCat.Shell.zip (no QQNT desktop needed)
     2. Silent-extract wrapper.node + DLLs from QQNT NSIS installer
-    3. Clean up unnecessary files + verify integrity
-    4. napcat/ is fully self-contained after deployment
+    3. Clean up unnecessary files
+    4. Deploy config templates from config/napcat-templates/
+    5. Verify deployment integrity
+    napcat/ is fully self-contained after deployment.
+    Config templates live in config/napcat-templates/ (git-tracked) and
+    are copied to napcat/config/ at deploy time.
 .PARAMETER Force
     Force re-download and re-extract all components
 .PARAMETER NapCatVersion
@@ -26,18 +30,6 @@ $RootDir    = Resolve-Path (Join-Path $PSScriptRoot '..')
 $NapCatDir  = Join-Path $RootDir 'napcat'
 $TempDir    = Join-Path $env:TEMP 'napcat-setup'
 $7zaExe     = Join-Path $TempDir '7za.exe'
-
-# ═══════════════════════════════════════════════════════════════════════════
-# Protected files (git-tracked custom files — never overwritten by upstream)
-# ═══════════════════════════════════════════════════════════════════════════
-$ProtectedFiles = @(
-    'napcat.bat',
-    'index.cjs',
-    'config.json',
-    'package.json',
-    'qqnt.json',
-    'KillQQ.bat'
-)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Helpers
@@ -67,7 +59,7 @@ function Ensure-TempDir {
 # Step 1: Download NapCat.Shell.zip
 # ═══════════════════════════════════════════════════════════════════════════
 function Install-NapCatShell {
-    Write-Step 1 4 'Downloading NapCat Shell...' 'Cyan'
+    Write-Step 1 5 'Downloading NapCat Shell...' 'Cyan'
 
     if (Test-NapCatCoreExists) {
         Write-Host "  NapCat core already exists, skipping (use -Force to re-download)" -ForegroundColor Green
@@ -118,34 +110,15 @@ function Install-NapCatShell {
     # napcat.mjs is at <root>/napcat/napcat.mjs → source root is its grandparent
     $sourceDir = Split-Path $napcatMjs.DirectoryName -Parent
 
-    # Backup user config
-    $onebotBackup = $null
-    $onebotConfigPath = Join-Path $NapCatDir 'config\onebot11.json'
-    if (Test-Path $onebotConfigPath) {
-        $onebotBackup = Get-Content $onebotConfigPath -Raw -Encoding UTF8
-    }
-
     # Copy core files
     Write-Host "  Copying core files..."
     $allItems = Get-ChildItem $sourceDir -Force
     foreach ($item in $allItems) {
         $destPath = Join-Path $NapCatDir $item.Name
 
-        # Skip protected files
-        if ($ProtectedFiles -contains $item.Name) {
-            Write-Host "    [skip protected] $($item.Name)" -ForegroundColor DarkGray
-            continue
-        }
-
         # Skip injection-mode files
         if ($item.Name -match '^(NapCatWinBootMain\.exe|NapCatWinBootHook\.dll|loadNapCat\.js|launcher-win10.*\.bat|quickLoginExample\.bat|launcher\.bat|launcher-user\.bat|conout-D9oph_Le\.js)$') {
             Write-Host "    [skip injection] $($item.Name)" -ForegroundColor DarkGray
-            continue
-        }
-
-        # Skip root-level napcat.mjs (the real one is in napcat/ subdirectory)
-        if ($item.Name -eq 'napcat.mjs' -and (-not $item.PSIsContainer)) {
-            Write-Host "    [skip root-level] napcat.mjs" -ForegroundColor DarkGray
             continue
         }
 
@@ -169,18 +142,13 @@ function Install-NapCatShell {
         }
     }
 
-    # Restore user config
-    if ($onebotBackup) {
-        $onebotBackup | Set-Content $onebotConfigPath -Encoding UTF8 -NoNewline
-        Write-Host "  Restored onebot11.json" -ForegroundColor Green
-    }
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Step 2: Extract wrapper.node + DLLs (silent extract from QQNT installer)
 # ═══════════════════════════════════════════════════════════════════════════
 function Sync-QQNTBinaries {
-    Write-Step 2 4 'Extracting QQNT binaries...' 'Cyan'
+    Write-Step 2 5 'Extracting QQNT binaries...' 'Cyan'
 
     if (Test-WrapperNodeExists) {
         Write-Host "  wrapper.node already exists, skipping (use -Force to re-extract)" -ForegroundColor Green
@@ -370,7 +338,7 @@ function Sync-QQNTBinaries {
 # Step 3: Remove unnecessary files
 # ═══════════════════════════════════════════════════════════════════════════
 function Clear-UnnecessaryFiles {
-    Write-Step 3 4 'Cleaning up unnecessary files...' 'Cyan'
+    Write-Step 3 5 'Cleaning up unnecessary files...' 'Cyan'
 
     $removedSize = 0
 
@@ -435,16 +403,76 @@ function Clear-UnnecessaryFiles {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Step 4: Verify deployment integrity
+# Step 4: Deploy config templates from git-tracked config/napcat-templates/
+# ═══════════════════════════════════════════════════════════════════════════
+function Deploy-NapCatConfigTemplates {
+    Write-Step 4 5 'Deploying config templates...' 'Cyan'
+
+    $TemplateDir = Join-Path $RootDir 'config\napcat-templates'
+
+    if (-not (Test-Path $TemplateDir)) {
+        Write-Host "  ERROR: Template directory not found: $TemplateDir" -ForegroundColor Red
+        Write-Host "  This should never happen — config/napcat-templates/ is git-tracked." -ForegroundColor Red
+        exit 1
+    }
+
+    # Config files land at napcat/config/ (after zip napcat/ subdir flattening)
+    $TargetDir = Join-Path $NapCatDir 'config'
+    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+
+    $templates = @('onebot11.json', 'napcat.json', 'webui.json')
+    foreach ($t in $templates) {
+        $src = Join-Path $TemplateDir $t
+        if (-not (Test-Path $src)) {
+            Write-Host "  ERROR: Template missing: $t" -ForegroundColor Red
+            Write-Host "  Expected at: $src" -ForegroundColor Red
+            exit 1
+        }
+
+        # Verify valid JSON before copying
+        try {
+            Get-Content $src -Raw -Encoding UTF8 | ConvertFrom-Json | Out-Null
+        } catch {
+            Write-Host "  ERROR: Template is not valid JSON: $t" -ForegroundColor Red
+            Write-Host "  $_" -ForegroundColor Red
+            exit 1
+        }
+
+        Copy-Item $src $TargetDir -Force
+        Write-Host "  [OK] $t -> napcat/config/" -ForegroundColor Green
+    }
+
+    # Verify the deployed onebot11.json structure
+    $deployedConfig = Join-Path $TargetDir 'onebot11.json'
+    try {
+        $config = Get-Content $deployedConfig -Raw -Encoding UTF8 | ConvertFrom-Json
+        $wsClients = $config.network.websocketClients
+        if ($wsClients -and $wsClients.Count -gt 0) {
+            foreach ($client in $wsClients) {
+                if ($client.url -and $client.enable) {
+                    Write-Host "  [OK] WS: $($client.name) -> $($client.url)" -ForegroundColor Green
+                }
+            }
+        } else {
+            Write-Host "  [WARN] No WebSocket clients configured in onebot11.json" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "  [ERR] Deployed onebot11.json validation failed: $_" -ForegroundColor Red
+        exit 1
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Step 5: Verify deployment integrity
 # ═══════════════════════════════════════════════════════════════════════════
 function Test-Deployment {
-    Write-Step 4 4 'Verifying deployment...' 'Cyan'
+    Write-Step 5 5 'Verifying deployment...' 'Cyan'
 
     $required = @(
         @{Path='node.exe';           Label='Node.js runtime';          Critical=$true},
         @{Path='wrapper.node';       Label='QQNT Wrapper module';      Critical=$true},
         @{Path='napcat.mjs';         Label='NapCat core';              Critical=$true},
-        @{Path='config\onebot11.json'; Label='OneBot config';          Critical=$true},
+        @{Path='config\onebot11.json';  Label='OneBot config (deployed from config/napcat-templates/)'; Critical=$true},
         @{Path='napcat.bat';         Label='Shell entry point';        Critical=$true},
         @{Path='index.cjs';          Label='Custom launcher';          Critical=$true}
     )
@@ -493,7 +521,7 @@ function Test-Deployment {
 # ═══════════════════════════════════════════════════════════════════════════
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  NapCat QQ Shell - Self-Contained Setup" -ForegroundColor Cyan
+Write-Host "  NapCat QQ Shell - Self-Contained Setup (5 steps)" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -510,6 +538,7 @@ try {
     Install-NapCatShell
     Sync-QQNTBinaries
     Clear-UnnecessaryFiles
+    Deploy-NapCatConfigTemplates
     $ok = Test-Deployment
 } finally {
     # Clean up temp directory
