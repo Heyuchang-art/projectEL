@@ -35,6 +35,7 @@ $ProtectedFiles = @(
     'index.cjs',
     'config.json',
     'package.json',
+    'qqnt.json',
     'KillQQ.bat'
 )
 
