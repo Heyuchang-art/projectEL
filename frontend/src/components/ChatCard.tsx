@@ -96,9 +96,9 @@ export default function ChatCard() {
     setTimeout(() => renameInputRef.current?.focus(), 50);
   };
 
-  const handleSubmitRename = () => {
+  const handleSubmitRename = async () => {
     if (renameValue.trim()) {
-      renameSession(sessionId, renameValue.trim());
+      await renameSession(sessionId, renameValue.trim());
     }
     setIsRenaming(false);
   };
