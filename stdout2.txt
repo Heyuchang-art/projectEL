@@ -1,16 +1,0 @@
-====================================================================
-          projectEL - AI Learning Agent Launcher
-====================================================================
-
-Scanning API keys from environment and local config...
-
-  [OK] DeepSeek       - found in system environment
-  [--] Anthropic      - not configured
-  [--] OpenAI         - not configured
-  [--] Qwen/DashScope  - not configured
-  [--] OpenRouter      - not configured
-
---------------------------------------------------------------------
- Tip: Configure missing keys via the Settings panel (gear icon)
- or set env vars: DEEPSEEK_API_KEY, DASHSCOPE_API_KEY, etc.
---------------------------------------------------------------------
