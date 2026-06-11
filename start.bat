@@ -1,8 +1,8 @@
 @echo off
-title Snapshot Pi Dev Server Launcher
+title projectEL Dev Server Launcher
 cls
 echo ====================================================================
-echo           Snapshot Pi - AI Learning Agent Launcher
+echo           projectEL - AI Learning Agent Launcher
 echo ====================================================================
 echo.
 echo Scanning API keys from environment and local config...
@@ -91,67 +91,46 @@ echo  or set env vars: DEEPSEEK_API_KEY, DASHSCOPE_API_KEY, etc.
 echo --------------------------------------------------------------------
 
 :: ===== Check and Download NapCat Binaries =====
-if not exist "%~dp0napcat\node.exe" (
+if not exist "%~dp0napcat\napcat.bat" (
     echo.
     echo --------------------------------------------------------------------
     echo  [WARNING] NapCat binaries are missing.
-    echo  Downloading and installing NapCat Shell ^(v4.18.4^) automatically...
+    echo  Downloading and installing NapCat Shell ^(v4.18.6^) automatically...
     echo --------------------------------------------------------------------
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\install-napcat.ps1"
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\setup-napcat.ps1"
 )
 
-:: ===== Dependency Pre-check & Auto-Install =====
+:: ===== Dependency Pre-check =====
 echo.
 echo Checking project dependencies...
-
-where node >nul 2>&1
-if errorlevel 1 (
+if not exist "%~dp0node_modules\.bin\tsx.cmd" (
     echo --------------------------------------------------------------------
-    echo  [ERROR] Node.js is not installed or not in your PATH.
-    echo  Please install Node.js v18+ to run this project.
+    echo  [ERROR] Backend dependency 'tsx' not found.
+    echo  Please run 'npm install' from the project root directory:
+    echo    cd /d "%~dp0"
+    echo    npm install
     echo --------------------------------------------------------------------
     pause
     exit /b 1
 )
-
-node "%~dp0scripts\check-deps.js"
-if errorlevel 1 (
-    echo.
+if not exist "%~dp0node_modules\.bin\vite.cmd" (
     echo --------------------------------------------------------------------
-    echo  [WARNING] Missing dependencies detected!
-    echo  Running 'npm install' automatically to install them...
+    echo  [ERROR] Frontend dependency 'vite' not found.
+    echo  Please run 'npm install' from the project root directory:
+    echo    cd /d "%~dp0"
+    echo    npm install
     echo --------------------------------------------------------------------
-    echo.
-    cd /d "%~dp0"
-    call npm install
-    if errorlevel 1 (
-        echo.
-        echo --------------------------------------------------------------------
-        echo  [ERROR] 'npm install' failed. Please run it manually to check.
-        echo --------------------------------------------------------------------
-        pause
-        exit /b 1
-    )
-    echo.
-    echo Re-checking dependencies...
-    node "%~dp0scripts\check-deps.js"
-    if errorlevel 1 (
-        echo --------------------------------------------------------------------
-        echo  [ERROR] Dependency check still failed after running npm install.
-        echo --------------------------------------------------------------------
-        pause
-        exit /b 1
-    )
-) else (
-    echo   [OK] All workspace dependencies are installed.
+    pause
+    exit /b 1
 )
+echo   [OK] All dependencies found.
 
 echo.
 echo Starting Backend Express Server (Port 3000)...
-start "Snapshot Pi Backend" /D "%~dp0backend" cmd /k "title Snapshot Pi Backend Server && npx tsx src/server.ts"
+start "projectEL Backend" /D "%~dp0backend" cmd /k "title projectEL Backend Server && npx tsx src/server.ts"
 
 echo Starting Frontend Vite Server (Port 5173)...
-start "Snapshot Pi Frontend" /D "%~dp0frontend" cmd /k "title Snapshot Pi Frontend Page && npm run dev"
+start "projectEL Frontend" /D "%~dp0frontend" cmd /k "title projectEL Frontend Page && npm run dev"
 
 echo.
 echo ====================================================================
