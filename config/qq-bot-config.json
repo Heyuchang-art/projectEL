@@ -1,5 +1,9 @@
 {
-  "enabled": false,
+  "enabled": true,
+  "napcat": {
+    "path": "napcat/napcat.bat",
+    "templateDir": "config/napcat-templates"
+  },
   "wsPath": "/qq/ws",
   "accessToken": "",
   "dedicatedPresetId": "qq-tutor",
@@ -13,9 +17,24 @@
     "/ai",
     "/ask"
   ],
+  "quiz": {
+    "enabled": true,
+    "questionsPerRound": 3,
+    "xpPerGrade": {
+      "0": 0,
+      "1": 1,
+      "2": 3,
+      "3": 5,
+      "4": 10
+    }
+  },
   "rendering": {
     "formulaImageWidth": 800,
     "maxMessageLength": 1500,
     "messageChunkOverlap": 100
+  },
+  "groupSync": {
+    "enabled": true,
+    "allowedGroupIds": []
   }
 }
