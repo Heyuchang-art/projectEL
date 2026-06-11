@@ -204,14 +204,14 @@ function Deploy-NapCatConfigTemplates {
 function Test-Deployment {
     Write-Step 4 4 'Verifying deployment...' 'Cyan'
 
-    # In Node.zip:
+    # Node.zip extracts flat to napcat/ root:
     #   napcat.bat              → root (spawn target)
-    #   node/node.exe           → Node.js runtime
+    #   node.exe                → Node.js runtime (at root, not in node/)
     #   napcat/napcat.mjs       → NapCat core
     #   napcat/config/          → config (overwritten by our templates above)
     $required = @(
         @{Path='napcat.bat';                        Label='Shell entry point';       Critical=$true},
-        @{Path='node\node.exe';                     Label='Node.js runtime';          Critical=$true},
+        @{Path='node.exe';                          Label='Node.js runtime';          Critical=$true},
         @{Path='napcat\napcat.mjs';                 Label='NapCat core';              Critical=$true},
         @{Path='napcat\config\onebot11.json';       Label='OneBot config (deployed)'; Critical=$true}
     )
