@@ -288,7 +288,22 @@ async function startServer() {
   }
 
   // ── QQ Bot ──────────────────────────────────────────────────────────
-  let napcatProcess: ChildProcess | null = null;
+
+  interface NapCatGuardState {
+    process: ChildProcess | null;
+    restartCount: number;
+    restartTimer: ReturnType<typeof setTimeout> | null;
+  }
+
+  const MAX_NAPCAT_RESTART = 3;
+  const NAPCAT_RESTART_BACKOFF = [5_000, 15_000, 30_000]; // 5s, 15s, 30s 指数退避
+
+  const napcatGuard: NapCatGuardState = {
+    process: null,
+    restartCount: 0,
+    restartTimer: null,
+  };
+
   let qqConfig: any = null;
   const qqConfigPath = path.join(workspaceCwd, 'qq-bot-config.json');
 
@@ -307,6 +322,106 @@ async function startServer() {
   qqLogger.setLogDir(path.join(kbService.inboxDir, 'qq-logs'));
 
   const reportGen = new ReportGenerator(kbService, workspaceCwd);
+
+  // ── NapCat 预检 ────────────────────────────────────────────────────
+  async function preflightNapCat(): Promise<{ ok: boolean; error?: string }> {
+    const dir = path.join(workspaceCwd, 'napcat');
+    const checks = [
+      { file: 'node.exe',                        label: 'Node.js 运行时' },
+      { file: 'wrapper.node',                    label: 'QQNT Wrapper 原生模块' },
+      { file: 'napcat/napcat.mjs',        label: 'NapCat 核心程序' },
+      { file: 'napcat/config/onebot11.json', label: 'OneBot 配置文件' },
+    ];
+    for (const c of checks) {
+      if (!await fs.pathExists(path.join(dir, c.file))) {
+        return {
+          ok: false,
+          error:
+            `缺少 ${c.label} (${c.file})。\n` +
+            `请运行一键部署: powershell -File scripts\\setup-napcat.ps1`,
+        };
+      }
+    }
+    // 清理 JSON 文件的 BOM（已知问题：NapCat 部分 JSON 含 UTF-8 BOM 导致解析崩溃）
+    const stripBom = path.join(workspaceCwd, 'scripts', 'strip-bom.js');
+    if (await fs.pathExists(stripBom)) {
+      try {
+        const { execSync } = await import('child_process');
+        execSync(`node "${stripBom}"`, { cwd: dir, timeout: 5000, windowsHide: true });
+      } catch { /* strip-bom 失败不阻塞启动 */ }
+    }
+    return { ok: true };
+  }
+
+  // ── NapCat 进程守护 ────────────────────────────────────────────────
+  function resetNapcatGuard() {
+    napcatGuard.restartCount = 0;
+    if (napcatGuard.restartTimer) {
+      clearTimeout(napcatGuard.restartTimer);
+      napcatGuard.restartTimer = null;
+    }
+  }
+
+  function spawnNapCat(): ChildProcess {
+    const napcatDir = path.join(workspaceCwd, 'napcat');
+    const proc = spawn('napcat.bat', [], {
+      cwd: napcatDir,
+      shell: true,
+      stdio: 'pipe',
+    });
+
+    proc.stdout?.on('data', (d: Buffer) => {
+      for (const line of d.toString().split('\n').filter(Boolean)) {
+        if (line.includes('[error]') || line.includes('[ERROR]')) {
+          console.error(`[NapCat] ${line}`);
+        } else if (line.includes('[warn]') || line.includes('[WARN]')) {
+          console.warn(`[NapCat] ${line}`);
+        }
+      }
+    });
+
+    proc.stderr?.on('data', (d: Buffer) => {
+      console.error(`[NapCat:stderr] ${d.toString().trim()}`);
+    });
+
+    proc.on('exit', (code, signal) => {
+      console.log(`[QQ] NapCat 进程退出 (code=${code}, signal=${signal})`);
+
+      // 用户主动停止
+      if (!qqConfig?.enabled) {
+        console.log('[QQ] QQ Bot 已禁用，不自动重启');
+        return;
+      }
+
+      // 正常退出（code 0）
+      if (code === 0) return;
+
+      // 异常退出 → 自动重启
+      if (napcatGuard.restartCount >= MAX_NAPCAT_RESTART) {
+        console.error(
+          `[QQ] NapCat 已连续崩溃 ${MAX_NAPCAT_RESTART} 次，停止自动重启。\n` +
+          `  请检查: 1) wrapper.node 版本是否匹配  2) QQNT 版本配置是否正确\n` +
+          `  修复后可通过 WebUI 重新启动。`
+        );
+        // 标记为禁用，防止下次自动启动
+        qqConfig.enabled = false;
+        fs.writeJson(qqConfigPath, qqConfig, { spaces: 2 }).catch(() => {});
+        return;
+      }
+
+      const delay = NAPCAT_RESTART_BACKOFF[napcatGuard.restartCount];
+      console.warn(
+        `[QQ] NapCat 异常退出，${delay / 1000}s 后进行第 ` +
+        `${napcatGuard.restartCount + 1}/${MAX_NAPCAT_RESTART} 次自动重启...`
+      );
+      napcatGuard.restartTimer = setTimeout(() => {
+        napcatGuard.restartCount++;
+        napcatGuard.process = spawnNapCat();
+      }, delay);
+    });
+
+    return proc;
+  }
 
   // QQ 状态（始终可用）
   app.get('/api/qq/status', (_req, res) => {
@@ -341,24 +456,19 @@ async function startServer() {
         return res.status(400).json({ success: false, error: '未找到 qq-bot-config.json 配置文件' });
       }
 
+      // 预检：确保 NapCat 运行环境完整
+      const preflight = await preflightNapCat();
+      if (!preflight.ok) {
+        return res.status(400).json({ success: false, error: preflight.error });
+      }
+
       // 初始化 QQ WebSocket 适配器（监听端口 3001）
       initQQAdapter(httpServer, getOrCreateSession, io, qqConfig, kbService, workspaceCwd);
 
-      // 使用 napcat.bat（NapCatQQ 官方推荐的独立模式，无需 QQ.exe 和管理员权限）
-      const napcatBatPath = path.join(workspaceCwd, 'napcat', 'napcat.bat');
-      if (!(await fs.pathExists(napcatBatPath))) {
-        return res.status(400).json({ success: false, error: '未找到 napcat.bat' });
-      }
-
-      const napcatDir = path.dirname(napcatBatPath);
-      napcatProcess = spawn('napcat.bat', [], {
-        cwd: napcatDir,
-        shell: true,
-        detached: true,
-        stdio: 'ignore',
-      });
-      napcatProcess.unref();
-      console.log('[QQ] NapCat spawned via napcat.bat (standalone mode)');
+      // 启动 NapCat Shell（独立模式，无需 QQ.exe 和管理员权限）
+      resetNapcatGuard();
+      napcatGuard.process = spawnNapCat();
+      console.log('[QQ] NapCat 已启动 (Shell standalone mode)');
 
       // 写配置 enabled: true
       qqConfig.enabled = true;
@@ -374,14 +484,15 @@ async function startServer() {
   app.post('/api/qq/stop', async (_req, res) => {
     try {
       stopQQAdapter();
+      resetNapcatGuard();
 
-      if (napcatProcess) {
+      if (napcatGuard.process?.pid) {
         try {
-          spawn('taskkill', ['/PID', String(napcatProcess.pid), '/T', '/F'], { stdio: 'ignore' });
+          spawn('taskkill', ['/PID', String(napcatGuard.process.pid), '/T', '/F'], { stdio: 'ignore' });
         } catch {
           // 忽略 kill 错误
         }
-        napcatProcess = null;
+        napcatGuard.process = null;
       }
 
       // 写配置 enabled: false
@@ -390,6 +501,7 @@ async function startServer() {
         await fs.writeJson(qqConfigPath, qqConfig, { spaces: 2 });
       }
 
+      console.log('[QQ] NapCat 已停止');
       res.json({ success: true, message: 'QQ 服务已停止' });
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
@@ -510,10 +622,13 @@ async function startServer() {
 
   // 2. 新建会话
   app.post("/api/sessions/create", async (req, res) => {
-    const { presetId, sessionId } = req.body;
+    const { presetId, sessionId, name } = req.body;
     const sId = sessionId || randomUUID();
     try {
       const session = await getOrCreateSession(sId, presetId);
+      if (name && name.trim()) {
+        session.sessionManager.appendSessionInfo(name.trim());
+      }
       res.json({
         success: true,
         sessionId: sId,
