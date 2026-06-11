@@ -592,6 +592,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
       if (data.success) {
         await fetchSessions();
+      } else {
+        alert(data.error || '重命名失败');
       }
     } catch (err) {
       console.error('Failed to rename session:', err);

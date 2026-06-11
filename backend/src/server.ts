@@ -329,8 +329,8 @@ async function startServer() {
     const checks = [
       { file: 'node.exe',                        label: 'Node.js 运行时' },
       { file: 'wrapper.node',                    label: 'QQNT Wrapper 原生模块' },
-      { file: 'napcat/napcat.mjs',        label: 'NapCat 核心程序' },
-      { file: 'napcat/config/onebot11.json', label: 'OneBot 配置文件' },
+      { file: 'napcat.mjs',            label: 'NapCat 核心程序' },
+      { file: 'config/onebot11.json',  label: 'OneBot 配置文件' },
     ];
     for (const c of checks) {
       if (!await fs.pathExists(path.join(dir, c.file))) {
@@ -624,6 +624,9 @@ async function startServer() {
   app.post("/api/sessions/create", async (req, res) => {
     const { presetId, sessionId, name } = req.body;
     const sId = sessionId || randomUUID();
+    if (name && name.length > 100) {
+      return res.status(400).json({ error: "会话名称不能超过100个字符" });
+    }
     try {
       const session = await getOrCreateSession(sId, presetId);
       if (name && name.trim()) {
@@ -690,6 +693,9 @@ async function startServer() {
     const { name } = req.body;
     if (!name || !name.trim()) {
       return res.status(400).json({ error: "名称不能为空" });
+    }
+    if (name.length > 100) {
+      return res.status(400).json({ error: "会话名称不能超过100个字符" });
     }
     try {
       // Ensure session is loaded (may be on disk but not in memory)
