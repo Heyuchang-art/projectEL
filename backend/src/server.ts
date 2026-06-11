@@ -684,6 +684,23 @@ async function startServer() {
     }
   });
 
+  // 重命名会话
+  app.put("/api/sessions/:id/rename", async (req, res) => {
+    const sessionId = req.params.id;
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "名称不能为空" });
+    }
+    try {
+      // Ensure session is loaded (may be on disk but not in memory)
+      const session = await getOrCreateSession(sessionId);
+      session.sessionManager.appendSessionInfo(name.trim());
+      res.json({ success: true, sessionId, name: name.trim() });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ----------------- HTTP 智能体预设路由 -----------------
 
   // 获取所有预设
