@@ -41,7 +41,7 @@ export default function QQBotCard() {
       if (reportRes.ok) setReport(await reportRes.json());
       setLoading(false);
     } catch {
-      setError('Failed to fetch QQ bot data');
+      setError('获取 QQ Bot 数据失败');
       setLoading(false);
     }
   }, []);
@@ -58,11 +58,11 @@ export default function QQBotCard() {
       } else {
         const msg = data.hint
           ? `${data.error}\n\nFix: ${data.hint}`
-          : (data.error || 'Start failed');
+          : (data.error || '启动失败');
         setActionError(msg);
       }
     } catch {
-      setActionError('Cannot connect to backend (localhost:3000)\nVerify backend is running: npx tsx backend/src/server.ts');
+      setActionError('无法连接到后端 (localhost:3000)\n请确认后端已启动: npx tsx backend/src/server.ts');
     }
     setActionLoading(false);
     fetchData();
@@ -78,10 +78,10 @@ export default function QQBotCard() {
         setStatus((prev) => prev ? { ...prev, running: false, accounts: [] } : null);
         setActionError(null);
       } else {
-        setActionError(data.error || 'Stop failed');
+        setActionError(data.error || '停止失败');
       }
     } catch {
-      setActionError('Cannot connect to backend (localhost:3000)');
+      setActionError('无法连接到后端 (localhost:3000)');
     }
     setActionLoading(false);
     fetchData();
@@ -130,7 +130,7 @@ export default function QQBotCard() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Bot size={16} style={{ color: 'var(--accent)' }} />
           <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '13px' }}>
-            QQ Bot
+            QQ Bot 监控
           </span>
           {hasOnlineAccount && (
             <span
@@ -161,9 +161,9 @@ export default function QQBotCard() {
                 gap: '4px',
                 opacity: actionLoading ? 0.5 : 1,
               }}
-              title="Stop QQ Service"
+              title="停止 QQ 服务"
             >
-              <Square size={10} fill="#ef4444" /> Stop
+              <Square size={10} fill="#ef4444" /> 停止
             </button>
           ) : (
             <button
@@ -181,9 +181,9 @@ export default function QQBotCard() {
                 gap: '4px',
                 opacity: actionLoading ? 0.5 : 1,
               }}
-              title="Start QQ Service"
+              title="启动 QQ 服务"
             >
-              <Play size={10} fill="#22c55e" /> Start
+              <Play size={10} fill="#22c55e" /> 启动
             </button>
           )}
           <button
@@ -195,7 +195,7 @@ export default function QQBotCard() {
               cursor: 'pointer',
               padding: '2px 6px',
             }}
-            title="Refresh"
+            title="刷新"
           >
             <RefreshCw size={12} />
           </button>
@@ -206,7 +206,7 @@ export default function QQBotCard() {
       <div style={{ flex: 1, overflow: 'auto', padding: '10px 14px' }}>
         {loading && (
           <div style={{ textAlign: 'center', padding: '20px', color: '#666666' }}>
-            Loading...
+            加载中...
           </div>
         )}
 
@@ -251,21 +251,21 @@ export default function QQBotCard() {
               fontSize: '11px',
             }}
           >
-            Waiting for QQ login... Scan QR code in the NapCat terminal window.
+            正在等待 QQ 登录...请在弹出的 NapCat 命令行窗口中扫码
           </div>
         )}
 
         {/* Connection Status */}
         <SectionHeader
           icon={<Wifi size={12} />}
-          label="Connection Status"
+          label="连接状态"
           expanded={expanded === 'status'}
           onToggle={() => toggleSection('status')}
         />
         {expanded === 'status' && (
           <div style={{ marginBottom: '10px' }}>
             {!status?.accounts?.length ? (
-              <div style={{ color: '#666666', padding: '6px 0' }}>No QQ accounts connected</div>
+              <div style={{ color: '#666666', padding: '6px 0' }}>无已配置的 QQ 账号连接</div>
             ) : (
               status.accounts.map((acc) => (
                 <div
@@ -285,7 +285,7 @@ export default function QQBotCard() {
                   )}
                   <span style={{ color: '#ffffff' }}>{acc.selfId}</span>
                   <span style={{ fontSize: '10px', color: acc.online ? '#22c55e' : '#ef4444' }}>
-                    {acc.online ? 'Online' : 'Offline'}
+                    {acc.online ? '在线' : '离线'}
                   </span>
                   {acc.nickname && (
                     <span style={{ fontSize: '10px', color: '#888888' }}>({acc.nickname})</span>
@@ -299,14 +299,14 @@ export default function QQBotCard() {
         {/* Weak Concepts */}
         <SectionHeader
           icon={<BookOpen size={12} />}
-          label="Weak Concepts"
+          label="薄弱知识点"
           expanded={expanded === 'weak'}
           onToggle={() => toggleSection('weak')}
         />
         {expanded === 'weak' && (
           <div style={{ marginBottom: '10px' }}>
             {!report || report.weakestConcepts.length === 0 ? (
-              <div style={{ color: '#666666', padding: '6px 0' }}>No data</div>
+              <div style={{ color: '#666666', padding: '6px 0' }}>暂无数据</div>
             ) : (
               report.weakestConcepts.map((c) => (
                 <div
@@ -320,7 +320,7 @@ export default function QQBotCard() {
                   }}
                 >
                   <span style={{ color: '#dddddd' }}>{c.title}</span>
-                  <span style={{ color: '#ff9955' }}>conf. {c.confidence.toFixed(2)}</span>
+                  <span style={{ color: '#ff9955' }}>置信度 {c.confidence.toFixed(2)}</span>
                 </div>
               ))
             )}
@@ -340,8 +340,8 @@ export default function QQBotCard() {
           flexShrink: 0,
         }}
       >
-        <span>Auto-refresh (30s)</span>
-        {report && <span>Updated {new Date(report.generatedAt).toLocaleTimeString()}</span>}
+        <span>自动刷新 (30s)</span>
+        {report && <span>更新于 {new Date(report.generatedAt).toLocaleTimeString()}</span>}
       </div>
     </div>
   );
