@@ -24,30 +24,10 @@ inbox/qq-logs/
 knowledge_bases/*/inbox/qq-logs/
 **/inbox/checkin_logs.jsonl
 
-# NapCat: large binaries (deployed by setup-napcat.ps1)
-napcat/node.exe
-napcat/napcat.mjs
-napcat/wrapper.node
-napcat/major.node
-napcat/QQNT.dll
-napcat/*.dll
-napcat/node_modules/
-napcat/native/
-napcat/static/
-napcat/worker/
-napcat/plugins/
-
-# NapCat: runtime-generated files
-napcat/cache/
-napcat/logs/
-napcat/*.db*
-napcat/*.log
-napcat/config/napcat_*.json
-napcat/config/onebot11_*.json
-napcat/config/napcat_protocol_*.json
-
-# NapCat: deployment leftovers
-napcat.zip
+# NapCat: entire directory auto-deployed by scripts/setup-napcat.ps1
+# QQ NT runtime creates temp dirs in its working directory (TCD*.tmp,
+# chrome_drag*, scoped_dir*, etc.) — normal behavior, not tracked.
+napcat/
 
 # Custom (non-preset) skills under skills/ and .pi/skills/
 skills/*/
