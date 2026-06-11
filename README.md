@@ -74,17 +74,17 @@ snapshot-pi/
 │   ├── agent/sessions/               # 会话持久化 (JSONL)
 │   ├── auth.json                     # API 密钥持久化存储
 │   └── models.json                   # 模型注册表 & Provider 配置
-├── napcat/                            # NapCat QQ Shell 独立模式 (OneBot v11 客户端)
-│   ├── index.js                        # 自定义启动器 (wrapper.node 智能三级定位)
+├── napcat/                            # ⚠️ gitignore — 由 scripts/setup.bat 自动部署
 │   ├── napcat.bat                      # Shell 入口
-├── napcat/                            # ⚠️ gitignore — 由 setup.bat 自动部署
-│   ├── node.exe                        # 嵌入式 Node.js
+│   ├── node.exe                        # 嵌入式 Node.js (自包含)
+│   ├── index.js                        # 自定义启动器
 │   ├── wrapper.node                    # QQNT Wrapper 原生模块
-│   ├── napcat.mjs                      # NapCat 核心
-│   └── config/                         # OneBot v11 + WebUI (从 config/napcat-templates/ 复制)
+│   ├── napcat/                         # NapCat 核心模块
+│   │   ├── napcat.mjs                  # NapCat 主入口
+│   │   └── config/                     # OneBot v11 / WebUI 配置 (从 config/napcat-templates/ 复制)
 ├── config/
 │   ├── qq-bot-config.json            # QQ Bot 运行时配置 (关键词/限流/渲染/测验)
-│   └── napcat-templates/             # NapCat 配置模板 (由 setup.bat 部署到 napcat/config/)
+│   └── napcat-templates/             # NapCat 配置模板 (由 scripts/setup.bat 部署到 napcat/napcat/config/)
 ├── docs/                             # 设计文档
 │   ├── plan—develop.md               # 开发进度与规划
 │   ├── webui.md                      # WebUI 设计规范
@@ -183,8 +183,8 @@ graph TD
 | 模块 | 功能 | 状态 | 代码位置 |
 |:---|:---|:---:|:---|
 | **基础框架** | Monorepo workspaces 管理 | ✅ 已完成 | `package.json` |
-| | start.bat 一键启动 (纯启动器) | ✅ 已完成 | `start.bat` |
-| | setup.bat 一键初始化部署 (API Key + npm + NapCat) | ✅ 已完成 | `scripts/setup.bat` |
+| | start.bat 一键启动 | ✅ 已完成 | `start.bat` |
+| | scripts/setup.bat 一键初始化部署 | ✅ 已完成 | `scripts/setup.bat` |
 | **前端 WebUI** | 卡片式多窗口拖拽布局 (Workspace) | ✅ 已完成 | `Workspace.tsx`, `WorkspaceContext.tsx` |
 | | 苏格拉底流式交互聊天 (Socket.io) | ✅ 已完成 | `ChatCard.tsx`, `ChatContext.tsx` |
 | | 多会话创建/切换/删除 | ✅ 已完成 | `ChatContext.tsx`, `server.ts` |
@@ -236,9 +236,8 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 
 | 服务 | 端口 |
 |------|------|
-| 后端 API（Express + Socket.io） | 3000 |
+| 后端 API（Express + Socket.io，内置静态托管前端） | 3000 |
 | QQ WebSocket（NapCat 连接） | 3001 |
-| 前端 Vite | 5173 |
 | NapCat WebUI | 6099 |
 
 ### 配置
@@ -265,18 +264,18 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 ### 使用步骤
 
 1. 运行 `scripts\setup.bat` 完成首次部署（已部署则跳过）
-2. 运行 `start.bat` 启动开发服务器
-3. 打开 WebUI `http://localhost:5173`，点击侧边栏 **QQ Bot** 图标
+2. 运行 `start.bat` 启动服务
+3. 浏览器打开 `http://localhost:3000`，点击侧边栏 **QQ Bot** 图标
 4. 在卡片页头点击 **▶ 启动** 按钮
 5. 系统自动启动 NapCat Shell（**独立模式**：内嵌 Node.js，无需 QQ.exe 或管理员权限）
-6. 在弹出的 NapCat 命令行窗口中扫码登录 QQ
-7. 登录成功后，卡片显示 **QQ xxx 在线**，Bot 开始响应私聊消息
+6. 在后端终端中看到 NapCat 输出的 QR 码，用手机 QQ 扫码登录
+7. 登录成功后，卡片显示 **QQ xxx 在线**，Bot 开始响应群聊与私聊消息
 
 > ℹ️ **关于部署**
 > 
-> NapCat Shell 的 `node.exe`、`wrapper.node` 和核心文件由 `setup.bat` 自动部署。
+> NapCat 的 `node.exe`、`wrapper.node` 和核心文件由 `scripts\setup.bat` 自动部署。
 > 部署完成后 `napcat/` 目录完全自包含，可整体迁移到任意 Windows 机器。
-> 如果 QQNT 版本升级导致不兼容，重新运行 `scripts\setup.bat --force` 即可。
+> 如果 NapCat 版本过旧，重新运行 `scripts\setup.bat` 即可（自动覆盖重装）。
 
 ### 个人聊天触发方式
 
@@ -364,35 +363,44 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 - Node.js >= 18.0.0
 - npm >= 9.0.0
 - Windows 10+（NapCat QQ Bot 功能需要）
-- QQNT 桌面版（仅首次部署时需要，用于提取 `wrapper.node`）
 
 ### 首次部署
 
 ```bash
 # git clone 后运行一次，完成所有初始化:
-#   - Node.js 环境检查
+#   - npm install 安装依赖
 #   - API Key 配置向导
-#   - npm install 依赖安装
-#   - NapCat QQ Shell 部署
-#   - 完整性验证
+#   - NapCat QQ Shell 自动部署
+#   - 前端资源构建
 scripts\setup.bat
-
-# 强制重建所有组件:
-scripts\setup.bat --force
 ```
+
+`scripts\setup.bat` 是一站式初始化脚本，包含：
+
+| 步骤 | 内容 | 说明 |
+|:---|:---|:---|
+| 1 | 环境检查 | 检测 Node.js / npm 版本 |
+| 2 | npm install | 安装所有依赖 |
+| 3 | API Key 配置 | 交互式向导，写入 `.pi/auth.json` |
+| 4 | NapCat 部署 | 下载并解压 NapCat Shell (Node.zip)，部署配置模板 |
+| 5 | 前端构建 | 构建生产包到 `frontend/dist/` |
+
+> 部署完成后 `napcat/` 目录完全自包含，可整体复制到任意 Windows 机器。
+> 如需重装，重新运行 `scripts\setup.bat` 即可。
 
 ### 日常启动
 
 ```bash
 # 双击 start.bat 或命令行:
 start.bat
-# → 后端 http://localhost:3000
-# → 前端 http://localhost:5173
+# → 浏览器自动打开 http://localhost:3000
 ```
 
-`start.bat` 会自动检测项目是否已初始化。如果未初始化，会自动调用 `setup.bat`。
+`start.bat` 仅做两件事：
+- 启动后端服务（Express，端口 3000，内置静态托管前端）
+- 自动打开浏览器
 
-**部署完成后**，`napcat/` 目录完全自包含，可整体复制到任意 Windows 机器，无需再次安装 QQNT。
+启动后可以在终端中看到 NapCat 的 QR 码输出（如果已部署），用手机 QQ 扫码即可登录 Bot。
 
 ### 配置 API 密钥与模型
 
@@ -495,7 +503,7 @@ start.bat
 
 #### 在网页中如何使用
 
-1. 启动项目后打开 `http://localhost:5173` 或 `http://127.0.0.1:5173`。
+1. 启动项目后打开 `http://localhost:3000`。
 2. 点击左侧“知识库”图标，可以查看 Wiki 卡片、整理笔记、归档审查和统计信息。
 3. 在聊天卡片中直接向 Agent 提问，例如：`动态规划核心思想是什么？`
 4. 如果命中知识库，聊天区会先出现系统提示：`已检索并注入 1 条知识库上下文`。

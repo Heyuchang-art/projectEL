@@ -1,142 +1,52 @@
 @echo off
-title projectEL Dev Server Launcher
+title projectEL Launcher
+chcp 65001 >nul
 cls
+
 echo ====================================================================
-echo           projectEL - AI Learning Agent Launcher
+echo              projectEL - AI Learning Agent
 echo ====================================================================
 echo.
-echo Scanning API keys from environment and local config...
-echo.
 
-:: ===== DeepSeek =====
-if defined DEEPSEEK_API_KEY (
-    echo %DEEPSEEK_API_KEY%| findstr /B "sk-ant-router" >nul 2>&1
+:: ===== 前置检查 =====
+cd /d "%~dp0"
+
+if not exist "node_modules" (
+    echo  [WARN] 依赖未安装。正在运行初始化部署...
+    call scripts\setup.bat
+    if errorlevel 1 exit /b 1
+)
+
+if not exist "frontend\dist\index.html" (
+    echo  [WARN] 前端未构建。正在构建...
+    call npm run build --workspace=frontend
     if errorlevel 1 (
-        echo   [OK] DeepSeek       - found in system environment
-        goto ds_end
+        echo  [FAIL] 前端构建失败
+        pause
+        exit /b 1
     )
-    echo   [skip] DeepSeek     - env var is a proxy key, checking local config
-    set "DEEPSEEK_API_KEY="
+    echo  [OK] 前端构建完成
 )
-for /f "usebackq delims=" %%k in (`node -e "try{const j=JSON.parse(require('fs').readFileSync('%~dp0.pi/auth.json','utf8'));if(j.deepseek&&j.deepseek.key)console.log(j.deepseek.key);}catch{}"`) do set "DEEPSEEK_API_KEY=%%k"
-if defined DEEPSEEK_API_KEY (
-    echo   [OK] DeepSeek       - found in .pi/auth.json
-) else (
-    echo   [--] DeepSeek       - not configured
-)
-:ds_end
 
-:: ===== Anthropic =====
-if defined ANTHROPIC_API_KEY (
-    echo %ANTHROPIC_API_KEY%| findstr /B "sk-ant-router" >nul 2>&1
-    if errorlevel 1 (
-        echo   [OK] Anthropic      - found in system environment
-        goto an_end
-    )
-    echo   [skip] Anthropic    - env var is Antigravity proxy key, not usable
-    set "ANTHROPIC_API_KEY="
-)
-for /f "usebackq delims=" %%k in (`node -e "try{const j=JSON.parse(require('fs').readFileSync('%~dp0.pi/auth.json','utf8'));if(j.anthropic&&j.anthropic.key)console.log(j.anthropic.key);}catch{}"`) do set "ANTHROPIC_API_KEY=%%k"
-if defined ANTHROPIC_API_KEY (
-    echo   [OK] Anthropic      - found in .pi/auth.json
-) else (
-    echo   [--] Anthropic      - not configured
-)
-:an_end
-
-:: ===== OpenAI =====
-if defined OPENAI_API_KEY (
-    echo   [OK] OpenAI         - found in system environment
-    goto oa_end
-)
-for /f "usebackq delims=" %%k in (`node -e "try{const j=JSON.parse(require('fs').readFileSync('%~dp0.pi/auth.json','utf8'));if(j.openai&&j.openai.key)console.log(j.openai.key);}catch{}"`) do set "OPENAI_API_KEY=%%k"
-if defined OPENAI_API_KEY (
-    echo   [OK] OpenAI         - found in .pi/auth.json
-) else (
-    echo   [--] OpenAI         - not configured
-)
-:oa_end
-
-
-:: ===== Qwen (Alibaba DashScope) =====
-if defined DASHSCOPE_API_KEY (
-    echo   [OK] Qwen/DashScope  - found in system environment
-    goto qw_end
-)
-for /f "usebackq delims=" %%k in (`node -e "try{const j=JSON.parse(require('fs').readFileSync('%~dp0.pi/auth.json','utf8'));if(j.qwen&&j.qwen.key)console.log(j.qwen.key);}catch{}"`) do set "DASHSCOPE_API_KEY=%%k"
-if defined DASHSCOPE_API_KEY (
-    echo   [OK] Qwen/DashScope  - found in .pi/auth.json
-) else (
-    echo   [--] Qwen/DashScope  - not configured
-)
-:qw_end
-
-:: ===== OpenRouter =====
-if defined OPENROUTER_API_KEY (
-    echo   [OK] OpenRouter      - found in system environment
-    goto or_end
-)
-for /f "usebackq delims=" %%k in (`node -e "try{const j=JSON.parse(require('fs').readFileSync('%~dp0.pi/auth.json','utf8'));if(j.openrouter&&j.openrouter.key)console.log(j.openrouter.key);}catch{}"`) do set "OPENROUTER_API_KEY=%%k"
-if defined OPENROUTER_API_KEY (
-    echo   [OK] OpenRouter      - found in .pi/auth.json
-) else (
-    echo   [--] OpenRouter      - not configured
-)
-:or_end
-
+echo  启动后端服务 (http://localhost:3000)...
 echo.
-echo --------------------------------------------------------------------
-echo  Tip: Configure missing keys via the Settings panel (gear icon)
-echo  or set env vars: DEEPSEEK_API_KEY, DASHSCOPE_API_KEY, etc.
-echo --------------------------------------------------------------------
 
-:: ===== Check and Download NapCat Binaries =====
-if not exist "%~dp0napcat\napcat.bat" (
-    echo.
-    echo --------------------------------------------------------------------
-    echo  [WARNING] NapCat binaries are missing.
-    echo  Downloading and installing NapCat Shell ^(v4.18.6^) automatically...
-    echo --------------------------------------------------------------------
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\setup-napcat.ps1"
-)
-
-:: ===== Dependency Pre-check =====
-echo.
-echo Checking project dependencies...
-if not exist "%~dp0node_modules\.bin\tsx.cmd" (
-    echo --------------------------------------------------------------------
-    echo  [ERROR] Backend dependency 'tsx' not found.
-    echo  Please run 'npm install' from the project root directory:
-    echo    cd /d "%~dp0"
-    echo    npm install
-    echo --------------------------------------------------------------------
-    pause
-    exit /b 1
-)
-if not exist "%~dp0node_modules\.bin\vite.cmd" (
-    echo --------------------------------------------------------------------
-    echo  [ERROR] Frontend dependency 'vite' not found.
-    echo  Please run 'npm install' from the project root directory:
-    echo    cd /d "%~dp0"
-    echo    npm install
-    echo --------------------------------------------------------------------
-    pause
-    exit /b 1
-)
-echo   [OK] All dependencies found.
-
-echo.
-echo Starting Backend Express Server (Port 3000)...
+:: ===== 启动后端 =====
 start "projectEL Backend" /D "%~dp0backend" cmd /k "title projectEL Backend Server && npx tsx src/server.ts"
 
-echo Starting Frontend Vite Server (Port 5173)...
-start "projectEL Frontend" /D "%~dp0frontend" cmd /k "title projectEL Frontend Page && npm run dev"
+:: ===== 等待后端就绪后打开浏览器 =====
+echo  等待后端就绪...
+:wait_loop
+timeout /t 2 /nobreak >nul
+>nul 2>&1 curl -s http://localhost:3000/api/qq/status || goto wait_loop
 
+echo  打开浏览器...
+start http://localhost:3000
+
+echo ====================================================================
+echo  服务已启动！
+echo  - 前端 + API:  http://localhost:3000
+echo  - QQ WS:       ws://127.0.0.1:3001/qq/ws
+echo ====================================================================
+echo  关闭此窗口即可停止所有服务。
 echo.
-echo ====================================================================
-echo  [SUCCESS] All services launched!
-echo  - Frontend Web UI:   http://localhost:5173
-echo  - Backend API:       http://localhost:3000
-echo  - QQ WS (NapCat):    ws://127.0.0.1:3001/qq/ws
-echo ====================================================================
-pause
