@@ -65,8 +65,9 @@ interface ChatContextProps {
   removeImage: (index: number) => void;
   removeAttachment: (index: number) => void;
   switchSession: (sessionId: string) => Promise<void>;
-  createSession: (presetId?: string) => Promise<void>;
+  createSession: (name?: string, presetId?: string) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
+  renameSession: (sessionId: string, name: string) => Promise<void>;
   selectModel: (provider: string, modelId: string, thinkingLevel?: string) => Promise<void>;
   fetchActiveModelConfig: () => Promise<void>;
   fetchSessions: () => Promise<void>;
@@ -534,13 +535,17 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const createSession = async (presetId?: string) => {
+  const createSession = async (name?: string, presetId?: string) => {
     try {
       const newSessionId = `session-${Date.now()}`;
+      const body: any = { sessionId: newSessionId, presetId };
+      if (name && name.trim()) {
+        body.name = name.trim();
+      }
       const response = await fetch('http://localhost:3000/api/sessions/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: newSessionId, presetId })
+        body: JSON.stringify(body)
       });
       const data = await response.json();
       if (data.success) {
@@ -573,6 +578,24 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Failed to delete session:', err);
       alert('删除会话失败，请检查网络连接或后端服务是否正常。');
+    }
+  };
+
+  const renameSession = async (sId: string, name: string) => {
+    if (!name.trim()) return;
+    try {
+      const response = await fetch(`http://localhost:3000/api/sessions/${sId}/rename`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim() })
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchSessions();
+      }
+    } catch (err) {
+      console.error('Failed to rename session:', err);
+      alert('重命名会话失败，请检查网络连接或后端服务是否正常。');
     }
   };
 
@@ -617,6 +640,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       switchSession,
       createSession,
       deleteSession,
+      renameSession,
       selectModel,
       fetchActiveModelConfig,
       fetchSessions,

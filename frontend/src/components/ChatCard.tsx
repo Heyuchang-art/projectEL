@@ -210,7 +210,7 @@ export default function ChatCard() {
             value={activePresetId || ''} 
             onChange={(e) => {
               const val = e.target.value;
-              createSession(val || undefined);
+              createSession(undefined, val || undefined);
             }}
             style={{
               backgroundColor: '#000000',
@@ -255,7 +255,7 @@ export default function ChatCard() {
 
           {/* New Session Button */}
           <button
-            onClick={() => createSession(activePresetId || undefined)}
+            onClick={() => createSession(undefined, activePresetId || undefined)}
             style={{
               backgroundColor: '#000000',
               border: '2px solid #333333',
