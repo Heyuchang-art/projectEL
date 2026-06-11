@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Bot, Wifi, WifiOff, Zap, Trophy, TrendingUp, BookOpen, RefreshCw, Play, Square } from 'lucide-react';
+import { Bot, Wifi, WifiOff, BookOpen, RefreshCw, Play, Square } from 'lucide-react';
 
 const API_BASE = 'http://localhost:3000/api/qq';
 
@@ -18,13 +18,7 @@ interface QQStatus {
 
 interface WeeklyReport {
   generatedAt: string;
-  periodDays: number;
-  highFrequencyTopics: { tag: string; count: number }[];
   weakestConcepts: { title: string; confidence: number }[];
-  leaderboard: { userId: number; totalXp: number; correct: number; total: number; accuracy: number }[];
-  checkinTrends: { date: string; totalAttempts: number; correctAttempts: number }[];
-  totalCards: number;
-  totalCheckins: number;
 }
 
 export default function QQBotCard() {
@@ -46,7 +40,7 @@ export default function QQBotCard() {
       if (statusRes.ok) setStatus(await statusRes.json());
       if (reportRes.ok) setReport(await reportRes.json());
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch QQ bot data');
       setLoading(false);
     }
@@ -62,7 +56,6 @@ export default function QQBotCard() {
         setStatus((prev) => prev ? { ...prev, running: true } : null);
         setActionError(null);
       } else {
-        // Show specific error + fix hint
         const msg = data.hint
           ? `${data.error}\n\nFix: ${data.hint}`
           : (data.error || 'Start failed');
@@ -85,10 +78,10 @@ export default function QQBotCard() {
         setStatus((prev) => prev ? { ...prev, running: false, accounts: [] } : null);
         setActionError(null);
       } else {
-        setActionError(data.error || '停止失败');
+        setActionError(data.error || 'Stop failed');
       }
     } catch {
-      setActionError('无法连接到后端服务');
+      setActionError('Cannot connect to backend (localhost:3000)');
     }
     setActionLoading(false);
     fetchData();
@@ -137,7 +130,7 @@ export default function QQBotCard() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Bot size={16} style={{ color: 'var(--accent)' }} />
           <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '13px' }}>
-            QQ Bot 监控
+            QQ Bot
           </span>
           {hasOnlineAccount && (
             <span
@@ -168,9 +161,9 @@ export default function QQBotCard() {
                 gap: '4px',
                 opacity: actionLoading ? 0.5 : 1,
               }}
-              title="停止 QQ 服务"
+              title="Stop QQ Service"
             >
-              <Square size={10} fill="#ef4444" /> 停止
+              <Square size={10} fill="#ef4444" /> Stop
             </button>
           ) : (
             <button
@@ -188,9 +181,9 @@ export default function QQBotCard() {
                 gap: '4px',
                 opacity: actionLoading ? 0.5 : 1,
               }}
-              title="启动 QQ 服务"
+              title="Start QQ Service"
             >
-              <Play size={10} fill="#22c55e" /> 启动
+              <Play size={10} fill="#22c55e" /> Start
             </button>
           )}
           <button
@@ -202,7 +195,7 @@ export default function QQBotCard() {
               cursor: 'pointer',
               padding: '2px 6px',
             }}
-            title="刷新"
+            title="Refresh"
           >
             <RefreshCw size={12} />
           </button>
@@ -213,7 +206,7 @@ export default function QQBotCard() {
       <div style={{ flex: 1, overflow: 'auto', padding: '10px 14px' }}>
         {loading && (
           <div style={{ textAlign: 'center', padding: '20px', color: '#666666' }}>
-            加载中...
+            Loading...
           </div>
         )}
 
@@ -240,6 +233,7 @@ export default function QQBotCard() {
               color: '#ff9933',
               marginBottom: '10px',
               fontSize: '11px',
+              whiteSpace: 'pre-wrap',
             }}
           >
             {actionError}
@@ -257,21 +251,21 @@ export default function QQBotCard() {
               fontSize: '11px',
             }}
           >
-            正在等待 QQ 登录...请在弹出的 NapCat 命令行窗口中扫码
+            Waiting for QQ login... Scan QR code in the NapCat terminal window.
           </div>
         )}
 
         {/* Connection Status */}
         <SectionHeader
           icon={<Wifi size={12} />}
-          label="连接状态"
+          label="Connection Status"
           expanded={expanded === 'status'}
           onToggle={() => toggleSection('status')}
         />
         {expanded === 'status' && (
           <div style={{ marginBottom: '10px' }}>
             {!status?.accounts?.length ? (
-              <div style={{ color: '#666666', padding: '6px 0' }}>无已配置的 QQ 账号连接</div>
+              <div style={{ color: '#666666', padding: '6px 0' }}>No QQ accounts connected</div>
             ) : (
               status.accounts.map((acc) => (
                 <div
@@ -291,7 +285,7 @@ export default function QQBotCard() {
                   )}
                   <span style={{ color: '#ffffff' }}>{acc.selfId}</span>
                   <span style={{ fontSize: '10px', color: acc.online ? '#22c55e' : '#ef4444' }}>
-                    {acc.online ? '在线' : '离线'}
+                    {acc.online ? 'Online' : 'Offline'}
                   </span>
                   {acc.nickname && (
                     <span style={{ fontSize: '10px', color: '#888888' }}>({acc.nickname})</span>
@@ -302,72 +296,17 @@ export default function QQBotCard() {
           </div>
         )}
 
-        {/* Quiz Stats */}
-        <SectionHeader
-          icon={<Zap size={12} />}
-          label="答题统计"
-          expanded={expanded === 'quiz'}
-          onToggle={() => toggleSection('quiz')}
-          badge={report ? `${report.totalCheckins}次` : undefined}
-        />
-        {expanded === 'quiz' && report && (
-          <div style={{ marginBottom: '10px' }}>
-            <div style={{ color: '#888888', marginBottom: '4px' }}>
-              知识库: {report.totalCards} 卡片 | 近{report.periodDays}天答题: {report.totalCheckins}次
-            </div>
-            {report.checkinTrends.length > 0 && (
-              <TrendMiniChart data={report.checkinTrends} />
-            )}
-          </div>
-        )}
-
-        {/* Leaderboard */}
-        <SectionHeader
-          icon={<Trophy size={12} />}
-          label="活跃排行"
-          expanded={expanded === 'leaderboard'}
-          onToggle={() => toggleSection('leaderboard')}
-        />
-        {expanded === 'leaderboard' && report && (
-          <div style={{ marginBottom: '10px' }}>
-            {report.leaderboard.length === 0 ? (
-              <div style={{ color: '#666666', padding: '6px 0' }}>暂无答题记录</div>
-            ) : (
-              report.leaderboard.slice(0, 5).map((entry, i) => (
-                <div
-                  key={entry.userId}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    padding: '3px 0',
-                    borderBottom: '1px solid #1a1a1a',
-                    fontSize: '11px',
-                  }}
-                >
-                  <span>
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
-                    {' '}QQ{entry.userId}
-                  </span>
-                  <span style={{ color: 'var(--accent)' }}>
-                    {entry.totalXp}XP ({entry.accuracy}%)
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
         {/* Weak Concepts */}
         <SectionHeader
           icon={<BookOpen size={12} />}
-          label="薄弱知识点"
+          label="Weak Concepts"
           expanded={expanded === 'weak'}
           onToggle={() => toggleSection('weak')}
         />
-        {expanded === 'weak' && report && (
+        {expanded === 'weak' && (
           <div style={{ marginBottom: '10px' }}>
-            {report.weakestConcepts.length === 0 ? (
-              <div style={{ color: '#666666', padding: '6px 0' }}>暂无数据</div>
+            {!report || report.weakestConcepts.length === 0 ? (
+              <div style={{ color: '#666666', padding: '6px 0' }}>No data</div>
             ) : (
               report.weakestConcepts.map((c) => (
                 <div
@@ -381,41 +320,9 @@ export default function QQBotCard() {
                   }}
                 >
                   <span style={{ color: '#dddddd' }}>{c.title}</span>
-                  <span style={{ color: '#ff9955' }}>置信度 {c.confidence}</span>
+                  <span style={{ color: '#ff9955' }}>conf. {c.confidence.toFixed(2)}</span>
                 </div>
               ))
-            )}
-          </div>
-        )}
-
-        {/* High-frequency Topics */}
-        <SectionHeader
-          icon={<TrendingUp size={12} />}
-          label="热门话题"
-          expanded={expanded === 'topics'}
-          onToggle={() => toggleSection('topics')}
-        />
-        {expanded === 'topics' && report && (
-          <div style={{ marginBottom: '10px' }}>
-            {report.highFrequencyTopics.length === 0 ? (
-              <div style={{ color: '#666666', padding: '6px 0' }}>暂无数据</div>
-            ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                {report.highFrequencyTopics.map((t) => (
-                  <span
-                    key={t.tag}
-                    style={{
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #333333',
-                      padding: '2px 8px',
-                      fontSize: '10px',
-                      color: 'var(--secondary)',
-                    }}
-                  >
-                    #{t.tag} ({t.count})
-                  </span>
-                ))}
-              </div>
             )}
           </div>
         )}
@@ -433,14 +340,12 @@ export default function QQBotCard() {
           flexShrink: 0,
         }}
       >
-        <span>自动刷新 (30s)</span>
-        {report && <span>更新于 {new Date(report.generatedAt).toLocaleTimeString()}</span>}
+        <span>Auto-refresh (30s)</span>
+        {report && <span>Updated {new Date(report.generatedAt).toLocaleTimeString()}</span>}
       </div>
     </div>
   );
 }
-
-// ─── 子组件 ──────────────────────────────────────────────────────────
 
 function SectionHeader({
   icon,
@@ -475,42 +380,6 @@ function SectionHeader({
       <span style={{ color: '#aaaaaa' }}>{icon}</span>
       <span style={{ color: '#cccccc', fontWeight: 600 }}>{label}</span>
       {badge && <span style={{ fontSize: '10px', color: '#888888', marginLeft: 'auto' }}>{badge}</span>}
-    </div>
-  );
-}
-
-function TrendMiniChart({ data }: { data: { date: string; totalAttempts: number; correctAttempts: number }[] }) {
-  const maxVal = Math.max(1, ...data.map((d) => d.totalAttempts));
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '40px', padding: '4px 0' }}>
-      {data.map((d) => {
-        const h = Math.max(2, Math.round((d.totalAttempts / maxVal) * 36));
-        return (
-          <div
-            key={d.date}
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '2px',
-            }}
-            title={`${d.date}: ${d.totalAttempts}次 (正确${d.correctAttempts})`}
-          >
-            <div
-              style={{
-                width: '100%',
-                height: `${h}px`,
-                backgroundColor: d.correctAttempts > 0 ? 'var(--accent)' : '#333333',
-                border: '1px solid #222222',
-              }}
-            />
-            <span style={{ fontSize: '8px', color: '#555555' }}>
-              {d.date.slice(5)}
-            </span>
-          </div>
-        );
-      })}
     </div>
   );
 }
