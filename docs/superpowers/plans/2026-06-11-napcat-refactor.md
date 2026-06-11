@@ -1,10 +1,12 @@
-# NapCat 部署重构 Implementation Plan
+# NapCat Deployment Refactor — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 新仓库 clone 后 `setup-napcat.ps1` 一键部署 NapCat Shell 独立模式，无需安装 QQNT 桌面版，QQBotCard 启停正常。
+**Goal:** One-command `setup-napcat.ps1` deployment after git clone — zero QQNT desktop dependency, QQBotCard start/stop functional.
 
-**Architecture:** 最小化提取器方案：下载 QQNT NSIS 安装包 → `7za.exe` 静默解压 → 提取 `wrapper.node` + DLL → 删除临时文件。NapCat 作为 OneBot v11 WS 客户端独立运行，后端 `server.ts` 管理进程生命周期，前端 `QQBotCard.tsx` 提供启停与状态监控。
+**Architecture:** Minimal extractor: download QQNT NSIS installer → `7za.exe` silent extract → grab `wrapper.node` + DLLs → cleanup. NapCat runs standalone as OneBot v11 WS client, backend `server.ts` manages process lifecycle, frontend `QQBotCard.tsx` provides start/stop and status monitoring.
+
+**Encoding rule:** All core code (PS1, TS, TSX, JS, JSON) uses English only. Only `start.bat` may contain Chinese (user-facing startup messages). This eliminates encoding-related garbled text issues entirely.
 
 **Tech Stack:** PowerShell 5.1+, Node.js, 7-Zip standalone (7za.exe), NapCat Shell v4.18.4, QQNT NSIS installer
 
@@ -14,39 +16,38 @@
 
 | Action | File | Responsibility |
 |:---|:---|:---|
-| Create | `scripts/setup-napcat.ps1` | 最小化提取器：下载 NapCat Shell + 从 QQNT 安装包提取二进制 |
-| Create | `scripts/strip-bom.js` | 清理 JSON BOM 头（NapCat 兼容性） |
-| Modify | `.gitignore` | 更新 NapCat 排除规则 |
-| Modify | `napcat/napcat.bat` | Shell 入口，确保引用 `index.cjs`，GBK+CRLF 编码 |
-| Modify | `backend/src/server.ts:326-354` | preflight 路径对齐 + 结构化错误信息 |
-| Modify | `frontend/src/components/QQBotCard.tsx:55-72` | 错误提示展示具体修复指引 |
-| Track | `napcat/index.cjs` | 自定义启动器（智能三级定位 wrapper.node） |
-| Track | `napcat/config.json` | QQ 版本伪装配置 |
-| Track | `napcat/package.json` | QQ 伪装包信息 |
-| Track | `napcat/KillQQ.bat` | 进程清理辅助 |
-| Track | `napcat/config/onebot11.json` | OneBot WS 客户端配置模板 |
-| Track | `napcat/config/napcat.json` | NapCat 运行时配置 |
-| Track | `napcat/config/webui.json` | WebUI 配置（端口 6099） |
-| Delete | `napcat/index.js` | 已被 `index.cjs` 替代 |
-| Delete | `napcat/napcat/` (整个目录) | 旧嵌套结构，已扁平化 |
-| Delete | `scripts/install-napcat.ps1` | 被新 `setup-napcat.ps1` 替代 |
-| Delete | `scripts/sync-qq-shell.ps1` | 功能合并到 `setup-napcat.ps1` |
-| Delete | `stderr.txt` `stderr2.txt` `stderr3.txt` | 调试日志残留 |
-| Delete | `stdout.txt` `stdout2.txt` `stdout3.txt` | 调试日志残留 |
+| Create | `scripts/setup-napcat.ps1` | Minimal extractor: download NapCat Shell + extract binaries from QQNT installer |
+| Create | `scripts/strip-bom.js` | Strip UTF-8 BOM from JSON files (NapCat compat) |
+| Modify | `.gitignore` | Update NapCat exclusion rules |
+| Modify | `napcat/napcat.bat` | Shell entry point, reference `index.cjs` |
+| Modify | `backend/src/server.ts:326-354` | Align preflight paths + structured error with hint |
+| Modify | `frontend/src/components/QQBotCard.tsx:55-72` | Display specific errors + fix hints |
+| Track | `napcat/index.cjs` | Custom launcher (smart 3-tier wrapper.node locator) |
+| Track | `napcat/config.json` | QQ version disguise config |
+| Track | `napcat/package.json` | QQ disguise package info |
+| Track | `napcat/KillQQ.bat` | Process cleanup helper |
+| Track | `napcat/config/onebot11.json` | OneBot WS client config template |
+| Track | `napcat/config/napcat.json` | NapCat runtime config |
+| Track | `napcat/config/webui.json` | WebUI config (port 6099) |
+| Delete | `napcat/index.js` | Replaced by `index.cjs` |
+| Delete | `napcat/napcat/` (entire dir) | Old nested structure, now flattened |
+| Delete | `scripts/install-napcat.ps1` | Replaced by new `setup-napcat.ps1` |
+| Delete | `scripts/sync-qq-shell.ps1` | Merged into `setup-napcat.ps1` |
+| Delete | `stderr.txt` `stdout.txt` etc. | Debug log leftovers |
 
 ---
 
-### Task 1: 更新 .gitignore 排除规则
+### Task 1: Update .gitignore exclusion rules
 
 **Files:**
 - Modify: `.gitignore`
 
-- [ ] **Step 1: 替换 NapCat 相关排除规则**
+- [ ] **Step 1: Replace NapCat rules**
 
-当前 `.gitignore` 第 27-68 行的 NapCat 规则替换为以下内容：
+Replace lines 27-68 of `.gitignore` (current NapCat rules) with:
 
 ```gitignore
-# NapCat: 排除大型二进制文件（通过 setup-napcat.ps1 部署）
+# NapCat: large binaries (deployed by setup-napcat.ps1)
 napcat/node.exe
 napcat/napcat.mjs
 napcat/wrapper.node
@@ -59,7 +60,7 @@ napcat/static/
 napcat/worker/
 napcat/plugins/
 
-# NapCat: 排除运行时生成文件
+# NapCat: runtime-generated files
 napcat/cache/
 napcat/logs/
 napcat/*.db*
@@ -68,90 +69,80 @@ napcat/config/napcat_*.json
 napcat/config/onebot11_*.json
 napcat/config/napcat_protocol_*.json
 
-# NapCat: 排除部署残留
+# NapCat: deployment leftovers
 napcat.zip
 ```
 
-> 关键变化: 
-> - 移除 `napcat/napcat/napcat.mjs` → `napcat/napcat.mjs`（扁平化后路径）
-> - 移除 `napcat/napcat/native/` 等深层路径，改为 `napcat/native/`
-> - 移除对 `napcat/napcat/config/` 的排除，配置现在在 `napcat/config/` 且由 git 跟踪模板
+> Key changes:
+> - `napcat/napcat/napcat.mjs` → `napcat/napcat.mjs` (post-flatten path)
+> - Remove deep `napcat/napcat/native/` paths → `napcat/native/`
+> - Remove exclusion of `napcat/napcat/config/` — config now at `napcat/config/` and git-tracked
 
-- [ ] **Step 2: 验证白名单文件不会被忽略**
+- [ ] **Step 2: Verify whitelisted files are not ignored**
 
 Run: `git check-ignore napcat/napcat.bat napcat/index.cjs napcat/config/onebot11.json`
 
-Expected: 无输出（文件未被 ignore）
+Expected: No output (files not ignored)
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add .gitignore
-git commit -m "chore: update .gitignore for flat napcat/ structure
+git commit -m "chore: update .gitignore for flat napcat/ structure"
 ```
 
 ---
 
-### Task 2: 提交 napcat/ 受保护文件到 git
+### Task 2: Commit napcat/ protected files to git
 
 **Files:**
-- Track: `napcat/index.cjs`
-- Track: `napcat/napcat.bat`
-- Track: `napcat/config.json`
-- Track: `napcat/package.json`
-- Track: `napcat/KillQQ.bat`
-- Track: `napcat/config/onebot11.json`
-- Track: `napcat/config/napcat.json`
-- Track: `napcat/config/webui.json`
-- Track: `napcat/LICENSE-APACHE-2.0.txt`
-- Track: `scripts/strip-bom.js`
-- Track: `scripts/setup-napcat.ps1` (当前版本作为基线)
-- Delete: `napcat/index.js`
-- Delete: `napcat/napcat/` 下所有残留文件
-- Delete: `scripts/install-napcat.ps1`
-- Delete: `scripts/sync-qq-shell.ps1`
-- Delete: `stderr.txt` `stderr2.txt` `stderr3.txt`
-- Delete: `stdout.txt` `stdout2.txt` `stdout3.txt`
+- Track: `napcat/index.cjs`, `napcat/napcat.bat`, `napcat/config.json`, `napcat/package.json`
+- Track: `napcat/KillQQ.bat`, `napcat/LICENSE-APACHE-2.0.txt`
+- Track: `napcat/config/onebot11.json`, `napcat/config/napcat.json`, `napcat/config/webui.json`
+- Track: `scripts/strip-bom.js`, `scripts/setup-napcat.ps1` (current version as baseline)
+- Delete: `napcat/index.js`, `napcat/napcat/` (all residual files)
+- Delete: `scripts/install-napcat.ps1`, `scripts/sync-qq-shell.ps1`
+- Delete: `stderr.txt`, `stderr2.txt`, `stderr3.txt`, `stdout.txt`, `stdout2.txt`, `stdout3.txt`
 
-- [ ] **Step 1: 删除旧文件**
+- [ ] **Step 1: Delete old files**
 
 ```bash
-# 删除旧 index.js
+# Delete old index.js
 git rm napcat/index.js 2>/dev/null
 
-# 删除旧嵌套 napcat/napcat/ 目录下所有残留文件
+# Delete old nested napcat/napcat/ directory
 git rm -r napcat/napcat/ 2>/dev/null || true
 
-# 删除旧安装脚本
+# Delete old install scripts
 git rm scripts/install-napcat.ps1 scripts/sync-qq-shell.ps1 2>/dev/null || true
 
-# 删除调试日志残留
+# Delete debug log leftovers
 git rm stderr.txt stderr2.txt stderr3.txt stdout.txt stdout2.txt stdout3.txt 2>/dev/null || true
 ```
 
-- [ ] **Step 2: 暂存新文件**
+- [ ] **Step 2: Stage new files**
 
 ```bash
-# 暂存 napcat 受保护文件
+# Stage napcat protected files
 git add napcat/napcat.bat napcat/index.cjs napcat/config.json napcat/package.json
 git add napcat/KillQQ.bat napcat/LICENSE-APACHE-2.0.txt
 git add napcat/config/onebot11.json napcat/config/napcat.json napcat/config/webui.json
 
-# 暂存脚本
+# Stage scripts
 git add scripts/strip-bom.js scripts/setup-napcat.ps1
 ```
 
-- [ ] **Step 3: 验证暂存内容**
+- [ ] **Step 3: Verify staged content**
 
 ```bash
 git status
 ```
 
-确认:
-- `napcat/index.js` 显示为 `deleted`
-- `napcat/napcat/` 下文件显示为 `deleted`
-- `napcat/index.cjs` 显示为 `new file`
-- `napcat/config/onebot11.json` 显示为 `new file`
+Confirm:
+- `napcat/index.js` shows as `deleted`
+- `napcat/napcat/` files show as `deleted`
+- `napcat/index.cjs` shows as `new file`
+- `napcat/config/onebot11.json` shows as `new file`
 
 - [ ] **Step 4: Commit**
 
@@ -168,28 +159,28 @@ git commit -m "chore: flatten napcat/ structure, track launcher files
 
 ---
 
-### Task 3: 重写 setup-napcat.ps1（最小化提取器）
+### Task 3: Rewrite setup-napcat.ps1 (minimal extractor)
 
 **Files:**
 - Rewrite: `scripts/setup-napcat.ps1`
 
-这是本次重构的核心。完整重写 PowerShell 部署脚本。
+This is the core of the refactor. Complete rewrite in English.
 
-- [ ] **Step 1: 写入新脚本**
+- [ ] **Step 1: Write the new script**
 
 ```powershell
 <#
 .SYNOPSIS
-    NapCat QQ Shell 一键自包含部署（零依赖版）
+    NapCat QQ Shell self-contained deployment (zero-dependency)
 .DESCRIPTION
-    1. 下载 NapCat.Shell.zip（无需 QQNT 桌面版）
-    2. 从 QQNT 官方安装包静默提取 wrapper.node + DLL（不安装 QQNT）
-    3. 清理非必要文件 + 验证完整性
-    4. 部署完成后 napcat/ 完全自包含，可整体迁移
+    1. Download NapCat.Shell.zip (no QQNT desktop needed)
+    2. Silent-extract wrapper.node + DLLs from QQNT NSIS installer
+    3. Clean up unnecessary files + verify integrity
+    4. napcat/ is fully self-contained after deployment
 .PARAMETER Force
-    强制重新下载和提取所有组件
+    Force re-download and re-extract all components
 .PARAMETER NapCatVersion
-    NapCat Shell 版本号（默认 v4.18.4）
+    NapCat Shell version (default v4.18.4)
 .EXAMPLE
     .\setup-napcat.ps1
     .\setup-napcat.ps1 -Force
@@ -208,7 +199,7 @@ $TempDir    = Join-Path $env:TEMP 'napcat-setup'
 $7zaExe     = Join-Path $TempDir '7za.exe'
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 受保护文件列表（git 跟踪的自定义文件，不可被 NapCat 官方包覆盖）
+# Protected files (git-tracked custom files — never overwritten by upstream)
 # ═══════════════════════════════════════════════════════════════════════════
 $ProtectedFiles = @(
     'napcat.bat',
@@ -219,7 +210,7 @@ $ProtectedFiles = @(
 )
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 辅助函数
+# Helpers
 # ═══════════════════════════════════════════════════════════════════════════
 
 function Write-Step {
@@ -243,13 +234,13 @@ function Ensure-TempDir {
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Step 1: 下载 NapCat.Shell.zip
+# Step 1: Download NapCat.Shell.zip
 # ═══════════════════════════════════════════════════════════════════════════
 function Install-NapCatShell {
-    Write-Step 1 4 '下载 NapCat Shell...' 'Cyan'
+    Write-Step 1 4 'Downloading NapCat Shell...' 'Cyan'
 
     if (Test-NapCatCoreExists) {
-        Write-Host "  NapCat 核心已存在，跳过下载（使用 -Force 强制重新下载）" -ForegroundColor Green
+        Write-Host "  NapCat core already exists, skipping (use -Force to re-download)" -ForegroundColor Green
         return
     }
 
@@ -260,70 +251,69 @@ function Install-NapCatShell {
 
     $zipFile = Join-Path $env:TEMP 'NapCat.Shell.zip'
 
-    # 下载
     $downloaded = $false
     foreach ($url in $urls) {
         try {
-            Write-Host "  尝试: $url"
+            Write-Host "  Trying: $url"
             $wc = New-Object System.Net.WebClient
             $wc.DownloadFile($url, $zipFile)
             $wc.Dispose()
             $downloaded = $true
-            Write-Host "  下载成功" -ForegroundColor Green
+            Write-Host "  Download OK" -ForegroundColor Green
             break
         } catch {
-            Write-Host "  失败: $_" -ForegroundColor DarkYellow
+            Write-Host "  Failed: $_" -ForegroundColor DarkYellow
         }
     }
 
     if (-not $downloaded) {
-        Write-Host "  下载失败。请手动下载并解压到 napcat/ 目录" -ForegroundColor Red
-        Write-Host "  下载地址: $($urls[-1])"
+        Write-Host "  Download failed. Manually download and extract to napcat/" -ForegroundColor Red
+        Write-Host "  URL: $($urls[-1])"
         exit 1
     }
 
-    # 解压到临时目录
+    # Extract to temp directory
     Ensure-TempDir
-    Write-Host "  解压中..."
+    Write-Host "  Extracting..."
     Expand-Archive -Path $zipFile -DestinationPath $TempDir -Force
     Remove-Item $zipFile -Force
 
-    # 找到 napcat.mjs 定位源根目录
+    # Locate napcat.mjs to find the source root
     $napcatMjs = Get-ChildItem $TempDir -Recurse -Filter 'napcat.mjs' -File | Select-Object -First 1
     if (-not $napcatMjs) {
-        Write-Host "  解压后未找到 napcat.mjs，zip 结构可能已变更" -ForegroundColor Red
+        Write-Host "  ERROR: napcat.mjs not found in extracted files — zip structure may have changed" -ForegroundColor Red
         exit 1
     }
 
-    # napcat.mjs 在 <root>/napcat/napcat.mjs → 源根是其祖父目录
+    # napcat.mjs is at <root>/napcat/napcat.mjs → source root is its grandparent
     $sourceDir = Split-Path $napcatMjs.DirectoryName -Parent
 
-    # 备份用户配置
+    # Backup user config
     $onebotBackup = $null
     $onebotConfigPath = Join-Path $NapCatDir 'config\onebot11.json'
     if (Test-Path $onebotConfigPath) {
         $onebotBackup = Get-Content $onebotConfigPath -Raw -Encoding UTF8
     }
 
-    # 复制核心文件
-    Write-Host "  复制核心文件..."
+    # Copy core files
+    Write-Host "  Copying core files..."
     $allItems = Get-ChildItem $sourceDir -Force
     foreach ($item in $allItems) {
         $destPath = Join-Path $NapCatDir $item.Name
 
-        # 跳过受保护文件
+        # Skip protected files
         if ($ProtectedFiles -contains $item.Name) {
             Write-Host "    [skip protected] $($item.Name)" -ForegroundColor DarkGray
             continue
         }
 
-        # 跳过注入模式专属文件
+        # Skip injection-mode files
         if ($item.Name -match '^(NapCatWinBootMain\.exe|NapCatWinBootHook\.dll|loadNapCat\.js|launcher-win10.*\.bat|quickLoginExample\.bat|launcher\.bat|launcher-user\.bat|conout-D9oph_Le\.js)$') {
             Write-Host "    [skip injection] $($item.Name)" -ForegroundColor DarkGray
             continue
         }
 
-        # 跳过根级 napcat.mjs（正确的在 napcat/ 子目录中）
+        # Skip root-level napcat.mjs (the real one is in napcat/ subdirectory)
         if ($item.Name -eq 'napcat.mjs' -and (-not $item.PSIsContainer)) {
             Write-Host "    [skip root-level] napcat.mjs" -ForegroundColor DarkGray
             continue
@@ -331,12 +321,12 @@ function Install-NapCatShell {
 
         if ($item.PSIsContainer) {
             if ($item.Name -eq 'napcat') {
-                # napcat/ 子目录 → 扁平化到根
+                # napcat/ subdirectory → flatten to root
                 Copy-Item "$($item.FullName)\*" $NapCatDir -Recurse -Force
-                Write-Host "    [flat] napcat/ → root" -ForegroundColor Green
+                Write-Host "    [flat] napcat/ -> root" -ForegroundColor Green
                 continue
             }
-            # 其他目录：合并
+            # Other directories: merge
             if (Test-Path $destPath) {
                 Copy-Item "$($item.FullName)\*" $destPath -Recurse -Force
             } else {
@@ -349,25 +339,25 @@ function Install-NapCatShell {
         }
     }
 
-    # 恢复用户配置
+    # Restore user config
     if ($onebotBackup) {
         $onebotBackup | Set-Content $onebotConfigPath -Encoding UTF8 -NoNewline
-        Write-Host "  已恢复 onebot11.json" -ForegroundColor Green
+        Write-Host "  Restored onebot11.json" -ForegroundColor Green
     }
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Step 2: 最小化提取 wrapper.node + DLL（从 QQNT 安装包静默解压）
+# Step 2: Extract wrapper.node + DLLs (silent extract from QQNT installer)
 # ═══════════════════════════════════════════════════════════════════════════
 function Sync-QQNTBinaries {
-    Write-Step 2 4 '提取 QQNT 二进制文件...' 'Cyan'
+    Write-Step 2 4 'Extracting QQNT binaries...' 'Cyan'
 
     if (Test-WrapperNodeExists) {
-        Write-Host "  wrapper.node 已存在，跳过提取（使用 -Force 强制重新提取）" -ForegroundColor Green
+        Write-Host "  wrapper.node already exists, skipping (use -Force to re-extract)" -ForegroundColor Green
         return
     }
 
-    # 2a. 从 config.json 读取期望版本
+    # 2a. Read expected version from config.json
     $targetVersion = ''
     $cfgPath = Join-Path $NapCatDir 'config.json'
     if (Test-Path $cfgPath) {
@@ -378,39 +368,39 @@ function Sync-QQNTBinaries {
         } catch { }
     }
     if (-not $targetVersion) {
-        $targetVersion = '9.9.26-44343'  # 已知稳定版本
+        $targetVersion = '9.9.26-44343'  # known stable version
     }
 
-    Write-Host "  目标 QQNT 版本: $targetVersion"
+    Write-Host "  Target QQNT version: $targetVersion"
     $buildId = ($targetVersion -split '-')[-1]
 
-    # 2b. 下载 QQNT 安装包
-    # QQNT 安装包命名: QQ9.9.26.44343_x64.exe
+    # 2b. Download QQNT installer
+    # QQNT installer naming: QQ9.9.26.44343_x64.exe
     $qqntVersionClean = $targetVersion -replace '-', '.'
     $qqntInstaller = "QQ${qqntVersionClean}_x64.exe"
     $qqntUrl = "https://dldir1.qq.com/qqfile/qq/QQNT/Windows/${qqntInstaller}"
 
     $installerPath = Join-Path $env:TEMP $qqntInstaller
     if (-not (Test-Path $installerPath)) {
-        Write-Host "  下载 QQNT 安装包 (~200MB)..."
+        Write-Host "  Downloading QQNT installer (~200MB)..."
         Write-Host "  $qqntUrl"
         try {
             $wc = New-Object System.Net.WebClient
             $wc.DownloadFile($qqntUrl, $installerPath)
             $wc.Dispose()
-            Write-Host "  下载成功" -ForegroundColor Green
+            Write-Host "  Download OK" -ForegroundColor Green
         } catch {
-            Write-Host "  下载 QQNT 安装包失败: $_" -ForegroundColor Red
-            Write-Host "  手动下载 $qqntInstaller 放到 %TEMP% 后重试" -ForegroundColor Yellow
+            Write-Host "  QQNT installer download failed: $_" -ForegroundColor Red
+            Write-Host "  Manually download $qqntInstaller to %TEMP% and retry" -ForegroundColor Yellow
             exit 1
         }
     } else {
-        Write-Host "  安装包已存在: $installerPath"
+        Write-Host "  Installer already cached: $installerPath"
     }
 
-    # 2c. 下载 7za.exe（如需要）
+    # 2c. Download 7za.exe if needed
     if (-not (Test-Path $7zaExe)) {
-        Write-Host "  下载 7za.exe..."
+        Write-Host "  Downloading 7za.exe..."
         $7zaUrl = 'https://7-zip.org/a/7za920.zip'
         $7zaZip = Join-Path $env:TEMP '7za920.zip'
         try {
@@ -419,62 +409,59 @@ function Sync-QQNTBinaries {
             $wc.Dispose()
             Expand-Archive -Path $7zaZip -DestinationPath $TempDir -Force
             Remove-Item $7zaZip -Force
-            Write-Host "  7za.exe 就绪" -ForegroundColor Green
+            Write-Host "  7za.exe ready" -ForegroundColor Green
         } catch {
-            Write-Host "  下载 7za.exe 失败，尝试备用源..."
-            $7zaUrl2 = 'https://github.com/ip7z/7zip/releases/download/24.09/7z2409-extra.7z'
-            # 如果 7za 不可用，回退到 Expand-Archive 解压 NSIS（成功率低）
-            Write-Host "  将尝试使用 Expand-Archive 解压 QQNT 安装包" -ForegroundColor Yellow
+            Write-Host "  7za.exe download failed, will try Expand-Archive fallback" -ForegroundColor Yellow
         }
     }
 
-    # 2d. 解压 QQNT 安装包
+    # 2d. Extract QQNT installer
     $extractDir = Join-Path $env:TEMP 'qqnt-extract'
     if (Test-Path $extractDir) { Remove-Item $extractDir -Recurse -Force }
     New-Item -ItemType Directory -Path $extractDir -Force | Out-Null
 
-    Write-Host "  解压 QQNT 安装包（可能需要 1-2 分钟）..."
+    Write-Host "  Extracting QQNT installer (may take 1-2 minutes)..."
 
     if (Test-Path $7zaExe) {
-        # 用 7za 解压 NSIS 安装包
+        # Use 7za to extract NSIS installer
         $extractArgs = @('x', "`"$installerPath`"", "-o`"$extractDir`"", '-y')
         $proc = Start-Process -FilePath $7zaExe -ArgumentList $extractArgs -Wait -NoNewWindow -PassThru
         if ($proc.ExitCode -ne 0) {
-            Write-Host "  7za 解压失败 (exit code: $($proc.ExitCode))" -ForegroundColor Yellow
-            Write-Host "  尝试用 Expand-Archive..."
+            Write-Host "  7za extraction failed (exit code: $($proc.ExitCode))" -ForegroundColor Yellow
+            Write-Host "  Falling back to Expand-Archive..."
             try {
                 Expand-Archive -Path $installerPath -DestinationPath $extractDir -Force
             } catch {
-                Write-Host "  QQNT 安装包解压完全失败" -ForegroundColor Red
+                Write-Host "  QQNT installer extraction completely failed" -ForegroundColor Red
                 exit 1
             }
         }
     } else {
-        # 回退：Expand-Archive
+        # Fallback: Expand-Archive
         try {
             Expand-Archive -Path $installerPath -DestinationPath $extractDir -Force
         } catch {
-            Write-Host "  QQNT 安装包解压失败。请确保 7za.exe 可用。" -ForegroundColor Red
+            Write-Host "  QQNT installer extraction failed. Ensure 7za.exe is available." -ForegroundColor Red
             exit 1
         }
     }
 
-    # 2e. 扫描提取 wrapper.node + DLL
-    Write-Host "  扫描并提取二进制文件..."
+    # 2e. Scan and extract wrapper.node + DLLs
+    Write-Host "  Scanning for binary files..."
 
-    # 在解压目录中递归搜索 wrapper.node
+    # Recursively search for wrapper.node in extracted directory
     $wrapperSrc = Get-ChildItem $extractDir -Recurse -Filter 'wrapper.node' -File | Select-Object -First 1
     if (-not $wrapperSrc) {
-        Write-Host "  未找到 wrapper.node！QQNT 安装包结构可能已变更" -ForegroundColor Red
-        Write-Host "  请报告此问题，并临时使用: 手动安装 QQNT 桌面版后重试" -ForegroundColor Yellow
+        Write-Host "  ERROR: wrapper.node not found! QQNT installer structure may have changed" -ForegroundColor Red
+        Write-Host "  Temporary workaround: install QQNT desktop, then re-run this script" -ForegroundColor Yellow
         exit 1
     }
 
-    # wrapper.node 所在目录即为 resources/app/
+    # wrapper.node location is resources/app/
     $resDir = $wrapperSrc.DirectoryName
-    Write-Host "  找到 wrapper.node: $resDir"
+    Write-Host "  Found wrapper.node at: $resDir"
 
-    # 提取关键文件
+    # Extract critical files
     $criticalFiles = @('wrapper.node', 'major.node')
     foreach ($f in $criticalFiles) {
         $src = Join-Path $resDir $f
@@ -486,7 +473,7 @@ function Sync-QQNTBinaries {
         }
     }
 
-    # 提取 DLL 依赖
+    # Extract DLL dependencies
     $dllFiles = @(
         'QBar.dll', 'LightQuic.dll', 'broadcast_ipc.dll',
         'libglib-2.0-0.dll', 'libgobject-2.0-0.dll',
@@ -502,9 +489,7 @@ function Sync-QQNTBinaries {
         }
     }
 
-    # 提取 QQNT.dll（在版本根目录，不在 resources/app 内）
-    # 版本根 = resources/app 的祖父目录
-    $versionRoot = Split-Path (Split-Path $resDir -Parent) -Parent
+    # Extract QQNT.dll (in version root, not resources/app)
     $qqntDll = Get-ChildItem $extractDir -Recurse -Filter 'QQNT.dll' -File | Select-Object -First 1
     if ($qqntDll) {
         Copy-Item $qqntDll.FullName $NapCatDir -Force
@@ -513,9 +498,9 @@ function Sync-QQNTBinaries {
         Write-Host "    [missing] QQNT.dll (non-critical)" -ForegroundColor DarkYellow
     }
 
-    # 2f. 更新版本配置
-    Write-Host "  更新版本配置 → $targetVersion (build $buildId)..."
-    
+    # 2f. Update version configs
+    Write-Host "  Updating version configs -> $targetVersion (build $buildId)..."
+
     # config.json
     if (Test-Path $cfgPath) {
         try {
@@ -524,9 +509,9 @@ function Sync-QQNTBinaries {
             $c.curVersion  = $targetVersion
             $c.buildId     = $buildId
             $c | ConvertTo-Json -Depth 10 | Set-Content $cfgPath -Encoding utf8
-            Write-Host "    config.json ✓" -ForegroundColor Green
+            Write-Host "    config.json OK" -ForegroundColor Green
         } catch {
-            Write-Host "    config.json 更新失败" -ForegroundColor Yellow
+            Write-Host "    config.json update failed" -ForegroundColor Yellow
         }
     }
 
@@ -538,28 +523,28 @@ function Sync-QQNTBinaries {
             $p.version = $targetVersion
             $p | Add-Member -MemberType NoteProperty -Name 'buildVersion' -Value $buildId -Force
             $p | ConvertTo-Json -Depth 10 | Set-Content $pkgPath -Encoding utf8
-            Write-Host "    package.json ✓" -ForegroundColor Green
+            Write-Host "    package.json OK" -ForegroundColor Green
         } catch {
-            Write-Host "    package.json 更新失败: $_" -ForegroundColor Yellow
+            Write-Host "    package.json update failed: $_" -ForegroundColor Yellow
         }
     }
 
-    # 2g. 清理
-    Write-Host "  清理临时文件..."
+    # 2g. Cleanup
+    Write-Host "  Cleaning up temporary files..."
     Remove-Item $extractDir -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
-    Write-Host "  已清理 QQNT 安装包（释放 ~200MB）" -ForegroundColor Green
+    Write-Host "  Cleaned up QQNT installer (freed ~200MB)" -ForegroundColor Green
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Step 3: 清理非必要文件
+# Step 3: Remove unnecessary files
 # ═══════════════════════════════════════════════════════════════════════════
 function Clear-UnnecessaryFiles {
-    Write-Step 3 4 '清理非必要组件...' 'Cyan'
+    Write-Step 3 4 'Cleaning up unnecessary files...' 'Cyan'
 
     $removedSize = 0
 
-    # 3a. 清理非 Windows 原生插件
+    # 3a. Remove non-Windows native plugins
     $nonWindowsPatterns = @(
         'native\**\*.darwin.*.node',
         'native\**\*.linux.*.node',
@@ -575,7 +560,7 @@ function Clear-UnnecessaryFiles {
         }
     }
 
-    # 清理非 Windows 空目录
+    # Remove empty non-Windows platform directories
     $platDirs = @('darwin.arm64', 'linux.arm64', 'linux.x64', 'win32-arm64')
     foreach ($platDir in $platDirs) {
         $dirs = Get-ChildItem $NapCatDir -Recurse -Directory -Filter $platDir -ErrorAction SilentlyContinue
@@ -586,7 +571,7 @@ function Clear-UnnecessaryFiles {
         }
     }
 
-    # 3b. 清理 static/assets/ 中未被引用的旧 hash chunk
+    # 3b. Remove stale hash chunks not referenced by index.html
     $assetsDir = Join-Path $NapCatDir 'static\assets'
     if (Test-Path $assetsDir) {
         $indexHtml = Join-Path $NapCatDir 'static\index.html'
@@ -608,30 +593,30 @@ function Clear-UnnecessaryFiles {
         }
     }
 
-    # 3c. 清理缓存/日志垃圾
+    # 3c. Clean cache/log junk
     Get-ChildItem (Join-Path $NapCatDir 'cache\*.png') -File -ErrorAction SilentlyContinue | Remove-Item -Force
     Get-ChildItem (Join-Path $NapCatDir '*.log') -File -ErrorAction SilentlyContinue | Remove-Item -Force
 
-    # 3d. 清理部署残留
+    # 3d. Remove deployment leftovers
     $rootZip = Join-Path $RootDir 'napcat.zip'
     if (Test-Path $rootZip) { Remove-Item $rootZip -Force }
 
-    Write-Host "  释放: $([math]::Round($removedSize/1MB, 1))MB" -ForegroundColor Green
+    Write-Host "  Freed: $([math]::Round($removedSize/1MB, 1))MB" -ForegroundColor Green
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Step 4: 验证部署完整性
+# Step 4: Verify deployment integrity
 # ═══════════════════════════════════════════════════════════════════════════
 function Test-Deployment {
-    Write-Step 4 4 '验证部署完整性...' 'Cyan'
+    Write-Step 4 4 'Verifying deployment...' 'Cyan'
 
     $required = @(
-        @{Path='node.exe';           Label='Node.js 运行时';          Critical=$true},
-        @{Path='wrapper.node';       Label='QQNT Wrapper 模块';       Critical=$true},
-        @{Path='napcat.mjs';         Label='NapCat 核心程序';         Critical=$true},
-        @{Path='config\onebot11.json'; Label='OneBot 配置';           Critical=$true},
-        @{Path='napcat.bat';         Label='Shell 入口';             Critical=$true},
-        @{Path='index.cjs';          Label='自定义启动器';            Critical=$true}
+        @{Path='node.exe';           Label='Node.js runtime';          Critical=$true},
+        @{Path='wrapper.node';       Label='QQNT Wrapper module';      Critical=$true},
+        @{Path='napcat.mjs';         Label='NapCat core';              Critical=$true},
+        @{Path='config\onebot11.json'; Label='OneBot config';          Critical=$true},
+        @{Path='napcat.bat';         Label='Shell entry point';        Critical=$true},
+        @{Path='index.cjs';          Label='Custom launcher';          Critical=$true}
     )
 
     $allOk = $true
@@ -649,7 +634,7 @@ function Test-Deployment {
         }
     }
 
-    # 验证 onebot11.json 内容
+    # Validate onebot11.json content
     $configPath = Join-Path $NapCatDir 'config\onebot11.json'
     if (Test-Path $configPath) {
         try {
@@ -658,14 +643,14 @@ function Test-Deployment {
             if ($wsClients -and $wsClients.Count -gt 0) {
                 foreach ($client in $wsClients) {
                     if ($client.url) {
-                        Write-Host "  [OK] WS Client: $($client.name) → $($client.url)" -ForegroundColor Green
+                        Write-Host "  [OK] WS Client: $($client.name) -> $($client.url)" -ForegroundColor Green
                     } else {
                         Write-Host "  [WARN] WS Client missing url" -ForegroundColor Yellow
                     }
                 }
             }
         } catch {
-            Write-Host "  [ERR] onebot11.json 不是有效的 JSON" -ForegroundColor Red
+            Write-Host "  [ERR] onebot11.json is not valid JSON" -ForegroundColor Red
             $allOk = $false
         }
     }
@@ -678,11 +663,11 @@ function Test-Deployment {
 # ═══════════════════════════════════════════════════════════════════════════
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  NapCat QQ Shell — 零依赖自包含部署" -ForegroundColor Cyan
+Write-Host "  NapCat QQ Shell - Self-Contained Setup" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# 确保 napcat/ 目录结构存在
+# Ensure napcat/ subdirectories exist
 $subdirs = @('config', 'native', 'plugins', 'static', 'worker', 'node_modules')
 foreach ($sd in $subdirs) {
     $destSub = Join-Path $NapCatDir $sd
@@ -697,37 +682,37 @@ try {
     Clear-UnnecessaryFiles
     $ok = Test-Deployment
 } finally {
-    # 清理临时目录
+    # Clean up temp directory
     if (Test-Path $TempDir) { Remove-Item $TempDir -Recurse -Force -ErrorAction SilentlyContinue }
 }
 
 Write-Host ""
 if ($ok) {
     Write-Host "========================================" -ForegroundColor Green
-    Write-Host "  部署完成！napcat/ 已完全自包含" -ForegroundColor Green
-    Write-Host "  → 使用 napcat.bat 直接启动" -ForegroundColor Green
-    Write-Host "  → 可整体复制到任意 Windows 机器" -ForegroundColor Green
+    Write-Host "  Deployment complete! napcat/ is self-contained" -ForegroundColor Green
+    Write-Host "  -> Run napcat.bat to start" -ForegroundColor Green
+    Write-Host "  -> The entire napcat/ dir can be copied to any Windows machine" -ForegroundColor Green
     Write-Host "========================================" -ForegroundColor Green
 } else {
     Write-Host "========================================" -ForegroundColor Red
-    Write-Host "  部署不完整，请检查上述缺失项" -ForegroundColor Red
-    Write-Host "  重新运行: .\setup-napcat.ps1 -Force" -ForegroundColor Yellow
+    Write-Host "  Deployment incomplete - check missing items above" -ForegroundColor Red
+    Write-Host "  Re-run: .\setup-napcat.ps1 -Force" -ForegroundColor Yellow
     Write-Host "========================================" -ForegroundColor Red
     exit 1
 }
 ```
 
-- [ ] **Step 2: 验证脚本语法**
+- [ ] **Step 2: Validate script syntax**
 
-Run: `powershell -NoProfile -Command "Get-Command 'scripts\setup-napcat.ps1'"` (PowerShell ISE 内语法检查)
+Run: `powershell -NoProfile -Command "Get-Command 'scripts\setup-napcat.ps1'"`
 
-Expected: 无语法错误
+Expected: No syntax errors. The file is UTF-8 without BOM (pure ASCII English, no encoding risk).
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add scripts/setup-napcat.ps1
-git commit -m "feat: rewrite setup-napcat.ps1 — zero-dependency extractor
+git commit -m "feat: rewrite setup-napcat.ps1 - zero-dependency extractor
 
 - Download NapCat Shell zip (no QQNT desktop needed)
 - Extract wrapper.node + DLLs from QQNT NSIS installer via 7za.exe
@@ -735,19 +720,20 @@ git commit -m "feat: rewrite setup-napcat.ps1 — zero-dependency extractor
 - Version config auto-update
 - Protected file list prevents custom launcher overwrite
 - Idempotent: skip steps where files already exist
-- -Force flag for full re-deployment"
+- -Force flag for full re-deployment
+- All English output - no encoding issues"
 ```
 
 ---
 
-### Task 4: 修复 napcat.bat 编码和路径
+### Task 4: Fix napcat.bat path
 
 **Files:**
 - Modify: `napcat/napcat.bat`
 
-`napcat.bat` 当前内容引用 `./index.js`，需改为 `./index.cjs`。同时需要确保 GBK+CRLF 编码。
+Current content references `./index.js`. Must change to `./index.cjs`.
 
-- [ ] **Step 1: 更新 napcat.bat 内容**
+- [ ] **Step 1: Update napcat.bat content**
 
 ```batch
 @echo off
@@ -755,101 +741,100 @@ cd /d "%~dp0"
 node.exe ./index.cjs %*
 ```
 
-> 注意：
-> - 移除 `chcp 65001`（CMD 读取阶段不可用，GBK 编码不需要）
-> - `index.js` → `index.cjs`
-> - 文件必须以 **GBK 编码 + CRLF 换行** 保存
+> Note:
+> - Remove `chcp 65001` (not needed, all ASCII)
+> - `index.js` -> `index.cjs`
+> - Content is pure ASCII — encoding-safe regardless of GBK or UTF-8
 
-- [ ] **Step 2: 验证编码**
+- [ ] **Step 2: Verify line endings**
 
 ```bash
-# 检查换行符
 file napcat/napcat.bat
-# 检查文件大小（应与修改前一致，3 行）
-wc -l napcat/napcat.bat
 ```
+
+Expected: `DOS batch file, ASCII text, with CRLF line terminators`
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add napcat/napcat.bat
-git commit -m "fix: napcat.bat use index.cjs, remove chcp 65001"
+git commit -m "fix: napcat.bat use index.cjs"
 ```
 
 ---
 
-### Task 5: 修复 server.ts preflight 路径对齐 + 结构化错误
+### Task 5: Fix server.ts preflight paths + structured error
 
 **Files:**
 - Modify: `backend/src/server.ts:326-354`
 
-- [ ] **Step 1: 更新 preflightNapCat 函数**
+- [ ] **Step 1: Replace preflightNapCat function**
 
 Replace lines 326-354 with:
 
 ```typescript
-  // ── NapCat 预检 ────────────────────────────────────────────────────
+  // ── NapCat Preflight ─────────────────────────────────────────────────
   async function preflightNapCat(): Promise<{ ok: boolean; error?: string; hint?: string }> {
     const dir = path.join(workspaceCwd, 'napcat');
     const setupCmd = 'powershell -File scripts\\setup-napcat.ps1';
-    
+
     const checks = [
-      { file: 'node.exe',           label: 'Node.js 运行时' },
-      { file: 'wrapper.node',       label: 'QQNT Wrapper 原生模块' },
-      { file: 'napcat.mjs',         label: 'NapCat 核心程序' },
-      { file: path.join('config', 'onebot11.json'), label: 'OneBot 配置文件' },
+      { file: 'node.exe',                           label: 'Node.js runtime' },
+      { file: 'wrapper.node',                       label: 'QQNT Wrapper module' },
+      { file: 'napcat.mjs',                         label: 'NapCat core' },
+      { file: path.join('config', 'onebot11.json'), label: 'OneBot config' },
     ];
-    
+
     const missing: string[] = [];
     for (const c of checks) {
       if (!await fs.pathExists(path.join(dir, c.file))) {
-        missing.push(`  • ${c.label} (${c.file})`);
+        missing.push(`  - ${c.label} (${c.file})`);
       }
     }
-    
+
     if (missing.length > 0) {
       return {
         ok: false,
-        error: `缺少以下组件:\n${missing.join('\n')}`,
-        hint: `请运行: ${setupCmd}`,
+        error: `Missing components:\n${missing.join('\n')}`,
+        hint: `Run: ${setupCmd}`,
       };
     }
-    
-    // 清理 JSON 文件的 BOM
+
+    // Strip BOM from JSON files (known issue: NapCat JSONs with UTF-8 BOM crash on parse)
     const stripBom = path.join(workspaceCwd, 'scripts', 'strip-bom.js');
     if (await fs.pathExists(stripBom)) {
       try {
         const { execSync } = await import('child_process');
         execSync(`node "${stripBom}"`, { cwd: dir, timeout: 5000, windowsHide: true });
-      } catch { /* strip-bom 失败不阻塞启动 */ }
+      } catch { /* strip-bom failure is non-blocking */ }
     }
     return { ok: true };
   }
 ```
 
-- [ ] **Step 2: 更新 /api/qq/start 处理器使用 hint**
+- [ ] **Step 2: Update /api/qq/start handler to pass hint**
 
-找到 `app.post('/api/qq/start', ...)` 中调用 preflight 的地方，更新错误响应：
+Find the preflight call in `app.post('/api/qq/start', ...)` and update the error response:
 
 ```typescript
-      // 预检：确保 NapCat 运行环境完整
+      // Preflight: ensure NapCat runtime is complete
       const preflight = await preflightNapCat();
       if (!preflight.ok) {
-        return res.status(400).json({ 
-          success: false, 
+        return res.status(400).json({
+          success: false,
           error: preflight.error,
           hint: preflight.hint,
         });
       }
 ```
 
-- [ ] **Step 3: 编译验证**
+- [ ] **Step 3: TypeScript compile check**
 
 ```bash
 cd backend && npx tsc --noEmit
 ```
 
-Expected: 无 TypeScript 错误
+Expected: No errors
 
 - [ ] **Step 4: Commit**
 
@@ -860,17 +845,17 @@ git commit -m "fix: server.ts preflight paths + structured error with hint
 - Use path.join for cross-platform config/onebot11.json path
 - Return list of ALL missing files (not just first)
 - Add hint field with one-click fix command
-- Pass hint to frontend error response"
+- All English error messages"
 ```
 
 ---
 
-### Task 6: 修复 QQBotCard.tsx 错误展示
+### Task 6: Fix QQBotCard.tsx error display
 
 **Files:**
 - Modify: `frontend/src/components/QQBotCard.tsx:55-72`
 
-- [ ] **Step 1: 更新 startService 函数**
+- [ ] **Step 1: Replace startService function**
 
 Replace `startService` (lines 55-72) with:
 
@@ -885,27 +870,27 @@ Replace `startService` (lines 55-72) with:
         setStatus((prev) => prev ? { ...prev, running: true } : null);
         setActionError(null);
       } else {
-        // 展示具体错误 + 修复指引
-        const msg = data.hint 
-          ? `${data.error}\n\n修复方法: ${data.hint}`
-          : (data.error || '启动失败');
+        // Show specific error + fix hint
+        const msg = data.hint
+          ? `${data.error}\n\nFix: ${data.hint}`
+          : (data.error || 'Start failed');
         setActionError(msg);
       }
     } catch {
-      setActionError('无法连接到后端服务 (localhost:3000)\n请确认后端已启动: npx tsx backend/src/server.ts');
+      setActionError('Cannot connect to backend (localhost:3000)\nVerify backend is running: npx tsx backend/src/server.ts');
     }
     setActionLoading(false);
     fetchData();
   };
 ```
 
-- [ ] **Step 2: 编译验证**
+- [ ] **Step 2: TypeScript compile check**
 
 ```bash
 cd frontend && npx tsc --noEmit
 ```
 
-Expected: 无 TypeScript 错误
+Expected: No errors
 
 - [ ] **Step 3: Commit**
 
@@ -914,92 +899,92 @@ git add frontend/src/components/QQBotCard.tsx
 git commit -m "fix: QQBotCard shows specific preflight errors + fix hints
 
 - Display backend hint (one-click deploy command) when available
-- Show 'check if backend is running' message on connection failure
-- Preserve existing error behavior for other failure modes"
+- Show connection help message on fetch failure
+- All English error messages"
 ```
 
 ---
 
-### Task 7: 端到端验证
+### Task 7: End-to-end verification
 
-**Files:** 无（验证 Task）
+**Files:** None (verification only)
 
-- [ ] **Step 1: 运行 setup-napcat.ps1 部署**
+- [ ] **Step 1: Run setup-napcat.ps1**
 
 ```bash
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-napcat.ps1
 ```
 
-Expected 输出:
+Expected output:
 ```
-[1/4] 下载 NapCat Shell...
-  NapCat 核心已存在，跳过下载
-[2/4] 提取 QQNT 二进制文件...
-  wrapper.node 已存在，跳过提取
-[3/4] 清理非必要组件...
-[4/4] 验证部署完整性...
-  [OK] Node.js 运行时 (node.exe)
-  [OK] QQNT Wrapper 模块 (wrapper.node)
-  [OK] NapCat 核心程序 (napcat.mjs)
-  [OK] OneBot 配置 (config\onebot11.json)
-  [OK] Shell 入口 (napcat.bat)
-  [OK] 自定义启动器 (index.cjs)
-  [OK] WS Client: Snapshot Pi → ws://127.0.0.1:3001/qq/ws
-  部署完成！
+[1/4] Downloading NapCat Shell...
+  NapCat core already exists, skipping
+[2/4] Extracting QQNT binaries...
+  wrapper.node already exists, skipping
+[3/4] Cleaning up unnecessary files...
+[4/4] Verifying deployment...
+  [OK] Node.js runtime (node.exe)
+  [OK] QQNT Wrapper module (wrapper.node)
+  [OK] NapCat core (napcat.mjs)
+  [OK] OneBot config (config\onebot11.json)
+  [OK] Shell entry point (napcat.bat)
+  [OK] Custom launcher (index.cjs)
+  [OK] WS Client: Snapshot Pi -> ws://127.0.0.1:3001/qq/ws
+  Deployment complete!
 ```
 
-- [ ] **Step 2: 验证 NapCat 进程能独立启动**
+- [ ] **Step 2: Verify NapCat can start independently**
 
 ```bash
 cd napcat && napcat.bat
 ```
 
-Expected: NapCat 进程启动，命令行窗口显示 `[NapCat Launcher]` 日志，尝试连接 `ws://127.0.0.1:3001/qq/ws`（此时后端未开，连接失败属正常）
+Expected: Process starts, `[NapCat Launcher]` log appears, attempts connection to `ws://127.0.0.1:3001/qq/ws` (fails because backend is not running — this is expected).
 
-按 Ctrl+C 终止。
+Press Ctrl+C to terminate.
 
-- [ ] **Step 3: 验证后端预检通过**
+- [ ] **Step 3: Verify backend preflight passes**
 
 ```bash
-# 启动后端
+# Start backend
 cd backend && npx tsx src/server.ts
 ```
 
 Expected: `[QQ] Config loaded (disabled, adapter not auto-started)`
 
 ```bash
-# 另开终端测试 preflight（通过 start API 间接测试）
+# In another terminal, test preflight via start API
 curl -X POST http://localhost:3000/api/qq/start
 ```
 
-Expected (如果 NapCat 已部署):
+Expected (if NapCat is deployed):
 ```json
-{"success":true,"message":"QQ 服务已启动"}
+{"success":true,"message":"QQ service started"}
 ```
 
-- [ ] **Step 4: 验证前端启停控件的错误处理**
+- [ ] **Step 4: Verify frontend start/stop UX**
 
-打开 `http://localhost:5173`，点击 QQ Bot → 查看状态面板是否正常加载。
+Open `http://localhost:5173`, click QQ Bot icon -> check status panel loads correctly.
 
-- [ ] **Step 5: 最终 Commit (如有修正)**
+- [ ] **Step 5: Final commit (if any corrections needed)**
 
 ```bash
 git status
-# 如有遗漏，git add + git commit --amend 或新 commit
+# If anything was missed, git add + commit
 ```
 
 ---
 
-## 实现顺序
+## Execution Order
 
 ```
 Task 1 (.gitignore)
-  └─→ Task 2 (提交 napcat/ 受保护文件)
-        └─→ Task 3 (setup-napcat.ps1 重写)
-              ├─→ Task 4 (napcat.bat 修复)
-              ├─→ Task 5 (server.ts 修复)
-              └─→ Task 6 (QQBotCard.tsx 修复)
-                    └─→ Task 7 (E2E 验证)
+  -> Task 2 (commit napcat/ protected files)
+        -> Task 3 (setup-napcat.ps1 rewrite)
+              |--> Task 4 (napcat.bat fix)
+              |--> Task 5 (server.ts fix)
+              |--> Task 6 (QQBotCard.tsx fix)
+                    -> Task 7 (E2E verification)
 ```
 
-Task 3-6 可以独立并行实现（修改不同文件），Task 7 必须在所有其他 Task 完成后执行。
+Tasks 3-6 can be implemented in parallel (different files). Task 7 must run after all others are complete.
