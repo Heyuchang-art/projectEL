@@ -323,32 +323,40 @@ async function startServer() {
 
   const reportGen = new ReportGenerator(kbService, workspaceCwd);
 
-  // ── NapCat 预检 ────────────────────────────────────────────────────
-  async function preflightNapCat(): Promise<{ ok: boolean; error?: string }> {
+  // ── NapCat Preflight ─────────────────────────────────────────────────
+  async function preflightNapCat(): Promise<{ ok: boolean; error?: string; hint?: string }> {
     const dir = path.join(workspaceCwd, 'napcat');
+    const setupCmd = 'powershell -File scripts\\setup-napcat.ps1';
+
     const checks = [
-      { file: 'node.exe',                        label: 'Node.js 运行时' },
-      { file: 'wrapper.node',                    label: 'QQNT Wrapper 原生模块' },
-      { file: 'napcat.mjs',            label: 'NapCat 核心程序' },
-      { file: 'config/onebot11.json',  label: 'OneBot 配置文件' },
+      { file: 'node.exe',                           label: 'Node.js runtime' },
+      { file: 'wrapper.node',                       label: 'QQNT Wrapper module' },
+      { file: 'napcat.mjs',                         label: 'NapCat core' },
+      { file: path.join('config', 'onebot11.json'), label: 'OneBot config' },
     ];
+
+    const missing: string[] = [];
     for (const c of checks) {
       if (!await fs.pathExists(path.join(dir, c.file))) {
-        return {
-          ok: false,
-          error:
-            `缺少 ${c.label} (${c.file})。\n` +
-            `请运行一键部署: powershell -File scripts\\setup-napcat.ps1`,
-        };
+        missing.push(`  - ${c.label} (${c.file})`);
       }
     }
-    // 清理 JSON 文件的 BOM（已知问题：NapCat 部分 JSON 含 UTF-8 BOM 导致解析崩溃）
+
+    if (missing.length > 0) {
+      return {
+        ok: false,
+        error: `Missing components:\n${missing.join('\n')}`,
+        hint: `Run: ${setupCmd}`,
+      };
+    }
+
+    // Strip BOM from JSON files (known issue: NapCat JSONs with UTF-8 BOM crash on parse)
     const stripBom = path.join(workspaceCwd, 'scripts', 'strip-bom.js');
     if (await fs.pathExists(stripBom)) {
       try {
         const { execSync } = await import('child_process');
         execSync(`node "${stripBom}"`, { cwd: dir, timeout: 5000, windowsHide: true });
-      } catch { /* strip-bom 失败不阻塞启动 */ }
+      } catch { /* strip-bom failure is non-blocking */ }
     }
     return { ok: true };
   }
@@ -459,7 +467,7 @@ async function startServer() {
       // 预检：确保 NapCat 运行环境完整
       const preflight = await preflightNapCat();
       if (!preflight.ok) {
-        return res.status(400).json({ success: false, error: preflight.error });
+        return res.status(400).json({ success: false, error: preflight.error, hint: preflight.hint });
       }
 
       // 初始化 QQ WebSocket 适配器（监听端口 3001）

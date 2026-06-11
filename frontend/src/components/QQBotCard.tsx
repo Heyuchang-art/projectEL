@@ -34,6 +34,7 @@ export default function QQBotCard() {
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -53,14 +54,22 @@ export default function QQBotCard() {
 
   const startService = async () => {
     setActionLoading(true);
+    setActionError(null);
     try {
       const res = await fetch(`${API_BASE}/start`, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         setStatus((prev) => prev ? { ...prev, running: true } : null);
+        setActionError(null);
+      } else {
+        // Show specific error + fix hint
+        const msg = data.hint
+          ? `${data.error}\n\nFix: ${data.hint}`
+          : (data.error || 'Start failed');
+        setActionError(msg);
       }
     } catch {
-      // ignore
+      setActionError('Cannot connect to backend (localhost:3000)\nVerify backend is running: npx tsx backend/src/server.ts');
     }
     setActionLoading(false);
     fetchData();
@@ -68,14 +77,18 @@ export default function QQBotCard() {
 
   const stopService = async () => {
     setActionLoading(true);
+    setActionError(null);
     try {
       const res = await fetch(`${API_BASE}/stop`, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         setStatus((prev) => prev ? { ...prev, running: false, accounts: [] } : null);
+        setActionError(null);
+      } else {
+        setActionError(data.error || '停止失败');
       }
     } catch {
-      // ignore
+      setActionError('无法连接到后端服务');
     }
     setActionLoading(false);
     fetchData();
@@ -215,6 +228,21 @@ export default function QQBotCard() {
             }}
           >
             {error}
+          </div>
+        )}
+
+        {actionError && (
+          <div
+            style={{
+              padding: '10px',
+              backgroundColor: 'rgba(255,165,0,0.1)',
+              border: '1px solid #ff9933',
+              color: '#ff9933',
+              marginBottom: '10px',
+              fontSize: '11px',
+            }}
+          >
+            {actionError}
           </div>
         )}
 
