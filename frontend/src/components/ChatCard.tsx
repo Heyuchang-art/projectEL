@@ -34,6 +34,24 @@ export default function ChatCard() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  // New-session popover state
+  const [showNewSessionPopover, setShowNewSessionPopover] = React.useState(false);
+  const [newSessionName, setNewSessionName] = React.useState('');
+  const [newSessionPresetId, setNewSessionPresetId] = React.useState('');
+  const popoverRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Close popover on outside click
+  React.useEffect(() => {
+    if (!showNewSessionPopover) return;
+    const handler = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setShowNewSessionPopover(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showNewSessionPopover]);
+
   // Auto scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -50,6 +68,19 @@ export default function ChatCard() {
       event.preventDefault();
       submitChat();
     }
+  };
+
+  const handleCreateWithName = () => {
+    createSession(newSessionName || undefined, newSessionPresetId || undefined);
+    setShowNewSessionPopover(false);
+    setNewSessionName('');
+    setNewSessionPresetId('');
+  };
+
+  const handleOpenNewSessionPopover = () => {
+    setNewSessionName('');
+    setNewSessionPresetId(activePresetId || '');
+    setShowNewSessionPopover(true);
   };
 
   useEffect(() => {
@@ -253,26 +284,126 @@ export default function ChatCard() {
             ))}
           </select>
 
-          {/* New Session Button */}
-          <button
-            onClick={() => createSession(undefined, activePresetId || undefined)}
-            style={{
-              backgroundColor: '#000000',
-              border: '2px solid #333333',
-              color: '#ffffff',
-              fontSize: '10px',
-              fontFamily: 'var(--font-mono)',
-              padding: '2px 6px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '2px',
-              boxShadow: '1px 1px 0px #ffffff'
-            }}
-            title="新建当前预设会话"
-          >
-            <Plus size={10} /> 新建
-          </button>
+          {/* New Session Button with Popover */}
+          <div style={{ position: 'relative' }} ref={popoverRef}>
+            <button
+              onClick={handleOpenNewSessionPopover}
+              style={{
+                backgroundColor: '#000000',
+                border: '2px solid #333333',
+                color: '#ffffff',
+                fontSize: '10px',
+                fontFamily: 'var(--font-mono)',
+                padding: '2px 6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
+                boxShadow: '1px 1px 0px #ffffff'
+              }}
+              title="新建会话"
+            >
+              <Plus size={10} /> 新建
+            </button>
+
+            {showNewSessionPopover && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: '0',
+                marginTop: '6px',
+                backgroundColor: '#0c0c0c',
+                border: '2px solid #ffffff',
+                boxShadow: '4px 4px 0px #000000',
+                padding: '12px',
+                zIndex: 200,
+                minWidth: '220px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+              }}>
+                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 'bold' }}>
+                  新建会话
+                </span>
+                <input
+                  type="text"
+                  value={newSessionName}
+                  onChange={(e) => setNewSessionName(e.target.value)}
+                  placeholder="输入名称（可选）"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreateWithName();
+                    if (e.key === 'Escape') setShowNewSessionPopover(false);
+                  }}
+                  style={{
+                    backgroundColor: '#000000',
+                    border: '2px solid #333333',
+                    color: '#ffffff',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '6px 8px',
+                    outline: 'none',
+                    width: '100%'
+                  }}
+                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap' }}>预设:</span>
+                  <select
+                    value={newSessionPresetId}
+                    onChange={(e) => setNewSessionPresetId(e.target.value)}
+                    style={{
+                      backgroundColor: '#000000',
+                      border: '2px solid #333333',
+                      color: '#ffffff',
+                      fontSize: '10px',
+                      fontFamily: 'var(--font-mono)',
+                      padding: '2px 4px',
+                      outline: 'none',
+                      cursor: 'pointer',
+                      flex: 1
+                    }}
+                  >
+                    <option value="">(无预设)</option>
+                    {presets.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => setShowNewSessionPopover(false)}
+                    style={{
+                      backgroundColor: '#000000',
+                      border: '2px solid #333333',
+                      color: '#ffffff',
+                      fontSize: '10px',
+                      fontFamily: 'var(--font-mono)',
+                      padding: '2px 8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    取消
+                  </button>
+                  <button
+                    onClick={handleCreateWithName}
+                    style={{
+                      backgroundColor: 'var(--primary)',
+                      border: '2px solid #ffffff',
+                      color: '#000000',
+                      fontSize: '10px',
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: 'bold',
+                      padding: '2px 8px',
+                      cursor: 'pointer',
+                      boxShadow: '2px 2px 0px #ffffff'
+                    }}
+                  >
+                    创建
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Delete Session Button */}
           {sessions.length > 1 && sessionId !== 'default-session' && (
