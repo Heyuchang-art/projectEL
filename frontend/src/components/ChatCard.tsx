@@ -24,7 +24,8 @@ export default function ChatCard() {
     removeAttachment,
     switchSession,
     createSession,
-    deleteSession
+    deleteSession,
+    renameSession
   } = useChat();
 
   const { toggleCard } = useWorkspace();
@@ -39,6 +40,11 @@ export default function ChatCard() {
   const [newSessionName, setNewSessionName] = React.useState('');
   const [newSessionPresetId, setNewSessionPresetId] = React.useState('');
   const popoverRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Rename state
+  const [isRenaming, setIsRenaming] = React.useState(false);
+  const [renameValue, setRenameValue] = React.useState('');
+  const renameInputRef = React.useRef<HTMLInputElement | null>(null);
 
   // Close popover on outside click
   React.useEffect(() => {
@@ -81,6 +87,24 @@ export default function ChatCard() {
     setNewSessionName('');
     setNewSessionPresetId(activePresetId || '');
     setShowNewSessionPopover(true);
+  };
+
+  const handleStartRename = () => {
+    const currentSession = sessions.find((s: any) => s.id === sessionId);
+    setRenameValue(currentSession?.name || '');
+    setIsRenaming(true);
+    setTimeout(() => renameInputRef.current?.focus(), 50);
+  };
+
+  const handleSubmitRename = () => {
+    if (renameValue.trim()) {
+      renameSession(sessionId, renameValue.trim());
+    }
+    setIsRenaming(false);
+  };
+
+  const handleCancelRename = () => {
+    setIsRenaming(false);
   };
 
   useEffect(() => {
@@ -261,28 +285,95 @@ export default function ChatCard() {
             ))}
           </select>
           
-          {/* Session Switcher */}
+          {/* Session Switcher with Rename */}
           <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>会话:</span>
-          <select 
-            value={sessionId} 
-            onChange={(e) => switchSession(e.target.value)}
-            style={{
-              backgroundColor: '#000000',
-              border: '2px solid #333333',
-              color: '#ffffff',
-              fontSize: '10px',
-              fontFamily: 'var(--font-mono)',
-              padding: '2px 4px',
-              borderRadius: '0',
-              outline: 'none',
-              cursor: 'pointer',
-              maxWidth: '150px'
-            }}
-          >
-            {sessions.map(s => (
-              <option key={s.id} value={s.id}>{s.name || s.id}</option>
-            ))}
-          </select>
+          {isRenaming ? (
+            <>
+              <input
+                ref={renameInputRef}
+                type="text"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSubmitRename();
+                  if (e.key === 'Escape') handleCancelRename();
+                }}
+                style={{
+                  backgroundColor: '#000000',
+                  border: '2px solid var(--primary)',
+                  color: '#ffffff',
+                  fontSize: '10px',
+                  fontFamily: 'var(--font-mono)',
+                  padding: '2px 4px',
+                  outline: 'none',
+                  maxWidth: '150px'
+                }}
+              />
+              <button
+                onClick={handleSubmitRename}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: 'var(--success)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  padding: '0 2px'
+                }}
+                title="确认"
+              >✓</button>
+              <button
+                onClick={handleCancelRename}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: 'var(--error)',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  padding: '0 2px'
+                }}
+                title="取消"
+              >✕</button>
+            </>
+          ) : (
+            <>
+              <select
+                value={sessionId}
+                onChange={(e) => switchSession(e.target.value)}
+                style={{
+                  backgroundColor: '#000000',
+                  border: '2px solid #333333',
+                  color: '#ffffff',
+                  fontSize: '10px',
+                  fontFamily: 'var(--font-mono)',
+                  padding: '2px 4px',
+                  borderRadius: '0',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  maxWidth: '150px'
+                }}
+              >
+                {sessions.map((s: any) => (
+                  <option key={s.id} value={s.id}>{s.name || s.id}</option>
+                ))}
+              </select>
+              <button
+                onClick={handleStartRename}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: '#555555',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  padding: '0 2px',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--secondary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = '#555555'; }}
+                title="重命名会话"
+              >✎</button>
+            </>
+          )}
 
           {/* New Session Button with Popover */}
           <div style={{ position: 'relative' }} ref={popoverRef}>
