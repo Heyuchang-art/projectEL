@@ -377,25 +377,13 @@ async function startServer() {
     }
 
     const napcatDir = path.dirname(napcatScript);
-    const proc = spawn(napcatScript, [], {
+    // 在新窗口中启动 NapCat（弹出独立 CMD 窗口，用户可看到 QR 码）
+    const proc = spawn('cmd.exe', ['/c', 'start', '"NapCat QQ"', '/wait', napcatScript], {
       cwd: napcatDir,
-      shell: true,
-      stdio: 'pipe',
+      stdio: 'ignore',
+      detached: true,
     });
 
-    proc.stdout?.on('data', (d: Buffer) => {
-      for (const line of d.toString().split('\n').filter(Boolean)) {
-        if (line.includes('[error]') || line.includes('[ERROR]')) {
-          console.error(`[NapCat] ${line}`);
-        } else if (line.includes('[warn]') || line.includes('[WARN]')) {
-          console.warn(`[NapCat] ${line}`);
-        }
-      }
-    });
-
-    proc.stderr?.on('data', (d: Buffer) => {
-      console.error(`[NapCat:stderr] ${d.toString().trim()}`);
-    });
 
     proc.on('exit', (code, signal) => {
       console.log(`[QQ] NapCat 进程退出 (code=${code}, signal=${signal})`);
