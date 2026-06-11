@@ -31,9 +31,9 @@ $NapCatDir  = Join-Path $RootDir 'napcat'
 $TempDir    = Join-Path $env:TEMP 'napcat-setup'
 $7zaExe     = Join-Path $TempDir '7za.exe'
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 # Helpers
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 
 function Write-Step {
     param([int]$Step, [int]$Total, [string]$Text, [string]$Color = 'Cyan')
@@ -55,9 +55,9 @@ function Ensure-TempDir {
     New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
 }
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 # Step 1: Download NapCat.Shell.zip
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 function Install-NapCatShell {
     Write-Step 1 5 'Downloading NapCat Shell...' 'Cyan'
 
@@ -103,11 +103,11 @@ function Install-NapCatShell {
     # Locate napcat.mjs to find the source root
     $napcatMjs = Get-ChildItem $TempDir -Recurse -Filter 'napcat.mjs' -File | Select-Object -First 1
     if (-not $napcatMjs) {
-        Write-Host "  ERROR: napcat.mjs not found in extracted files — zip structure may have changed" -ForegroundColor Red
+        Write-Host "  ERROR: napcat.mjs not found in extracted files - zip structure may have changed" -ForegroundColor Red
         exit 1
     }
 
-    # napcat.mjs is at <root>/napcat/napcat.mjs → source root is its grandparent
+    # napcat.mjs is at <root>/napcat/napcat.mjs -> source root is its grandparent
     $sourceDir = Split-Path $napcatMjs.DirectoryName -Parent
 
     # Copy core files
@@ -124,7 +124,7 @@ function Install-NapCatShell {
 
         if ($item.PSIsContainer) {
             if ($item.Name -eq 'napcat') {
-                # napcat/ subdirectory → flatten to root
+                # napcat/ subdirectory -> flatten to root
                 Copy-Item "$($item.FullName)\*" $NapCatDir -Recurse -Force
                 Write-Host "    [flat] napcat/ -> root" -ForegroundColor Green
                 continue
@@ -144,9 +144,9 @@ function Install-NapCatShell {
 
 }
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 # Step 2: Extract wrapper.node + DLLs (silent extract from QQNT installer)
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 function Sync-QQNTBinaries {
     Write-Step 2 5 'Extracting QQNT binaries...' 'Cyan'
 
@@ -334,9 +334,9 @@ function Sync-QQNTBinaries {
     Write-Host "  Cleaned up QQNT installer (freed ~200MB)" -ForegroundColor Green
 }
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 # Step 3: Remove unnecessary files
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 function Clear-UnnecessaryFiles {
     Write-Step 3 5 'Cleaning up unnecessary files...' 'Cyan'
 
@@ -402,9 +402,9 @@ function Clear-UnnecessaryFiles {
     Write-Host "  Freed: $([math]::Round($removedSize/1MB, 1))MB" -ForegroundColor Green
 }
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 # Step 4: Deploy config templates from git-tracked config/napcat-templates/
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 function Deploy-NapCatConfigTemplates {
     Write-Step 4 5 'Deploying config templates...' 'Cyan'
 
@@ -412,7 +412,7 @@ function Deploy-NapCatConfigTemplates {
 
     if (-not (Test-Path $TemplateDir)) {
         Write-Host "  ERROR: Template directory not found: $TemplateDir" -ForegroundColor Red
-        Write-Host "  This should never happen — config/napcat-templates/ is git-tracked." -ForegroundColor Red
+        Write-Host "  This should never happen - config/napcat-templates/ is git-tracked." -ForegroundColor Red
         exit 1
     }
 
@@ -462,9 +462,9 @@ function Deploy-NapCatConfigTemplates {
     }
 }
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 # Step 5: Verify deployment integrity
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 function Test-Deployment {
     Write-Step 5 5 'Verifying deployment...' 'Cyan'
 
@@ -516,9 +516,9 @@ function Test-Deployment {
     return $allOk
 }
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 # Main
-# ═══════════════════════════════════════════════════════════════════════════
+# ============================================================================
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  NapCat QQ Shell - Self-Contained Setup (5 steps)" -ForegroundColor Cyan
