@@ -377,11 +377,11 @@ async function startServer() {
     }
 
     const napcatDir = path.dirname(napcatScript);
-    // 在新窗口中启动 NapCat（弹出独立 CMD 窗口，用户可看到 QR 码）
-    const proc = spawn('cmd.exe', ['/c', 'start', '"NapCat QQ"', '/wait', napcatScript], {
+    // 直接启动 NapCat（stdio: inherit 让 NapCat 的输出显示在当前终端，QR 码直接可见）
+    const proc = spawn(napcatScript, [], {
       cwd: napcatDir,
-      stdio: 'ignore',
-      detached: true,
+      shell: true,
+      stdio: 'inherit',
     });
 
 
