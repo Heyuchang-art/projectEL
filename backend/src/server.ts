@@ -329,10 +329,10 @@ async function startServer() {
     const setupCmd = 'powershell -File scripts\\setup-napcat.ps1';
 
     const checks = [
-      { file: 'node.exe',                           label: 'Node.js runtime' },
-      { file: 'wrapper.node',                       label: 'QQNT Wrapper module' },
-      { file: 'napcat.mjs',                         label: 'NapCat core' },
-      { file: path.join('config', 'onebot11.json'), label: 'OneBot config' },
+      { file: 'node.exe',                                    label: 'Node.js runtime' },
+      { file: 'wrapper.node',                                label: 'QQNT Wrapper module' },
+      { file: path.join('napcat', 'napcat.mjs'),             label: 'NapCat core' },
+      { file: path.join('napcat', 'config', 'onebot11.json'), label: 'OneBot config' },
     ];
 
     const missing: string[] = [];
