@@ -5,7 +5,6 @@ import type { Server as IOServer } from 'socket.io';
 import { randomUUID } from 'crypto';
 import { getContentRouter } from './qq-renderer.js';
 import { ChatRefiner } from './qq-chat-refiner.js';
-import { QuizService } from './qq-quiz-service.js';
 import type { KnowledgeBaseService } from './knowledge-base/knowledge-base-service.js';
 import { getQQLogger } from './qq-logger.js';
 
@@ -21,11 +20,6 @@ interface QQBotConfig {
   maxGroupContextMessages: number;
   rateLimit: { maxMessages: number; windowSeconds: number };
   triggerKeywords: string[];
-  quiz: {
-    enabled: boolean;
-    questionsPerRound: number;
-    xpPerGrade: Record<string, number>;
-  };
   rendering: {
     formulaImageWidth: number;
     maxMessageLength: number;
@@ -100,14 +94,11 @@ interface OneBotApiResponse {
   echo?: string;
 }
 
-interface GroupContext {
-  group_id: number;
-  recentMessages: {
-    user_id: number;
-    nickname: string;
-    text: string;
-    timestamp: number;
-  }[];
+interface GroupMessageRecord {
+  user_id: number;
+  nickname: string;
+  text: string;
+  timestamp: number;
 }
 
 interface RateLimitEntry {
@@ -455,13 +446,12 @@ class QQWebSocketServer {
     io: IOServer,
     config: QQBotConfig,
     kbService: KnowledgeBaseService,
-    workspaceCwd: string,
   ) {
     this.config = config;
     this.io = io;
     this.httpServer = _httpServer;
     this.messageHandler = new OneBotMessageHandler(config);
-    this.aiService = new QQAIService(getOrCreateSession, io, config, kbService, workspaceCwd);
+    this.aiService = new QQAIService(getOrCreateSession, io, config, kbService);
 
     // 创建独立的 HTTP 服务器，避免与主后端端口 3000 冲突
     this.httpServer = createHttpServer();
@@ -630,12 +620,7 @@ class OneBotMessageHandler {
       return;
     }
 
-    // 测验答题路由：检查是否有进行中的测验
     const groupId = event.group_id!;
-    if (aiService.isQuizActive(groupId)) {
-      const answerResult = aiService.submitQuizAnswer(event.user_id, groupId, cleanText);
-      if (answerResult) return; // 已作为答题处理
-    }
 
     aiService
       .handleGroupMessage(cleanText, images, conn, groupId, event.user_id)
@@ -750,9 +735,9 @@ class QQAIService {
   private io: IOServer;
   private config: QQBotConfig;
   private activeSessions: Map<string, any> = new Map();
-  private groupContexts: Map<number, GroupContext> = new Map();
+  private groupContexts: Map<number, GroupMessageRecord[]> = new Map();
   private chatRefiner: ChatRefiner;
-  private quizService: QuizService;
+  private kbService: KnowledgeBaseService;
   private sessionLocks: Map<string, Promise<void>> = new Map();
 
   constructor(
@@ -760,19 +745,12 @@ class QQAIService {
     io: IOServer,
     config: QQBotConfig,
     kbService: KnowledgeBaseService,
-    workspaceCwd: string,
   ) {
     this.getOrCreateSession = getOrCreateSession;
     this.io = io;
     this.config = config;
+    this.kbService = kbService;
     this.chatRefiner = new ChatRefiner(getOrCreateSession, kbService);
-    this.quizService = new QuizService(
-      getOrCreateSession,
-      kbService,
-      workspaceCwd,
-      config.quiz.xpPerGrade,
-      config.quiz.questionsPerRound,
-    );
   }
 
   private async runQueue<T>(sessionId: string, fn: () => Promise<T>): Promise<T> {
@@ -795,44 +773,33 @@ class QQAIService {
     return `qq-${selfId}`;
   }
 
-  private getGroupContext(groupId: number): GroupContext {
+  private getGroupContext(groupId: number): GroupMessageRecord[] {
     if (!this.groupContexts.has(groupId)) {
-      this.groupContexts.set(groupId, {
-        group_id: groupId,
-        recentMessages: [],
-      });
+      this.groupContexts.set(groupId, []);
     }
     return this.groupContexts.get(groupId)!;
   }
 
   private addMessageToContext(groupId: number, userId: number, nickname: string, text: string): void {
     const ctx = this.getGroupContext(groupId);
-    ctx.recentMessages.push({ user_id: userId, nickname, text, timestamp: Date.now() });
+    ctx.push({ user_id: userId, nickname, text, timestamp: Date.now() });
 
     const max = this.config.maxGroupContextMessages || 20;
-    while (ctx.recentMessages.length > max) {
-      ctx.recentMessages.shift();
+    while (ctx.length > max) {
+      ctx.shift();
     }
   }
 
   private maybeRefineContext(selfId: number, groupId: number): void {
     const ctx = this.getGroupContext(groupId);
-    const msgCount = ctx.recentMessages.length;
+    const msgCount = ctx.length;
 
     if (!this.chatRefiner.shouldExtract(groupId, msgCount)) return;
 
     // 异步执行知识提取，不阻塞消息处理
-    this.chatRefiner.extractConcepts(selfId, groupId, ctx.recentMessages).catch((err) => {
+    this.chatRefiner.extractConcepts(selfId, groupId, ctx).catch((err) => {
       console.error('[QQ] ChatRefiner async error:', err);
     });
-  }
-
-  isQuizActive(groupId: number): boolean {
-    return this.quizService.isActive(groupId);
-  }
-
-  submitQuizAnswer(userId: number, groupId: number, text: string): boolean {
-    return this.quizService.submitAnswer(userId, groupId, text);
   }
 
   async handleCommand(
@@ -845,53 +812,29 @@ class QQAIService {
     const cmd = parts[0].toLowerCase();
     const selfId = conn.selfId!;
 
-    // 为测验服务设置消息发送回调
-    this.quizService.setSendMessage(async (gid, msg) => {
-      await conn.sendApiCall('send_group_msg', { group_id: gid, message: msg });
-    });
-
     let response: string | null = null;
 
     switch (cmd) {
-      case '/quiz-start':
-        if (groupId) {
-          response = await this.quizService.startQuiz(selfId, groupId);
-        } else {
-          response = '测验功能仅限在群聊中使用。';
-        }
-        break;
-
-      case '/quiz-stop':
-        if (groupId) {
-          response = this.quizService.stopQuiz(groupId);
-        } else {
-          response = '测验功能仅限在群聊中使用。';
-        }
-        break;
-
-      case '/quiz-stats':
-        if (groupId) {
-          response = this.quizService.getStats(groupId);
-        } else {
-          response = '测验功能仅限在群聊中使用。';
-        }
-        break;
-
       case '/help':
-        response = `📚 可用命令：
-/quiz-start - 开始一轮知识测验 (仅限群聊)
-/quiz-stop - 提前终止测验 (仅限群聊)
-/quiz-stats - 查看测验状态 (仅限群聊)
-/help - 显示此帮助
+        response = `Available commands:
+/help  - Show this help
+/stats - View personal learning stats
 
-直接向我发送消息提问即可进行私聊学习！`;
+Send me any question to start learning!`;
         break;
 
       case '/stats':
-        if (groupId) {
-          response = this.quizService.getStats(groupId, userId);
-        } else {
-          response = '测验状态查询仅限在群聊中使用。';
+        try {
+          const stats = await this.kbService.getStats();
+          response = [
+            'Personal Learning Stats',
+            '-----------------------------',
+            `Knowledge cards: ${stats.totalCards ?? 'N/A'}`,
+            `Review notes:     ${stats.totalNotes ?? 'N/A'}`,
+            `Archived:         ${stats.archivedCount ?? 'N/A'}`,
+          ].join('\n');
+        } catch {
+          response = 'Unable to fetch stats. Please try again later.';
         }
         break;
 
@@ -1043,10 +986,10 @@ class QQAIService {
     });
   }
 
-  private buildContextPrefix(ctx: GroupContext): string {
-    if (ctx.recentMessages.length === 0) return '';
-    const lines = ['以下是群聊的历史消息上下文：'];
-    for (const msg of ctx.recentMessages) {
+  private buildContextPrefix(ctx: GroupMessageRecord[]): string {
+    if (ctx.length === 0) return '';
+    const lines = ['Recent group chat context:'];
+    for (const msg of ctx) {
       const shortText = msg.text.length > 80 ? msg.text.slice(0, 80) + '...' : msg.text;
       lines.push(`- ${msg.nickname}: ${shortText}`);
     }
@@ -1158,11 +1101,9 @@ class QQAIService {
 
   getStatus(): {
     activeSessionCount: number;
-    activeGroupContexts: number;
   } {
     return {
       activeSessionCount: this.activeSessions.size,
-      activeGroupContexts: this.groupContexts.size,
     };
   }
 }
@@ -1177,17 +1118,13 @@ export function initQQAdapter(
   io: IOServer,
   config: QQBotConfig,
   kbService: KnowledgeBaseService,
-  workspaceCwd: string,
 ): void {
   if (qqServer) {
     console.warn('[QQ] Adapter already initialized');
     return;
   }
 
-  // 初始化日志器
-  getQQLogger(workspaceCwd);
-
-  qqServer = new QQWebSocketServer(httpServer, getOrCreateSession, io, config, kbService, workspaceCwd);
+  qqServer = new QQWebSocketServer(httpServer, getOrCreateSession, io, config, kbService);
   console.log('[QQ] OneBot v11 adapter initialized on path:', config.wsPath);
 }
 

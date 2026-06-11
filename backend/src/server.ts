@@ -310,7 +310,7 @@ async function startServer() {
   if (await fs.pathExists(qqConfigPath)) {
     qqConfig = await fs.readJson(qqConfigPath);
     if (qqConfig.enabled) {
-      initQQAdapter(httpServer, getOrCreateSession, io, qqConfig, kbService, workspaceCwd);
+      initQQAdapter(httpServer, getOrCreateSession, io, qqConfig, kbService);
       console.log('[QQ] Config loaded and adapter auto-started');
     } else {
       console.log('[QQ] Config loaded (disabled, adapter not auto-started)');
@@ -471,7 +471,7 @@ async function startServer() {
       }
 
       // 初始化 QQ WebSocket 适配器（监听端口 3001）
-      initQQAdapter(httpServer, getOrCreateSession, io, qqConfig, kbService, workspaceCwd);
+      initQQAdapter(httpServer, getOrCreateSession, io, qqConfig, kbService);
 
       // 启动 NapCat Shell（独立模式，无需 QQ.exe 和管理员权限）
       resetNapcatGuard();
