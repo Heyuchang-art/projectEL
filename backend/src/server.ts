@@ -70,6 +70,29 @@ async function startServer() {
   const sessions = new Map<string, any>();
   const sessionPresets = new Map<string, string>();
 
+  // Helper to check if a provider is configured with a non-empty key
+  function checkIsConfigured(provider: string, authStatus: any, modelsConfig: any): boolean {
+    if (authStatus.source === "environment" || authStatus.source === "runtime") {
+      return true;
+    }
+    const cred = authStorage.get(provider);
+    if (cred) {
+      const key = cred.type === "api_key" ? cred.key : (cred as any).key;
+      if (typeof key === "string" && key.trim() !== "") {
+        return true;
+      }
+      if (cred.type === "oauth") {
+        return true;
+      }
+      return false;
+    }
+    const pConfig = modelsConfig.providers?.[provider] || {};
+    if (pConfig.apiKey && pConfig.apiKey.trim() !== "" && pConfig.apiKey !== "DASHSCOPE_API_KEY") {
+      return true;
+    }
+    return false;
+  }
+
   // Helper to check if a model and its provider are active and enabled
   function isModelAndProviderEnabled(provider: string, modelId: string): boolean {
     const builtInProviders = ["anthropic", "openai", "google", "deepseek", "qwen", "openrouter"];
@@ -88,7 +111,7 @@ async function startServer() {
     if (!providersList.includes(provider)) return false;
 
     const authStatus = modelRegistry.getProviderAuthStatus(provider);
-    const isConfigured = authStatus.configured || !!authStatus.source;
+    const isConfigured = checkIsConfigured(provider, authStatus, modelsConfig);
     if (!isConfigured) return false;
 
     const pConfig = modelsConfig.providers?.[provider] || {};
@@ -878,7 +901,7 @@ async function startServer() {
         }
 
         const pConfig = modelsConfig.providers?.[p] || {};
-        const isConfigured = authStatus.configured || !!authStatus.source;
+        const isConfigured = checkIsConfigured(p, authStatus, modelsConfig);
         // 未添加 api key 的服务商默认不激活 (enabled: false)
         const defaultEnabled = isConfigured;
         const enabled = pConfig.enabled !== undefined ? pConfig.enabled : defaultEnabled;
