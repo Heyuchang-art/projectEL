@@ -263,7 +263,15 @@ export default function Workspace({ activeCards, cardLayout, onUpdateLayout, ren
                     onMouseLeave={(e) => {
                       e.currentTarget.draggable = true;
                     }}
-                    onDragStart={(e) => handleDragStart(item.id, e)}
+                    onDragStart={(e) => {
+                      const target = e.target as HTMLElement | null;
+                      const isInteractive = target?.closest('select') || target?.closest('button') || target?.closest('input') || target?.closest('option');
+                      if (isInteractive || !target?.closest('.card-drag-header')) {
+                        e.preventDefault();
+                        return;
+                      }
+                      handleDragStart(item.id, e);
+                    }}
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
