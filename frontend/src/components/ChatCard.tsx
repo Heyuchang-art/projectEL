@@ -11,6 +11,7 @@ export default function ChatCard() {
     setInputText,
     isStreaming,
     activeModel,
+    availableModels,
     thinkingLevel,
     selectedAttachments,
     sessionId,
@@ -25,7 +26,8 @@ export default function ChatCard() {
     switchSession,
     createSession,
     deleteSession,
-    renameSession
+    renameSession,
+    selectModel
   } = useChat();
 
   const { toggleCard } = useWorkspace();
@@ -170,9 +172,81 @@ export default function ChatCard() {
             <h2 style={{ fontSize: '14px', fontWeight: 900, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: '#d1d5db' }}>
               💬 Xaihi Learning Console
             </h2>
-            <div style={{ display: 'flex', gap: '12px', marginTop: '4px', fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-              <span>模型: <strong style={{ color: 'var(--secondary)' }}>{activeModel}</strong></span>
-              <span>思考: <strong style={{ color: 'var(--primary)' }}>{thinkingLevel}</strong></span>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '4px', fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', alignItems: 'center' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                模型: 
+                <select
+                  value={activeModel}
+                  onChange={async (e) => {
+                    const selectedId = e.target.value;
+                    const model = availableModels.find(m => m.id === selectedId);
+                    if (model) {
+                      const nextThinking = model.reasoning ? thinkingLevel : 'off';
+                      await selectModel(model.provider, model.id, nextThinking);
+                    }
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: 'var(--secondary)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    padding: '0 2px',
+                    margin: '0',
+                  }}
+                >
+                  {availableModels.map(m => (
+                    <option key={m.id} value={m.id} style={{ backgroundColor: '#000000', color: '#ffffff' }}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </span>
+
+              {(() => {
+                const activeModelObj = availableModels.find(m => m.id === activeModel);
+                const currentModelSupportsReasoning = activeModelObj ? activeModelObj.reasoning : false;
+                
+                if (!currentModelSupportsReasoning) return null;
+
+                return (
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    思考: 
+                    <select
+                      value={thinkingLevel}
+                      onChange={async (e) => {
+                        const level = e.target.value;
+                        const model = availableModels.find(m => m.id === activeModel);
+                        if (model) {
+                          await selectModel(model.provider, model.id, level);
+                        }
+                      }}
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: 'var(--primary)',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        padding: '0 2px',
+                        margin: '0',
+                      }}
+                    >
+                      <option value="off" style={{ backgroundColor: '#000000', color: '#ffffff' }}>off</option>
+                      <option value="minimal" style={{ backgroundColor: '#000000', color: '#ffffff' }}>minimal</option>
+                      <option value="low" style={{ backgroundColor: '#000000', color: '#ffffff' }}>low</option>
+                      <option value="medium" style={{ backgroundColor: '#000000', color: '#ffffff' }}>medium</option>
+                      <option value="high" style={{ backgroundColor: '#000000', color: '#ffffff' }}>high</option>
+                      <option value="xhigh" style={{ backgroundColor: '#000000', color: '#ffffff' }}>xhigh</option>
+                    </select>
+                  </span>
+                );
+              })()}
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
