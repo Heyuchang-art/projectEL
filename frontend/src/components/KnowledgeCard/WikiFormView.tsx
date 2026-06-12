@@ -84,7 +84,7 @@ export default function WikiFormView({ cardId, kb, onSaved, onCancel }: Props) {
             value={lifecycle}
             onChange={e => setLifecycle(e.target.value as any)}
             className="input-premium"
-            style={{ width: '100%', fontSize: '12px', padding: '8px 10px', color: '#fff', backgroundColor: '#000' }}
+            style={{ width: '100%', fontSize: '12px', padding: '8px 10px', color: '#d1d5db', backgroundColor: '#000' }}
           >
             <option value="immortal">永生 (永不衰减)</option>
             <option value="standard">标准 (半衰期 180天)</option>

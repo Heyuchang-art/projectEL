@@ -167,7 +167,7 @@ export default function ChatCard() {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontSize: '14px', fontWeight: 900, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: '#ffffff' }}>
+            <h2 style={{ fontSize: '14px', fontWeight: 900, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: '#d1d5db' }}>
               💬 Xaihi Learning Console
             </h2>
             <div style={{ display: 'flex', gap: '12px', marginTop: '4px', fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
@@ -184,7 +184,7 @@ export default function ChatCard() {
                 height: '24px',
                 backgroundColor: '#000000',
                 border: '2px solid #222222',
-                color: '#ffffff',
+                color: '#d1d5db',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -234,7 +234,7 @@ export default function ChatCard() {
                   height: '24px',
                   backgroundColor: '#000000',
                   border: '2px solid #222222',
-                  color: '#ffffff',
+                  color: '#d1d5db',
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -270,7 +270,7 @@ export default function ChatCard() {
             style={{
               backgroundColor: '#000000',
               border: '2px solid #333333',
-              color: '#ffffff',
+              color: '#d1d5db',
               fontSize: '10px',
               fontFamily: 'var(--font-mono)',
               padding: '2px 4px',
@@ -301,7 +301,7 @@ export default function ChatCard() {
                 style={{
                   backgroundColor: '#000000',
                   border: '2px solid var(--primary)',
-                  color: '#ffffff',
+                  color: '#d1d5db',
                   fontSize: '10px',
                   fontFamily: 'var(--font-mono)',
                   padding: '2px 4px',
@@ -342,7 +342,7 @@ export default function ChatCard() {
                 style={{
                   backgroundColor: '#000000',
                   border: '2px solid #333333',
-                  color: '#ffffff',
+                  color: '#d1d5db',
                   fontSize: '10px',
                   fontFamily: 'var(--font-mono)',
                   padding: '2px 4px',
@@ -382,7 +382,7 @@ export default function ChatCard() {
               style={{
                 backgroundColor: '#000000',
                 border: '2px solid #333333',
-                color: '#ffffff',
+                color: '#d1d5db',
                 fontSize: '10px',
                 fontFamily: 'var(--font-mono)',
                 padding: '2px 6px',
@@ -413,7 +413,7 @@ export default function ChatCard() {
                 flexDirection: 'column',
                 gap: '8px'
               }}>
-                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 'bold' }}>
+                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#d1d5db', fontWeight: 'bold' }}>
                   新建会话
                 </span>
                 <input
@@ -429,7 +429,7 @@ export default function ChatCard() {
                   style={{
                     backgroundColor: '#000000',
                     border: '2px solid #333333',
-                    color: '#ffffff',
+                    color: '#d1d5db',
                     fontSize: '11px',
                     fontFamily: 'var(--font-mono)',
                     padding: '6px 8px',
@@ -445,7 +445,7 @@ export default function ChatCard() {
                     style={{
                       backgroundColor: '#000000',
                       border: '2px solid #333333',
-                      color: '#ffffff',
+                      color: '#d1d5db',
                       fontSize: '10px',
                       fontFamily: 'var(--font-mono)',
                       padding: '2px 4px',
@@ -466,7 +466,7 @@ export default function ChatCard() {
                     style={{
                       backgroundColor: '#000000',
                       border: '2px solid #333333',
-                      color: '#ffffff',
+                      color: '#d1d5db',
                       fontSize: '10px',
                       fontFamily: 'var(--font-mono)',
                       padding: '2px 8px',
@@ -552,7 +552,7 @@ export default function ChatCard() {
                     fontSize: '11px',
                     lineHeight: '1.6',
                     whiteSpace: 'pre-wrap',
-                    color: '#ffffff'
+                    color: '#d1d5db'
                   }}
                 >
                   {m.text}

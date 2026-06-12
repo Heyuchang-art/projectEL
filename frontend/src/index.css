@@ -3,7 +3,7 @@
   --panel-bg: #0c0c0c;
   --panel-border: #222222;
   --panel-border-active: #ffffff;
-  --text-main: #ffffff;
+  --text-main: #d1d5db;
   --text-muted: #7f7f7f;
   
   /* Neo-Brutalist Vibrant Accent Colors */
@@ -70,7 +70,7 @@ body {
   font-family: var(--font-mono);
   font-weight: 900;
   text-transform: uppercase;
-  color: #ffffff;
+  color: #d1d5db;
   background: none;
   -webkit-text-fill-color: initial;
   background-clip: initial;
@@ -140,12 +140,12 @@ body {
 /* Secondary Button variant */
 .btn-secondary {
   background: #000000;
-  color: #ffffff;
+  color: #d1d5db;
   border: 2px solid var(--panel-border);
   box-shadow: 3px 3px 0px #1a1a1a;
 }
 .btn-secondary:hover {
-  border-color: #ffffff;
+  border-color: #d1d5db;
   background: #111111;
   box-shadow: 5px 5px 0px #222222;
 }
@@ -285,7 +285,7 @@ body {
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  color: #ffffff;
+  color: #d1d5db;
   font-family: var(--font-mono);
   font-size: 8px;
   font-weight: 900;
@@ -333,7 +333,7 @@ body {
 }
 
 .workflow-template-copy em {
-  color: #ffffff;
+  color: #d1d5db;
   font-size: 10px;
   font-style: normal;
   overflow: hidden;
@@ -391,7 +391,7 @@ body {
   align-items: center;
   gap: 6px;
   background: #000000;
-  color: #ffffff;
+  color: #d1d5db;
   border: 2px solid var(--panel-border);
   box-shadow: 3px 3px 0px #000000;
   font-family: var(--font-mono);
@@ -418,7 +418,7 @@ body {
   height: 26px;
   background-color: #000000;
   border: 2px solid #222222;
-  color: #ffffff;
+  color: #d1d5db;
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -478,7 +478,7 @@ body {
 .workflow-modal-warning {
   border: 2px solid var(--error);
   background: rgba(255, 64, 129, 0.08);
-  color: #ffffff;
+  color: #d1d5db;
   font-family: var(--font-mono);
   font-size: 10px;
   line-height: 1.6;
@@ -520,7 +520,7 @@ body {
   font-family: var(--font-mono);
   font-size: 10px;
   line-height: 1.45;
-  color: #ffffff;
+  color: #d1d5db;
 }
 
 .workflow-validation-item.error {
@@ -607,7 +607,7 @@ body {
   max-width: 220px;
   background: #000000;
   border: 2px solid #222222;
-  color: #ffffff;
+  color: #d1d5db;
   font-family: var(--font-mono);
   font-size: 10px;
 }
@@ -658,7 +658,7 @@ body {
 .markdown-message h3,
 .markdown-message h4 {
   margin: 12px 0 8px;
-  color: #ffffff;
+  color: #d1d5db;
   font-family: var(--font-mono);
   font-weight: 900;
   line-height: 1.25;
@@ -717,7 +717,7 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #ffffff;
+  color: #d1d5db;
   white-space: pre;
 }
 
@@ -888,7 +888,7 @@ body {
 .wiki-markdown h3,
 .wiki-markdown h4 {
   margin: 10px 0 6px;
-  color: #ffffff;
+  color: #d1d5db;
   font-family: var(--font-mono);
   font-weight: 900;
   line-height: 1.25;
@@ -937,7 +937,7 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #ffffff;
+  color: #d1d5db;
   white-space: pre;
   font-size: 10.5px;
 }

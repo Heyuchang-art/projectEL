@@ -56,12 +56,12 @@ export default function WikiDetailView({ cardId, kb, onBack, onEdit }: Props) {
       <div style={{
         padding: '14px', backgroundColor: '#000000', border: '2px solid #222222', marginBottom: '14px',
       }}>
-        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', margin: '0 0 10px 0' }}>{card.title}</h3>
+        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#d1d5db', margin: '0 0 10px 0' }}>{card.title}</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
           <div><span style={{ color: 'var(--text-muted)' }}>生命周期:</span> <span style={{ color: 'var(--secondary)' }}>{lifecycleLabel[card.lifecycle] || card.lifecycle}</span></div>
-          <div><span style={{ color: 'var(--text-muted)' }}>衰减率:</span> <span style={{ color: '#fff' }}>{card.decay_rate}</span></div>
-          <div><span style={{ color: 'var(--text-muted)' }}>创建时间:</span> <span style={{ color: '#fff' }}>{new Date(card.created_at).toLocaleDateString()}</span></div>
-          <div><span style={{ color: 'var(--text-muted)' }}>最近交互:</span> <span style={{ color: '#fff' }}>{new Date(card.last_interacted).toLocaleDateString()}</span></div>
+          <div><span style={{ color: 'var(--text-muted)' }}>衰减率:</span> <span style={{ color: '#d1d5db' }}>{card.decay_rate}</span></div>
+          <div><span style={{ color: 'var(--text-muted)' }}>创建时间:</span> <span style={{ color: '#d1d5db' }}>{new Date(card.created_at).toLocaleDateString()}</span></div>
+          <div><span style={{ color: 'var(--text-muted)' }}>最近交互:</span> <span style={{ color: '#d1d5db' }}>{new Date(card.last_interacted).toLocaleDateString()}</span></div>
         </div>
         <div style={{ marginTop: '10px' }}>
           <ConfidenceBadge score={card.effective_confidence} />

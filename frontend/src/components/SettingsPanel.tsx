@@ -328,7 +328,7 @@ export default function SettingsPanel() {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 'bold', fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#ffffff' }}>
+              <span style={{ fontWeight: 'bold', fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#d1d5db' }}>
                 {p.name.toUpperCase()}
               </span>
               {p.id === 'deepseek' && (

@@ -127,7 +127,7 @@ export default function ArchiveReview({ kb, onBack }: Props) {
                   onChange={() => toggleVeto(c.filename)}
                   style={{ accentColor: 'var(--secondary)' }}
                 />
-                <span style={{ flex: 1, color: '#fff' }}>{c.title}</span>
+                <span style={{ flex: 1, color: '#d1d5db' }}>{c.title}</span>
                 <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--error)' }}>
                   置信度: {c.confidence.toFixed(2)}
                 </span>

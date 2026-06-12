@@ -73,7 +73,7 @@ export default function SlideDrawer({ isOpen, onClose, title, children }: SlideD
               fontSize: '18px',
               textTransform: 'uppercase',
               letterSpacing: '-0.5px',
-              color: '#ffffff'
+              color: '#d1d5db'
             }}
           >
             {title}
@@ -85,7 +85,7 @@ export default function SlideDrawer({ isOpen, onClose, title, children }: SlideD
               height: '32px',
               backgroundColor: '#000000',
               border: '2px solid #ffffff',
-              color: '#ffffff',
+              color: '#d1d5db',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',

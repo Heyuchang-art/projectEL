@@ -129,7 +129,7 @@ export default function QQBotCard() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Bot size={16} style={{ color: 'var(--accent)' }} />
-          <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '13px' }}>
+          <span style={{ color: '#d1d5db', fontWeight: 700, fontSize: '13px' }}>
             QQ Bot 监控
           </span>
           {hasOnlineAccount && (
@@ -283,7 +283,7 @@ export default function QQBotCard() {
                   ) : (
                     <WifiOff size={12} style={{ color: '#ef4444' }} />
                   )}
-                  <span style={{ color: '#ffffff' }}>{acc.selfId}</span>
+                  <span style={{ color: '#d1d5db' }}>{acc.selfId}</span>
                   <span style={{ fontSize: '10px', color: acc.online ? '#22c55e' : '#ef4444' }}>
                     {acc.online ? '在线' : '离线'}
                   </span>

@@ -99,7 +99,7 @@ export default function Header() {
         <Database size={20} style={{ color: 'var(--secondary)' }} />
         <span
           style={{
-            color: '#ffffff',
+            color: '#d1d5db',
             fontWeight: 900,
             fontSize: '15px',
             fontFamily: 'var(--font-mono)',
@@ -129,7 +129,7 @@ export default function Header() {
           disabled={loading}
           style={{
             backgroundColor: '#111111',
-            color: '#ffffff',
+            color: '#d1d5db',
             border: '2px solid #ffffff',
             padding: '6px 12px',
             fontFamily: 'var(--font-mono)',
@@ -153,7 +153,7 @@ export default function Header() {
           disabled={loading}
           style={{
             backgroundColor: 'var(--primary)',
-            color: '#ffffff',
+            color: '#d1d5db',
             border: '2px solid #ffffff',
             padding: '6px 12px',
             fontSize: '13px',
@@ -187,7 +187,7 @@ export default function Header() {
             disabled={loading}
             style={{
               backgroundColor: 'var(--accent)',
-              color: '#ffffff',
+              color: '#d1d5db',
               border: '2px solid #ffffff',
               padding: '6px 12px',
               fontSize: '13px',

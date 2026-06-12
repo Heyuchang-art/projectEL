@@ -71,7 +71,7 @@ export default function KnowledgeCard({ onClose }: { onClose: () => void }) {
           onMouseLeave={e => { e.currentTarget.style.borderColor = '#222222'; }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-            <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff', margin: 0, fontFamily: 'var(--font-sans)' }}>
+            <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#d1d5db', margin: 0, fontFamily: 'var(--font-sans)' }}>
               {card.title}
             </h3>
             <span style={{
@@ -108,7 +108,7 @@ export default function KnowledgeCard({ onClose }: { onClose: () => void }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <BookOpen size={16} color="var(--accent)" />
-          <h2 style={{ fontSize: '15px', fontWeight: 900, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: '#ffffff', margin: 0 }}>
+          <h2 style={{ fontSize: '15px', fontWeight: 900, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: '#d1d5db', margin: 0 }}>
             知识库
           </h2>
           <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
@@ -135,7 +135,7 @@ export default function KnowledgeCard({ onClose }: { onClose: () => void }) {
             <FileText size={12} /> 源文件
           </button>
           <button onClick={onClose}
-            style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}>
+            style={{ background: 'none', border: 'none', color: '#d1d5db', cursor: 'pointer', padding: '4px' }}>
             ✕
           </button>
         </div>
@@ -157,7 +157,7 @@ export default function KnowledgeCard({ onClose }: { onClose: () => void }) {
                 onChange={e => handleSearch(e.target.value)}
                 placeholder="搜索知识库..."
                 style={{
-                  flex: 1, background: 'none', border: 'none', color: '#fff',
+                  flex: 1, background: 'none', border: 'none', color: '#d1d5db',
                   fontSize: '12px', fontFamily: 'var(--font-mono)', outline: 'none',
                 }}
               />
@@ -208,7 +208,7 @@ export default function KnowledgeCard({ onClose }: { onClose: () => void }) {
                   className="btn-premium btn-secondary" style={{ padding: '4px 8px', fontSize: '10px', marginBottom: '10px' }}>
                   返回列表
                 </button>
-                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>{sourceContent.title}</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#d1d5db', marginBottom: '8px' }}>{sourceContent.title}</h3>
                 <pre style={{
                   backgroundColor: '#000000', padding: '16px', fontSize: '12px',
                   fontFamily: 'var(--font-mono)', color: '#cccccc', whiteSpace: 'pre-wrap',
@@ -234,7 +234,7 @@ export default function KnowledgeCard({ onClose }: { onClose: () => void }) {
                     onMouseLeave={e => { e.currentTarget.style.borderColor = '#222222'; }}
                   >
                     <div>
-                      <span style={{ fontSize: '13px', color: '#ffffff', fontWeight: 600 }}>{s.title}</span>
+                      <span style={{ fontSize: '13px', color: '#d1d5db', fontWeight: 600 }}>{s.title}</span>
                       <span style={{ fontSize: '10px', color: 'var(--text-muted)', marginLeft: '8px', fontFamily: 'var(--font-mono)' }}>
                         {s.filename}
                       </span>

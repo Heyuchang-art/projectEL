@@ -314,7 +314,7 @@ export default function CanvasCard() {
               fontWeight: 900,
               fontFamily: 'var(--font-mono)',
               textTransform: 'uppercase',
-              color: '#ffffff'
+              color: '#d1d5db'
             }}
           >
             Skill Canvas Map
