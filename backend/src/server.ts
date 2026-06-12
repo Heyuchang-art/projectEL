@@ -838,7 +838,20 @@ async function startServer() {
     try {
       const s = await getOrCreateSession(sessionId);
       const allModels = modelRegistry.getAll();
-      const providersList = ["anthropic", "openai", "google", "deepseek", "qwen", "openrouter"];
+      
+      let modelsConfig: any = { providers: {} };
+      if (await fs.pathExists(modelsJsonPath)) {
+        try {
+          modelsConfig = await fs.readJson(modelsJsonPath);
+        } catch (err) {}
+      }
+      if (!modelsConfig.providers) {
+        modelsConfig.providers = {};
+      }
+
+      const builtInProviders = ["anthropic", "openai", "google", "deepseek", "qwen", "openrouter"];
+      const customProviders = Object.keys(modelsConfig.providers);
+      const providersList = Array.from(new Set([...builtInProviders, ...customProviders]));
 
       const providersData = providersList.map((p) => {
         const authStatus = modelRegistry.getProviderAuthStatus(p);
@@ -850,23 +863,36 @@ async function startServer() {
           configuredBaseUrl = firstModelOfProvider.baseUrl;
         }
 
+        const pConfig = modelsConfig.providers?.[p] || {};
+        const isConfigured = authStatus.configured || !!authStatus.source;
+        // 未添加 api key 的服务商默认不激活 (enabled: false)
+        const defaultEnabled = isConfigured;
+        const enabled = pConfig.enabled !== undefined ? pConfig.enabled : defaultEnabled;
+
         return {
           id: p,
           name: modelRegistry.getProviderDisplayName(p),
-          configured: authStatus.configured || !!authStatus.source,
+          configured: isConfigured,
           source: authStatus.source,
-          baseUrl: configuredBaseUrl
+          baseUrl: configuredBaseUrl,
+          enabled: enabled
         };
       });
 
-      const modelsData = allModels.map((m) => ({
-        id: m.id,
-        name: m.name,
-        provider: m.provider,
-        reasoning: m.reasoning,
-        contextWindow: m.contextWindow,
-        maxTokens: m.maxTokens
-      }));
+      const modelsData = allModels.map((m) => {
+        const customModel = modelsConfig.providers?.[m.provider]?.models?.find((cm: any) => cm.id === m.id);
+        const isModelEnabled = customModel?.enabled !== undefined ? customModel.enabled : true;
+
+        return {
+          id: m.id,
+          name: m.name,
+          provider: m.provider,
+          reasoning: m.reasoning,
+          contextWindow: m.contextWindow,
+          maxTokens: m.maxTokens,
+          enabled: isModelEnabled
+        };
+      });
 
       res.json({
         providers: providersData,
@@ -882,7 +908,7 @@ async function startServer() {
 
   // 配置 Provider (API Key, Base URL 等)
   app.post("/api/models/configure", async (req, res) => {
-    const { provider, apiKey, baseUrl, api, models } = req.body;
+    const { provider, apiKey, baseUrl, api, models, enabled } = req.body;
     try {
       if (apiKey !== undefined) {
         if (apiKey.trim() === "") {
@@ -919,6 +945,10 @@ async function startServer() {
 
       if (models !== undefined) {
         modelsConfig.providers[provider].models = models;
+      }
+
+      if (enabled !== undefined) {
+        modelsConfig.providers[provider].enabled = enabled;
       }
 
       if (Object.keys(modelsConfig.providers[provider]).length === 0) {
