@@ -30,6 +30,9 @@ export default function SettingsPanel() {
   const [newModelName, setNewModelName] = useState('');
   const [newModelReasoning, setNewModelReasoning] = useState(false);
 
+  // Collapsible model list state (by providerId)
+  const [expandedProviders, setExpandedProviders] = useState<Record<string, boolean>>({});
+
   const fetchModelConfig = async () => {
     setIsLoading(true);
     try {
@@ -562,135 +565,155 @@ export default function SettingsPanel() {
 
               {/* Models management section */}
               <div style={{ marginTop: '8px', borderTop: '1px solid #222222', paddingTop: '12px' }}>
-                <h4 style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--primary)', marginBottom: '8px', textTransform: 'uppercase' }}>
-                  已添加的模型 ({availableModels.filter(m => m.provider === p.id).length})
-                </h4>
+                <div 
+                  onClick={() => setExpandedProviders(prev => ({ ...prev, [p.id]: !prev[p.id] }))}
+                  style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    cursor: 'pointer', 
+                    marginBottom: '8px',
+                    userSelect: 'none'
+                  }}
+                >
+                  <h4 style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--primary)', margin: 0, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '9px', width: '10px', display: 'inline-block' }}>{expandedProviders[p.id] ? '▼' : '▶'}</span>
+                    已添加的模型 ({availableModels.filter(m => m.provider === p.id).length})
+                  </h4>
+                  <span style={{ fontSize: '9px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', border: '1px solid #333333', padding: '1px 4px', borderRadius: '3px', backgroundColor: '#050505' }}>
+                    {expandedProviders[p.id] ? '收起' : '展开'}
+                  </span>
+                </div>
 
-                {availableModels.filter(m => m.provider === p.id).length === 0 ? (
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginBottom: '8px' }}>
-                    无模型，请在下方添加模型以开始使用。
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
-                    {availableModels.filter(m => m.provider === p.id).map(m => (
-                      <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0c0c0c', padding: '6px 10px', border: '1px solid #222222', opacity: (m.enabled !== false && p.enabled !== false) ? 1 : 0.5 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: (m.enabled !== false && p.enabled !== false) ? '#ffffff' : 'var(--text-muted)' }}>
-                            {m.name} <span style={{ color: 'var(--text-muted)', fontSize: '9px' }}>({m.id})</span>
-                            {m.reasoning && <span style={{ marginLeft: '6px', color: 'var(--primary)', fontSize: '8px', border: '1px solid var(--primary)', padding: '0px 2px' }}>Reasoning</span>}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                          {/* Switch for Model activation */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>模型启用状态</span>
-                            <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', position: 'relative' }}>
-                              <input
-                                type="checkbox"
-                                checked={m.enabled !== false}
-                                onChange={(e) => handleToggleModel(p.id, m.id, e.target.checked)}
-                                style={{ display: 'none' }}
-                              />
-                              <div style={{
-                                position: 'relative',
-                                width: '32px',
-                                height: '18px',
-                                backgroundColor: m.enabled !== false ? 'var(--primary)' : '#222222',
-                                borderRadius: '9px',
-                                transition: 'background-color 0.2s ease',
-                                border: '2px solid #333333'
-                              }}>
-                                <div style={{
-                                  position: 'absolute',
-                                  top: '1px',
-                                  left: m.enabled !== false ? '15px' : '1px',
-                                  width: '12px',
-                                  height: '12px',
-                                  backgroundColor: m.enabled !== false ? '#000000' : '#888888',
-                                  borderRadius: '50%',
-                                  transition: 'left 0.2s ease'
-                                }} />
+                {expandedProviders[p.id] && (
+                  <>
+                    {availableModels.filter(m => m.provider === p.id).length === 0 ? (
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', marginBottom: '8px' }}>
+                        无模型，请在下方添加模型以开始使用。
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                        {availableModels.filter(m => m.provider === p.id).map(m => (
+                          <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0c0c0c', padding: '6px 10px', border: '1px solid #222222', opacity: (m.enabled !== false && p.enabled !== false) ? 1 : 0.5 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: (m.enabled !== false && p.enabled !== false) ? '#ffffff' : 'var(--text-muted)' }}>
+                                {m.name} <span style={{ color: 'var(--text-muted)', fontSize: '9px' }}>({m.id})</span>
+                                {m.reasoning && <span style={{ marginLeft: '6px', color: 'var(--primary)', fontSize: '8px', border: '1px solid var(--primary)', padding: '0px 2px' }}>Reasoning</span>}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                              {/* Switch for Model activation */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>模型启用状态</span>
+                                <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', position: 'relative' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={m.enabled !== false}
+                                    onChange={(e) => handleToggleModel(p.id, m.id, e.target.checked)}
+                                    style={{ display: 'none' }}
+                                  />
+                                  <div style={{
+                                    position: 'relative',
+                                    width: '32px',
+                                    height: '18px',
+                                    backgroundColor: m.enabled !== false ? 'var(--primary)' : '#222222',
+                                    borderRadius: '9px',
+                                    transition: 'background-color 0.2s ease',
+                                    border: '2px solid #333333'
+                                  }}>
+                                    <div style={{
+                                      position: 'absolute',
+                                      top: '1px',
+                                      left: m.enabled !== false ? '15px' : '1px',
+                                      width: '12px',
+                                      height: '12px',
+                                      backgroundColor: m.enabled !== false ? '#000000' : '#888888',
+                                      borderRadius: '50%',
+                                      transition: 'left 0.2s ease'
+                                    }} />
+                                  </div>
+                                </label>
                               </div>
-                            </label>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteModel(p.id, m.id)}
+                                style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteModel(p.id, m.id)}
-                            style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Add Model Inline form */}
+                    {addingModelForProvider === p.id ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px', backgroundColor: '#0c0c0c', border: '1px solid #222222', marginTop: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input
+                            type="text"
+                            placeholder="模型 ID (如: deepseek-chat)"
+                            value={newModelId}
+                            onChange={e => setNewModelId(e.target.value)}
+                            className="input-premium"
+                            style={{ flex: 1, fontSize: '11px', padding: '4px 8px' }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="显示名称 (如: DeepSeek Chat)"
+                            value={newModelName}
+                            onChange={e => setNewModelName(e.target.value)}
+                            className="input-premium"
+                            style={{ flex: 1, fontSize: '11px', padding: '4px 8px' }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                            <input
+                              type="checkbox"
+                              checked={newModelReasoning}
+                              onChange={e => setNewModelReasoning(e.target.checked)}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            支持 Reasoning (思考深度)
+                          </label>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => setAddingModelForProvider(null)}
+                              className="btn-premium btn-secondary"
+                              style={{ fontSize: '10px', padding: '3px 8px', boxShadow: 'none' }}
+                            >
+                              取消
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveModel(p.id)}
+                              className="btn-premium"
+                              style={{ fontSize: '10px', padding: '3px 8px', boxShadow: 'none' }}
+                            >
+                              添加
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Add Model Inline form */}
-                {addingModelForProvider === p.id ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px', backgroundColor: '#0c0c0c', border: '1px solid #222222', marginTop: '8px' }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <input
-                        type="text"
-                        placeholder="模型 ID (如: deepseek-chat)"
-                        value={newModelId}
-                        onChange={e => setNewModelId(e.target.value)}
-                        className="input-premium"
-                        style={{ flex: 1, fontSize: '11px', padding: '4px 8px' }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="显示名称 (如: DeepSeek Chat)"
-                        value={newModelName}
-                        onChange={e => setNewModelName(e.target.value)}
-                        className="input-premium"
-                        style={{ flex: 1, fontSize: '11px', padding: '4px 8px' }}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                        <input
-                          type="checkbox"
-                          checked={newModelReasoning}
-                          onChange={e => setNewModelReasoning(e.target.checked)}
-                          style={{ cursor: 'pointer' }}
-                        />
-                        支持 Reasoning (思考深度)
-                      </label>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button
-                          type="button"
-                          onClick={() => setAddingModelForProvider(null)}
-                          className="btn-premium btn-secondary"
-                          style={{ fontSize: '10px', padding: '3px 8px', boxShadow: 'none' }}
-                        >
-                          取消
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSaveModel(p.id)}
-                          className="btn-premium"
-                          style={{ fontSize: '10px', padding: '3px 8px', boxShadow: 'none' }}
-                        >
-                          添加
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAddingModelForProvider(p.id);
-                      setNewModelId('');
-                      setNewModelName('');
-                      setNewModelReasoning(false);
-                    }}
-                    className="btn-premium btn-secondary"
-                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%', marginTop: '4px', boxShadow: 'none' }}
-                  >
-                    + 添加模型
-                  </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAddingModelForProvider(p.id);
+                          setNewModelId('');
+                          setNewModelName('');
+                          setNewModelReasoning(false);
+                        }}
+                        className="btn-premium btn-secondary"
+                        style={{ fontSize: '10px', padding: '4px 8px', width: '100%', marginTop: '4px', boxShadow: 'none' }}
+                      >
+                        + 添加模型
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
