@@ -250,11 +250,12 @@ export default function Workspace({ activeCards, cardLayout, onUpdateLayout, ren
 
               {col.cards.map((item, idx) => (
                 <React.Fragment key={item.id}>
-                  {/* Card wrapper */}
                   <div
                     draggable
                     onMouseDown={(e) => {
-                      e.currentTarget.draggable = Boolean((e.target as HTMLElement | null)?.closest('.card-drag-header'));
+                      const target = e.target as HTMLElement | null;
+                      const isInteractive = target?.closest('select') || target?.closest('button') || target?.closest('input') || target?.closest('option');
+                      e.currentTarget.draggable = Boolean(target?.closest('.card-drag-header') && !isInteractive);
                     }}
                     onMouseUp={(e) => {
                       e.currentTarget.draggable = true;
