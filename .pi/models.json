@@ -140,7 +140,8 @@
       ]
     },
     "openai": {
-      "enabled": false
+      "enabled": false,
+      "baseUrl": "https://api.openai.com/v1"
     },
     "google": {
       "name": "google",
