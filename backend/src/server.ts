@@ -937,6 +937,30 @@ async function startServer() {
     }
   });
 
+  // 删除服务商
+  app.delete("/api/models/provider/:providerId", async (req, res) => {
+    const { providerId } = req.params;
+    try {
+      authStorage.remove(providerId);
+      let modelsConfig: any = { providers: {} };
+      if (await fs.pathExists(modelsJsonPath)) {
+        try {
+          modelsConfig = await fs.readJson(modelsJsonPath);
+        } catch (err) {}
+      }
+      if (modelsConfig.providers && modelsConfig.providers[providerId]) {
+        delete modelsConfig.providers[providerId];
+        await fs.outputJson(modelsJsonPath, modelsConfig, { spaces: 2 });
+      }
+      modelRegistry.refresh();
+      authStorage.reload();
+      res.json({ success: true });
+    } catch (err: any) {
+      console.error("Delete provider error:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // 切换激活的模型与思考级别
   app.post("/api/models/select", async (req, res) => {
     const { provider, modelId, thinkingLevel, sessionId } = req.body;
