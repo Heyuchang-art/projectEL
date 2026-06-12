@@ -70,15 +70,40 @@ async function startServer() {
   const sessions = new Map<string, any>();
   const sessionPresets = new Map<string, string>();
 
-  // 查找一个本地已配置 API key 的可用模型作为保底
+  // Helper to check if a model and its provider are active and enabled
+  function isModelAndProviderEnabled(provider: string, modelId: string): boolean {
+    let modelsConfig: any = { providers: {} };
+    try {
+      if (fs.existsSync(modelsJsonPath)) {
+        modelsConfig = fs.readJsonSync(modelsJsonPath);
+      }
+    } catch (err) {}
+    if (!modelsConfig.providers) {
+      modelsConfig.providers = {};
+    }
+
+    const authStatus = modelRegistry.getProviderAuthStatus(provider);
+    const isConfigured = authStatus.configured || !!authStatus.source;
+    if (!isConfigured) return false;
+
+    const pConfig = modelsConfig.providers?.[provider] || {};
+    const providerEnabled = pConfig.enabled !== undefined ? pConfig.enabled : true;
+    if (!providerEnabled) return false;
+
+    const customModel = pConfig.models?.find((cm: any) => cm.id === modelId);
+    const isModelEnabled = customModel?.enabled !== undefined ? customModel.enabled : true;
+    return isModelEnabled;
+  }
+
+  // 查找一个本地已配置 API key 且已启用的可用模型作为保底
   function getConfiguredFallbackModel(): any {
     const allModels = modelRegistry.getAll();
     for (const m of allModels) {
-      const authStatus = modelRegistry.getProviderAuthStatus(m.provider);
-      if (authStatus.configured || !!authStatus.source) {
+      if (isModelAndProviderEnabled(m.provider, m.id)) {
         return m;
       }
     }
+    // If absolutely nothing is active/enabled, fallback to the first model registry entry
     return allModels[0];
   }
 
@@ -147,31 +172,15 @@ async function startServer() {
 
 
 
-    // 检查该会话当前模型是否已配置凭证，否则采用已配置的可用模型作为保底
-    if (!session.model) {
+    // 检查该会话当前模型是否已配置凭证且已启用，否则采用已配置且已启用的可用模型作为保底
+    if (!session.model || !isModelAndProviderEnabled(session.model.provider, session.model.id)) {
       const fallback = getConfiguredFallbackModel();
-      console.log(`[Session FinalCheck] No model found for session ${sessionId}, setting fallback to ${fallback?.provider}/${fallback?.id}`);
+      console.log(`[Session FinalCheck] Session model missing or disabled for session ${sessionId}, setting fallback to ${fallback?.provider}/${fallback?.id}`);
       if (fallback) {
         try {
           await session.setModel(fallback);
         } catch (err) {
           console.error(`Failed to set fallback model for session ${sessionId}:`, err);
-        }
-      }
-    } else {
-      const authStatus = modelRegistry.getProviderAuthStatus(session.model.provider);
-      const isConfigured = authStatus.configured || !!authStatus.source;
-      console.log(`[Session FinalCheck] session.model=${session.model.provider}/${session.model.id}, configured=${isConfigured}, authStatus:`, JSON.stringify(authStatus));
-      if (!isConfigured) {
-        const fallback = getConfiguredFallbackModel();
-        console.log(`[Session FinalCheck] Falling back to ${fallback?.provider}/${fallback?.id}`);
-        if (fallback) {
-          try {
-            await session.setModel(fallback);
-            console.log(`[Session FinalCheck] setModel succeeded: ${fallback.provider}/${fallback.id}, session.model now: ${session.model?.provider}/${session.model?.id}`);
-          } catch (err) {
-            console.error(`Failed to set fallback model for session ${sessionId}:`, err);
-          }
         }
       }
     }
