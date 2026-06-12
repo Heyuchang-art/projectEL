@@ -170,7 +170,8 @@ export default function SettingsPanel() {
           reasoning: m.reasoning,
           input: m.input || ['text'],
           contextWindow: m.contextWindow || 4096,
-          maxTokens: m.maxTokens || 4096
+          maxTokens: m.maxTokens || 4096,
+          enabled: m.enabled !== false
         }));
 
       // 避免重复添加相同 ID 的模型
@@ -185,7 +186,8 @@ export default function SettingsPanel() {
         reasoning: newModelReasoning,
         input: ['text'],
         contextWindow: 128000,
-        maxTokens: 4096
+        maxTokens: 4096,
+        enabled: true
       };
 
       const updatedModels = [...currentModels, newModel];
@@ -226,7 +228,8 @@ export default function SettingsPanel() {
           reasoning: m.reasoning,
           input: m.input || ['text'],
           contextWindow: m.contextWindow || 4096,
-          maxTokens: m.maxTokens || 4096
+          maxTokens: m.maxTokens || 4096,
+          enabled: m.enabled !== false
         }));
 
       const response = await fetch('http://localhost:3000/api/models/configure', {
@@ -250,7 +253,63 @@ export default function SettingsPanel() {
     }
   };
 
-  // 5. Save Provider API Keys & Base URLs globally
+  // 5. Toggle Provider Activation
+  const handleToggleProvider = async (providerId: string, enabled: boolean) => {
+    try {
+      const response = await fetch('http://localhost:3000/api/models/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: providerId,
+          enabled: enabled
+        })
+      });
+      if (!response.ok) {
+        throw new Error('更新激活状态失败');
+      }
+      await fetchModelConfig();
+      await fetchActiveModelConfig();
+    } catch (err: any) {
+      alert(`更新激活状态失败: ${err.message}`);
+    }
+  };
+
+  // 6. Toggle Model Activation Inline
+  const handleToggleModel = async (providerId: string, modelId: string, enabled: boolean) => {
+    try {
+      const updatedModels = availableModels
+        .filter(m => m.provider === providerId)
+        .map(m => ({
+          id: m.id,
+          name: m.name,
+          reasoning: m.reasoning,
+          input: m.input || ['text'],
+          contextWindow: m.contextWindow || 4096,
+          maxTokens: m.maxTokens || 4096,
+          enabled: m.id === modelId ? enabled : (m.enabled !== false)
+        }));
+
+      const response = await fetch('http://localhost:3000/api/models/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: providerId,
+          models: updatedModels
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('更新模型状态失败');
+      }
+
+      await fetchModelConfig();
+      await fetchActiveModelConfig();
+    } catch (err: any) {
+      alert(`更新模型状态失败: ${err.message}`);
+    }
+  };
+
+  // 7. Save Provider API Keys & Base URLs globally
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -355,13 +414,28 @@ export default function SettingsPanel() {
               gap: '12px', 
               padding: '16px', 
               background: '#000000', 
-              border: '2px solid #222222' 
+              border: '2px solid #222222',
+              opacity: p.enabled !== false ? 1 : 0.65,
+              transition: 'opacity 0.2s ease'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 'bold', fontSize: '12px', fontFamily: 'var(--font-mono)', color: '#d1d5db' }}>
-                {(p.name || p.id).toUpperCase()}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  type="checkbox"
+                  checked={p.enabled !== false}
+                  onChange={(e) => handleToggleProvider(p.id, e.target.checked)}
+                  style={{ cursor: 'pointer' }}
+                />
+                <span style={{ fontWeight: 'bold', fontSize: '12px', fontFamily: 'var(--font-mono)', color: p.enabled !== false ? '#d1d5db' : 'var(--text-muted)' }}>
+                  {(p.name || p.id).toUpperCase()}
+                </span>
+                {p.enabled === false && (
+                  <span style={{ fontSize: '8px', color: 'var(--text-muted)', border: '1px solid var(--text-muted)', padding: '0 2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
+                    已禁用
+                  </span>
+                )}
+              </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {p.id === 'deepseek' && (
                   <button 
@@ -452,11 +526,19 @@ export default function SettingsPanel() {
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                     {availableModels.filter(m => m.provider === p.id).map(m => (
-                      <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0c0c0c', padding: '6px 10px', border: '1px solid #222222' }}>
-                        <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#ffffff' }}>
-                          {m.name} <span style={{ color: 'var(--text-muted)', fontSize: '9px' }}>({m.id})</span>
-                          {m.reasoning && <span style={{ marginLeft: '6px', color: 'var(--primary)', fontSize: '8px', border: '1px solid var(--primary)', padding: '0px 2px' }}>Reasoning</span>}
-                        </span>
+                      <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0c0c0c', padding: '6px 10px', border: '1px solid #222222', opacity: m.enabled !== false ? 1 : 0.5 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input
+                            type="checkbox"
+                            checked={m.enabled !== false}
+                            onChange={(e) => handleToggleModel(p.id, m.id, e.target.checked)}
+                            style={{ cursor: 'pointer' }}
+                          />
+                          <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: m.enabled !== false ? '#ffffff' : 'var(--text-muted)' }}>
+                            {m.name} <span style={{ color: 'var(--text-muted)', fontSize: '9px' }}>({m.id})</span>
+                            {m.reasoning && <span style={{ marginLeft: '6px', color: 'var(--primary)', fontSize: '8px', border: '1px solid var(--primary)', padding: '0px 2px' }}>Reasoning</span>}
+                          </span>
+                        </div>
                         <button
                           type="button"
                           onClick={() => handleDeleteModel(p.id, m.id)}
