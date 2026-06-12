@@ -12,6 +12,7 @@ export default function ChatCard() {
     isStreaming,
     activeModel,
     availableModels,
+    providers,
     thinkingLevel,
     selectedAttachments,
     sessionId,
@@ -198,11 +199,19 @@ export default function ChatCard() {
                     margin: '0',
                   }}
                 >
-                  {availableModels.map(m => (
-                    <option key={m.id} value={m.id} style={{ backgroundColor: '#000000', color: '#ffffff' }}>
-                      {m.name}
-                    </option>
-                  ))}
+                  {availableModels
+                    .filter(m => {
+                      const p = providers.find(prov => prov.id === m.provider);
+                      const isProviderEnabled = p ? p.enabled !== false : true;
+                      const isModelEnabled = m.enabled !== false;
+                      return (isProviderEnabled && isModelEnabled) || m.id === activeModel;
+                    })
+                    .map(m => (
+                      <option key={m.id} value={m.id} style={{ backgroundColor: '#000000', color: '#ffffff' }}>
+                        {m.name} {m.enabled === false ? ' (已禁用)' : ''}
+                      </option>
+                    ))
+                  }
                 </select>
               </span>
 
