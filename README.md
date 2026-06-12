@@ -92,6 +92,7 @@ snapshot-pi/
 │   ├── qq_bot_development_proposal.md     # QQ Bot 开发提案
 │   └── developer_guide.md            # 开发者指南
 ├── start.bat                         # Windows 一键启动脚本
+├── setup.bat                         # Windows 首次部署脚本 (调用 scripts/setup.bat)
 ├── package.json                      # 根配置与 workspaces
 └── tsconfig.base.json                # 共享 TypeScript 配置
 ```
