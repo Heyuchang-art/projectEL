@@ -1,8 +1,9 @@
-# Task Checklist - Provider and Model Activation Toggles
+# Task Checklist - Fix setup.bat error
 
 | Task | Status | Notes |
 | :--- | :---: | :--- |
-| Task 1: Backend Fallback Logic & Default Activation Configuration | [x] | Update server.ts fallback and session logic |
-| Task 2: Update UI Toggles in SettingsPanel | [x] | Replace checkboxes with custom Switch components |
-| Task 3: Home Page Model Filtering Strictness | [x] | Filter out disabled provider models in ChatCard header |
-| Task 4: Collapsible Model List in SettingsPanel | [x] | Add collapse/expand toggle for model lists in SettingsPanel |
+| Task 1: Identify root cause of setup script error | [x] | Uncovered parenthesis block termination parsing bug in scripts/setup.bat |
+| Task 2: Fix the parenthesis bug in scripts/setup.bat | [x] | Edit scripts/setup.bat to remove the unescaped parentheses in checking block |
+| Task 3: Verify the fix by running setup.bat | [x] | Run the modified script to ensure it checks node/npm successfully and runs |
+| Task 4: Clean up debug setup script | [x] | Remove scripts/setup_debug.bat |
+

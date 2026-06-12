@@ -14,7 +14,7 @@ echo.
 :: ===== Step 1: Check Node.js / npm =====
 echo [1/5] Checking environment...
 where node >nul 2>&1 || (
-    echo   [FAIL] Node.js not found. Install from: https://nodejs.org/ (v18+)
+    echo   [FAIL] Node.js not found. Install from: https://nodejs.org/ v18+
     pause
     exit /b 1
 )
