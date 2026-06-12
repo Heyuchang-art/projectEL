@@ -113,7 +113,7 @@ async function startServer() {
 
   // Helper to check if a model and its provider are active and enabled
   function isModelAndProviderEnabled(provider: string, modelId: string): boolean {
-    const builtInProviders = ["anthropic", "openai", "google", "deepseek", "qwen", "openrouter"];
+    const builtInProviders = ["anthropic", "openai", "google", "deepseek", "qwen"];
     let modelsConfig: any = { providers: {} };
     try {
       if (fs.existsSync(modelsJsonPath)) {
@@ -128,11 +128,12 @@ async function startServer() {
     const providersList = [...builtInProviders, ...customProviders];
     if (!providersList.includes(provider)) return false;
 
+    const pConfig = modelsConfig.providers?.[provider] || {};
+    if (pConfig.deleted === true) return false;
+
     const authStatus = modelRegistry.getProviderAuthStatus(provider);
     const isConfigured = checkIsConfigured(provider, authStatus, modelsConfig);
     if (!isConfigured) return false;
-
-    const pConfig = modelsConfig.providers?.[provider] || {};
     const providerEnabled = pConfig.enabled !== undefined ? pConfig.enabled : true;
     if (!providerEnabled) return false;
 
@@ -904,38 +905,40 @@ async function startServer() {
         modelsConfig.providers = {};
       }
 
-      const builtInProviders = ["anthropic", "openai", "google", "deepseek", "qwen", "openrouter"];
+      const builtInProviders = ["anthropic", "openai", "google", "deepseek", "qwen"];
       const customProviders = Object.keys(modelsConfig.providers);
       const providersList = Array.from(new Set([...builtInProviders, ...customProviders]));
 
-      const providersData = providersList.map((p) => {
-        const authStatus = modelRegistry.getProviderAuthStatus(p);
+      const providersData = providersList
+        .filter((p) => modelsConfig.providers?.[p]?.deleted !== true)
+        .map((p) => {
+          const authStatus = modelRegistry.getProviderAuthStatus(p);
 
-        let configuredBaseUrl = "";
-        const allRegisteredModels = modelRegistry.getAll();
-        const firstModelOfProvider = allRegisteredModels.find(m => m.provider === p);
-        if (firstModelOfProvider) {
-          configuredBaseUrl = firstModelOfProvider.baseUrl;
-        }
+          let configuredBaseUrl = "";
+          const allRegisteredModels = modelRegistry.getAll();
+          const firstModelOfProvider = allRegisteredModels.find(m => m.provider === p);
+          if (firstModelOfProvider) {
+            configuredBaseUrl = firstModelOfProvider.baseUrl;
+          }
 
-        const pConfig = modelsConfig.providers?.[p] || {};
-        const isConfigured = checkIsConfigured(p, authStatus, modelsConfig);
-        // 未添加 api key 的服务商默认不激活 (enabled: false)
-        const defaultEnabled = isConfigured;
-        const enabled = pConfig.enabled !== undefined ? pConfig.enabled : defaultEnabled;
+          const pConfig = modelsConfig.providers?.[p] || {};
+          const isConfigured = checkIsConfigured(p, authStatus, modelsConfig);
+          // 未添加 api key 的服务商默认不激活 (enabled: false)
+          const defaultEnabled = isConfigured;
+          const enabled = pConfig.enabled !== undefined ? pConfig.enabled : defaultEnabled;
 
-        return {
-          id: p,
-          name: modelRegistry.getProviderDisplayName(p),
-          configured: isConfigured,
-          source: authStatus.source,
-          baseUrl: configuredBaseUrl,
-          enabled: enabled
-        };
-      });
+          return {
+            id: p,
+            name: modelRegistry.getProviderDisplayName(p),
+            configured: isConfigured,
+            source: authStatus.source,
+            baseUrl: configuredBaseUrl,
+            enabled: enabled
+          };
+        });
 
       const modelsData = allModels
-        .filter((m) => providersList.includes(m.provider))
+        .filter((m) => providersList.includes(m.provider) && modelsConfig.providers?.[m.provider]?.deleted !== true)
         .map((m) => {
           const customModel = modelsConfig.providers?.[m.provider]?.models?.find((cm: any) => cm.id === m.id);
           const isModelEnabled = customModel?.enabled !== undefined ? customModel.enabled : true;
@@ -992,6 +995,10 @@ async function startServer() {
         modelsConfig.providers[provider] = {};
       }
 
+      if (modelsConfig.providers[provider].deleted) {
+        delete modelsConfig.providers[provider].deleted;
+      }
+
       if (baseUrl !== undefined) {
         modelsConfig.providers[provider].baseUrl = baseUrl;
       }
@@ -1035,10 +1042,20 @@ async function startServer() {
           modelsConfig = await fs.readJson(modelsJsonPath);
         } catch (err) {}
       }
-      if (modelsConfig.providers && modelsConfig.providers[providerId]) {
-        delete modelsConfig.providers[providerId];
-        await fs.outputJson(modelsJsonPath, modelsConfig, { spaces: 2 });
+      if (!modelsConfig.providers) {
+        modelsConfig.providers = {};
       }
+
+      const builtInProviders = ["anthropic", "openai", "google", "deepseek", "qwen"];
+      if (builtInProviders.includes(providerId)) {
+        modelsConfig.providers[providerId] = { deleted: true };
+      } else {
+        if (modelsConfig.providers[providerId]) {
+          delete modelsConfig.providers[providerId];
+        }
+      }
+
+      await fs.outputJson(modelsJsonPath, modelsConfig, { spaces: 2 });
       modelRegistry.refresh();
       authStorage.reload();
       res.json({ success: true });

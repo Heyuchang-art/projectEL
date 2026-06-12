@@ -33,6 +33,18 @@ export default function SettingsPanel() {
   // Collapsible model list state (by providerId)
   const [expandedProviders, setExpandedProviders] = useState<Record<string, boolean>>({});
 
+  const defaultProviderIds = ["anthropic", "openai", "google", "deepseek", "qwen"];
+  const defaultProviderNames: Record<string, string> = {
+    anthropic: "Anthropic (Claude)",
+    openai: "OpenAI",
+    google: "Google Gemini",
+    deepseek: "DeepSeek",
+    qwen: "Qwen (通义千问)"
+  };
+  const deletedDefaultProviders = defaultProviderIds.filter(
+    id => !providers.some(p => p.id === id)
+  );
+
   const fetchModelConfig = async () => {
     setIsLoading(true);
     try {
@@ -391,7 +403,7 @@ export default function SettingsPanel() {
   };
 
   const isCustomProvider = (providerId: string) => {
-    return !['anthropic', 'openai', 'google', 'deepseek', 'qwen', 'openrouter'].includes(providerId);
+    return !['anthropic', 'openai', 'google', 'deepseek', 'qwen'].includes(providerId);
   };
 
   if (isLoading) {
@@ -507,16 +519,14 @@ export default function SettingsPanel() {
                     填官方参数
                   </button>
                 )}
-                {isCustomProvider(p.id) && (
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteProvider(p.id)}
-                    className="btn-premium btn-secondary"
-                    style={{ color: '#ff4d4d', borderColor: '#ff4d4d', padding: '4px 8px', fontSize: '10px', boxShadow: 'none' }}
-                  >
-                    删除服务商
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => handleDeleteProvider(p.id)}
+                  className="btn-premium btn-secondary"
+                  style={{ color: '#ff4d4d', borderColor: '#ff4d4d', padding: '4px 8px', fontSize: '10px', boxShadow: 'none' }}
+                >
+                  删除服务商
+                </button>
               </div>
             </div>
             
@@ -720,6 +730,41 @@ export default function SettingsPanel() {
           </div>
         ))}
       </div>
+
+      {/* Restore Default Providers Section */}
+      {deletedDefaultProviders.length > 0 && (
+        <div style={{ marginTop: '20px', borderTop: '2px solid #222222', paddingTop: '16px' }}>
+          <h4 style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '10px' }}>
+            恢复默认服务商
+          </h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {deletedDefaultProviders.map(id => (
+              <button
+                key={id}
+                type="button"
+                onClick={async () => {
+                  try {
+                    const response = await fetch('http://localhost:3000/api/models/configure', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ provider: id, enabled: false })
+                    });
+                    if (!response.ok) throw new Error('恢复服务商失败');
+                    await fetchModelConfig();
+                    await fetchActiveModelConfig();
+                  } catch (err: any) {
+                    alert(err.message);
+                  }
+                }}
+                className="btn-premium btn-secondary"
+                style={{ fontSize: '10px', padding: '6px 12px', boxShadow: 'none' }}
+              >
+                + 恢复 {defaultProviderNames[id] || id}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div 
