@@ -51,6 +51,7 @@ interface ChatContextProps {
   isStreaming: boolean;
   activeModel: string;
   availableModels: any[];
+  providers: any[];
   thinkingLevel: string;
   selectedImages: ChatAttachment[];
   selectedAttachments: ChatAttachment[];
@@ -83,6 +84,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeModel, setActiveModel] = useState('获取中...');
   const [availableModels, setAvailableModels] = useState<any[]>([]);
+  const [providers, setProviders] = useState<any[]>([]);
   const [thinkingLevel, setThinkingLevel] = useState('medium');
   const [selectedAttachments, setSelectedAttachments] = useState<ChatAttachment[]>([]);
   const [sessionId, setSessionId] = useState('default-session');
@@ -115,6 +117,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data.activeModel) setActiveModel(data.activeModel);
       if (data.thinkingLevel) setThinkingLevel(data.thinkingLevel);
       if (data.models) setAvailableModels(data.models);
+      if (data.providers) setProviders(data.providers);
     } catch (err) {
       console.error('Failed to fetch models config:', err);
     }
@@ -634,6 +637,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isStreaming,
       activeModel,
       availableModels,
+      providers,
       thinkingLevel,
       selectedImages,
       selectedAttachments,
