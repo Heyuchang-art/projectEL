@@ -199,19 +199,32 @@ export default function ChatCard() {
                     margin: '0',
                   }}
                 >
-                  {availableModels
-                    .filter(m => {
+                  {(() => {
+                    const filtered = availableModels.filter(m => {
                       const p = providers.find(prov => prov.id === m.provider);
                       const isProviderEnabled = p ? p.enabled !== false : true;
                       const isModelEnabled = m.enabled !== false;
-                      return (isProviderEnabled && isModelEnabled) || m.id === activeModel;
-                    })
-                    .map(m => (
-                      <option key={m.id} value={m.id} style={{ backgroundColor: '#000000', color: '#ffffff' }}>
-                        {m.name} {m.enabled === false ? ' (已禁用)' : ''}
-                      </option>
-                    ))
-                  }
+                      return isProviderEnabled && isModelEnabled;
+                    });
+                    
+                    const activeIncluded = filtered.some(m => m.id === activeModel);
+                    const activeModelObj = availableModels.find(m => m.id === activeModel);
+                    
+                    return (
+                      <>
+                        {!activeIncluded && activeModelObj && (
+                          <option value={activeModelObj.id} style={{ backgroundColor: '#000000', color: 'var(--text-muted)' }}>
+                            {activeModelObj.name} (已禁用)
+                          </option>
+                        )}
+                        {filtered.map(m => (
+                          <option key={m.id} value={m.id} style={{ backgroundColor: '#000000', color: '#ffffff' }}>
+                            {m.name}
+                          </option>
+                        ))}
+                      </>
+                    );
+                  })()}
                 </select>
               </span>
 
