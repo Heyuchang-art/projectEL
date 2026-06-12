@@ -66,6 +66,24 @@ async function startServer() {
   const authStorage = AuthStorage.create(authStoragePath);
   const modelRegistry = ModelRegistry.create(authStorage, modelsJsonPath);
 
+  // Clean up any empty stored keys in auth storage on startup to allow environment variable fallbacks
+  const allAuthProviders = authStorage.list();
+  let authChanged = false;
+  for (const p of allAuthProviders) {
+    const cred = authStorage.get(p);
+    if (cred) {
+      const key = cred.type === "api_key" ? cred.key : (cred as any).key;
+      if (typeof key === "string" && key.trim() === "") {
+        authStorage.remove(p);
+        authChanged = true;
+      }
+    }
+  }
+  if (authChanged) {
+    authStorage.reload();
+    modelRegistry.refresh();
+  }
+
   // 多会话与预设管理器
   const sessions = new Map<string, any>();
   const sessionPresets = new Map<string, string>();
