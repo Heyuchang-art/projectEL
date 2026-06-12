@@ -150,6 +150,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchPresets();
   }, []);
 
+  // 监听会话变更，更新当前会话模型配置与可用模型列表
+  useEffect(() => {
+    fetchActiveModelConfig();
+  }, [sessionId]);
+
   // 连接 Socket.io 并监听事件
   useEffect(() => {
     if (socketRef.current) {
