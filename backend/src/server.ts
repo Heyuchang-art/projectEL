@@ -145,56 +145,7 @@ async function startServer() {
       io.to(sessionId).emit("pi-event", event);
     });
 
-    const activePresetId = sessionPresets.get(sessionId);
-    if (activePresetId && !sessionFile) {
-      const presetsPath = path.join(workspaceCwd, "skills", "agent-presets.json");
-      if (await fs.pathExists(presetsPath)) {
-        const presets = await fs.readJson(presetsPath);
-        const preset = presets.find((p: any) => p.id === activePresetId);
-        if (preset && preset.modelConfig) {
-          const { provider, modelId, thinkingLevel } = preset.modelConfig;
-          let model = modelRegistry.find(provider, modelId);
 
-          // 检查该模型是否已配置凭证，否则采用已配置的可用模型作为保底
-          let isConfigured = false;
-          if (model) {
-            const authStatus = modelRegistry.getProviderAuthStatus(model.provider);
-            isConfigured = authStatus.configured || !!authStatus.source;
-            console.log(`[Session Preset] Model ${provider}/${modelId} configured:`, isConfigured, 'authStatus:', JSON.stringify(authStatus));
-          } else {
-            console.log(`[Session Preset] Model ${provider}/${modelId} not found in registry`);
-          }
-
-          if (!model || !isConfigured) {
-            const previousModel = model;
-            model = getConfiguredFallbackModel();
-            console.log(`[Session Preset] Falling back from ${previousModel?.provider}/${previousModel?.id} to ${model?.provider}/${model?.id}`);
-          }
-
-          if (model) {
-            try {
-              await session.setModel(model);
-              console.log(`[Session Preset] setModel succeeded: ${model.provider}/${model.id}, session.model now: ${session.model?.provider}/${session.model?.id}`);
-            } catch (err) {
-              console.error(`Failed to set model ${model.provider}/${model.id} for preset:`, err);
-            }
-            // 独立设置思考等级，不受 setModel 失败影响
-            if (thinkingLevel && thinkingLevel !== "off") {
-              try {
-                await session.setThinkingLevel(thinkingLevel);
-              } catch (err) {
-                console.error(`Failed to set thinkingLevel "${thinkingLevel}" for preset, trying fallback "low"...`, err);
-                try {
-                  await session.setThinkingLevel("low");
-                } catch (fallbackErr) {
-                  console.error(`Fallback thinkingLevel "low" also failed:`, fallbackErr);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
 
     // 检查该会话当前模型是否已配置凭证，否则采用已配置的可用模型作为保底
     if (!session.model) {
@@ -728,17 +679,6 @@ async function startServer() {
       const presets = (await fs.pathExists(presetsPath)) ? await fs.readJson(presetsPath) : [];
       
       const presetData = { ...req.body };
-      if (!presetData.modelConfig || !presetData.modelConfig.provider || !presetData.modelConfig.modelId) {
-        const fallback = getConfiguredFallbackModel();
-        if (fallback) {
-          presetData.modelConfig = {
-            provider: fallback.provider,
-            modelId: fallback.id,
-            thinkingLevel: presetData.modelConfig?.thinkingLevel || "off"
-          };
-        }
-      }
-
       const newPreset = { id: randomUUID().slice(0, 8), ...presetData };
       presets.push(newPreset);
       await fs.outputJson(presetsPath, presets, { spaces: 2 });
@@ -759,17 +699,6 @@ async function startServer() {
       }
 
       const presetData = { ...req.body };
-      if (!presetData.modelConfig || !presetData.modelConfig.provider || !presetData.modelConfig.modelId) {
-        const fallback = getConfiguredFallbackModel();
-        if (fallback) {
-          presetData.modelConfig = {
-            provider: fallback.provider,
-            modelId: fallback.id,
-            thinkingLevel: presetData.modelConfig?.thinkingLevel || "off"
-          };
-        }
-      }
-
       presets[index] = { ...presets[index], ...presetData, id: req.params.id };
       await fs.outputJson(presetsPath, presets, { spaces: 2 });
       res.json({ success: true, preset: presets[index] });
