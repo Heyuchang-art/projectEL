@@ -201,7 +201,7 @@ export default function ChatCard() {
               onMouseLeave={(e) => {
                 if (!isStreaming) {
                   e.currentTarget.style.borderColor = '#222222';
-                  e.currentTarget.style.color = '#ffffff';
+                  e.currentTarget.style.color = '#d1d5db';
                 }
               }}
               title="清空当前对话历史"
@@ -247,7 +247,7 @@ export default function ChatCard() {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = '#222222';
-                  e.currentTarget.style.color = '#ffffff';
+                  e.currentTarget.style.color = '#d1d5db';
                 }}
                 title="隐藏聊天窗口"
               >
@@ -404,7 +404,7 @@ export default function ChatCard() {
                 left: '0',
                 marginTop: '6px',
                 backgroundColor: '#0c0c0c',
-                border: '2px solid #ffffff',
+                border: '2px solid #d1d5db',
                 boxShadow: '4px 4px 0px #000000',
                 padding: '12px',
                 zIndex: 200,
@@ -479,7 +479,7 @@ export default function ChatCard() {
                     onClick={handleCreateWithName}
                     style={{
                       backgroundColor: 'var(--primary)',
-                      border: '2px solid #ffffff',
+                      border: '2px solid #d1d5db',
                       color: '#000000',
                       fontSize: '10px',
                       fontFamily: 'var(--font-mono)',

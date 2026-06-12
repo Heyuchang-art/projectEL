@@ -33,7 +33,7 @@ export default function Sidebar() {
           width: '42px',
           height: '42px',
           backgroundColor: '#000000',
-          border: '2px solid #ffffff',
+          border: '2px solid #d1d5db',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -104,7 +104,7 @@ export default function Sidebar() {
           width: '46px',
           height: '46px',
           backgroundColor: '#000000',
-          border: '2px solid #ffffff',
+          border: '2px solid #d1d5db',
           color: '#d1d5db',
           display: 'flex',
           justifyContent: 'center',
@@ -121,7 +121,7 @@ export default function Sidebar() {
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'none';
           e.currentTarget.style.boxShadow = '3px 3px 0px #000000';
-          e.currentTarget.style.borderColor = '#ffffff';
+          e.currentTarget.style.borderColor = '#d1d5db';
         }}
         title="模型与 API 配置"
       >

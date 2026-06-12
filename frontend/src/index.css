@@ -2,7 +2,7 @@
   --bg-color: #000000;
   --panel-bg: #0c0c0c;
   --panel-border: #222222;
-  --panel-border-active: #ffffff;
+  --panel-border-active: #d1d5db;
   --text-main: #d1d5db;
   --text-muted: #7f7f7f;
   
@@ -176,7 +176,7 @@ body {
   border-radius: 0px;
   height: 12px;
   overflow: hidden;
-  border: 2px solid #ffffff;
+  border: 2px solid #d1d5db;
 }
 
 .progress-bar-fill {
@@ -221,7 +221,7 @@ body {
 
 .react-flow__edge-path {
   stroke-width: 3 !important;
-  stroke: #ffffff !important;
+  stroke: #d1d5db !important;
 }
 
 /* Custom React Flow Node styling */
@@ -229,7 +229,7 @@ body {
   padding: 12px 16px;
   border-radius: 0px;
   background: #0c0c0c;
-  border: 3px solid #ffffff;
+  border: 3px solid #d1d5db;
   color: var(--text-main);
   min-width: 200px;
   font-family: var(--font-mono);
@@ -266,7 +266,7 @@ body {
 .flow-node-handle {
   width: 10px !important;
   height: 10px !important;
-  background: #ffffff !important;
+  background: #d1d5db !important;
   border: 2px solid #000000 !important;
   border-radius: 0px !important; /* Sharp handles */
 }

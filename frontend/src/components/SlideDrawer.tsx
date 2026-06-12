@@ -84,7 +84,7 @@ export default function SlideDrawer({ isOpen, onClose, title, children }: SlideD
               width: '32px',
               height: '32px',
               backgroundColor: '#000000',
-              border: '2px solid #ffffff',
+              border: '2px solid #d1d5db',
               color: '#d1d5db',
               display: 'flex',
               justifyContent: 'center',
@@ -102,8 +102,8 @@ export default function SlideDrawer({ isOpen, onClose, title, children }: SlideD
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'none';
               e.currentTarget.style.boxShadow = '2px 2px 0px #000000';
-              e.currentTarget.style.borderColor = '#ffffff';
-              e.currentTarget.style.color = '#ffffff';
+              e.currentTarget.style.borderColor = '#d1d5db';
+              e.currentTarget.style.color = '#d1d5db';
             }}
           >
             <X size={16} />

@@ -130,7 +130,7 @@ export default function Header() {
           style={{
             backgroundColor: '#111111',
             color: '#d1d5db',
-            border: '2px solid #ffffff',
+            border: '2px solid #d1d5db',
             padding: '6px 12px',
             fontFamily: 'var(--font-mono)',
             fontWeight: 'bold',
@@ -154,7 +154,7 @@ export default function Header() {
           style={{
             backgroundColor: 'var(--primary)',
             color: '#d1d5db',
-            border: '2px solid #ffffff',
+            border: '2px solid #d1d5db',
             padding: '6px 12px',
             fontSize: '13px',
             fontWeight: 'bold',
@@ -188,7 +188,7 @@ export default function Header() {
             style={{
               backgroundColor: 'var(--accent)',
               color: '#d1d5db',
-              border: '2px solid #ffffff',
+              border: '2px solid #d1d5db',
               padding: '6px 12px',
               fontSize: '13px',
               fontWeight: 'bold',
