@@ -210,20 +210,25 @@ export default function ChatCard() {
                     const activeIncluded = filtered.some(m => m.id === activeModel);
                     const activeModelObj = availableModels.find(m => m.id === activeModel);
                     
-                    return (
-                      <>
-                        {!activeIncluded && activeModelObj && (
-                          <option value={activeModelObj.id} style={{ backgroundColor: '#000000', color: 'var(--text-muted)' }}>
-                            {activeModelObj.name} (已禁用)
-                          </option>
-                        )}
-                        {filtered.map(m => (
-                          <option key={m.id} value={m.id} style={{ backgroundColor: '#000000', color: '#ffffff' }}>
-                            {m.name}
-                          </option>
-                        ))}
-                      </>
-                    );
+                    const optionsList: React.ReactNode[] = [];
+                    
+                    if (!activeIncluded && activeModelObj) {
+                      optionsList.push(
+                        <option key={activeModelObj.id} value={activeModelObj.id} style={{ backgroundColor: '#000000', color: 'var(--text-muted)' }}>
+                          {activeModelObj.name} (已禁用)
+                        </option>
+                      );
+                    }
+                    
+                    filtered.forEach(m => {
+                      optionsList.push(
+                        <option key={m.id} value={m.id} style={{ backgroundColor: '#000000', color: '#ffffff' }}>
+                          {m.name}
+                        </option>
+                      );
+                    });
+                    
+                    return optionsList;
                   })()}
                 </select>
               </span>
