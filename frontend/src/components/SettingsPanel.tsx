@@ -372,6 +372,21 @@ export default function SettingsPanel() {
     }
   };
 
+  const isProviderConfiguredInUI = (providerId: string) => {
+    const currentKey = apiKeys[providerId];
+    const originalProvider = providers.find(p => p.id === providerId);
+    
+    if (currentKey === undefined) {
+      return originalProvider?.configured || false;
+    }
+    
+    if (currentKey === '********') {
+      return true;
+    }
+    
+    return currentKey.trim() !== '';
+  };
+
   const isCustomProvider = (providerId: string) => {
     return !['anthropic', 'openai', 'google', 'deepseek', 'qwen', 'openrouter'].includes(providerId);
   };
@@ -415,28 +430,60 @@ export default function SettingsPanel() {
               padding: '16px', 
               background: '#000000', 
               border: '2px solid #222222',
-              opacity: p.enabled !== false ? 1 : 0.65,
+              opacity: (p.enabled !== false && isProviderConfiguredInUI(p.id)) ? 1 : 0.65,
               transition: 'opacity 0.2s ease'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <input
-                  type="checkbox"
-                  checked={p.enabled !== false}
-                  onChange={(e) => handleToggleProvider(p.id, e.target.checked)}
-                  style={{ cursor: 'pointer' }}
-                />
-                <span style={{ fontWeight: 'bold', fontSize: '12px', fontFamily: 'var(--font-mono)', color: p.enabled !== false ? '#d1d5db' : 'var(--text-muted)' }}>
+                <span style={{ fontWeight: 'bold', fontSize: '12px', fontFamily: 'var(--font-mono)', color: (p.enabled !== false && isProviderConfiguredInUI(p.id)) ? '#d1d5db' : 'var(--text-muted)' }}>
                   {(p.name || p.id).toUpperCase()}
                 </span>
-                {p.enabled === false && (
+                {(!isProviderConfiguredInUI(p.id) || p.enabled === false) && (
                   <span style={{ fontSize: '8px', color: 'var(--text-muted)', border: '1px solid var(--text-muted)', padding: '0 2px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
-                    已禁用
+                    {!isProviderConfiguredInUI(p.id) ? '未配置 Key' : '已禁用'}
                   </span>
                 )}
               </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                {/* Switch for Provider activation */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '8px' }}>
+                  <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>服务商启用状态</span>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', position: 'relative' }}>
+                    <input
+                      type="checkbox"
+                      checked={p.enabled !== false && isProviderConfiguredInUI(p.id)}
+                      onChange={(e) => {
+                        if (!isProviderConfiguredInUI(p.id)) {
+                          alert('请先输入 API Key 才可以启用服务商');
+                          return;
+                        }
+                        handleToggleProvider(p.id, e.target.checked);
+                      }}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{
+                      position: 'relative',
+                      width: '36px',
+                      height: '20px',
+                      backgroundColor: (p.enabled !== false && isProviderConfiguredInUI(p.id)) ? 'var(--primary)' : '#222222',
+                      borderRadius: '10px',
+                      transition: 'background-color 0.2s ease',
+                      border: '2px solid #333333'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: '2px',
+                        left: (p.enabled !== false && isProviderConfiguredInUI(p.id)) ? '18px' : '2px',
+                        width: '12px',
+                        height: '12px',
+                        backgroundColor: (p.enabled !== false && isProviderConfiguredInUI(p.id)) ? '#000000' : '#888888',
+                        borderRadius: '50%',
+                        transition: 'left 0.2s ease'
+                      }} />
+                    </div>
+                  </label>
+                </div>
                 {p.id === 'deepseek' && (
                   <button 
                     type="button"
@@ -526,26 +573,54 @@ export default function SettingsPanel() {
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                     {availableModels.filter(m => m.provider === p.id).map(m => (
-                      <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0c0c0c', padding: '6px 10px', border: '1px solid #222222', opacity: m.enabled !== false ? 1 : 0.5 }}>
+                      <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0c0c0c', padding: '6px 10px', border: '1px solid #222222', opacity: (m.enabled !== false && p.enabled !== false) ? 1 : 0.5 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <input
-                            type="checkbox"
-                            checked={m.enabled !== false}
-                            onChange={(e) => handleToggleModel(p.id, m.id, e.target.checked)}
-                            style={{ cursor: 'pointer' }}
-                          />
-                          <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: m.enabled !== false ? '#ffffff' : 'var(--text-muted)' }}>
+                          <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: (m.enabled !== false && p.enabled !== false) ? '#ffffff' : 'var(--text-muted)' }}>
                             {m.name} <span style={{ color: 'var(--text-muted)', fontSize: '9px' }}>({m.id})</span>
                             {m.reasoning && <span style={{ marginLeft: '6px', color: 'var(--primary)', fontSize: '8px', border: '1px solid var(--primary)', padding: '0px 2px' }}>Reasoning</span>}
                           </span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteModel(p.id, m.id)}
-                          style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                        >
-                          <Trash2 size={12} />
-                        </button>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                          {/* Switch for Model activation */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>模型启用状态</span>
+                            <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', position: 'relative' }}>
+                              <input
+                                type="checkbox"
+                                checked={m.enabled !== false}
+                                onChange={(e) => handleToggleModel(p.id, m.id, e.target.checked)}
+                                style={{ display: 'none' }}
+                              />
+                              <div style={{
+                                position: 'relative',
+                                width: '32px',
+                                height: '18px',
+                                backgroundColor: m.enabled !== false ? 'var(--primary)' : '#222222',
+                                borderRadius: '9px',
+                                transition: 'background-color 0.2s ease',
+                                border: '2px solid #333333'
+                              }}>
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '1px',
+                                  left: m.enabled !== false ? '15px' : '1px',
+                                  width: '12px',
+                                  height: '12px',
+                                  backgroundColor: m.enabled !== false ? '#000000' : '#888888',
+                                  borderRadius: '50%',
+                                  transition: 'left 0.2s ease'
+                                }} />
+                              </div>
+                            </label>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteModel(p.id, m.id)}
+                            style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
