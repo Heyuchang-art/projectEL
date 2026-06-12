@@ -7,4 +7,4 @@
 | Task 3: Backend: Filter deleted providers in models list & checks | [x] | Filter GET /api/models and isModelAndProviderEnabled |
 | Task 4: Frontend: Enable Delete button for default providers | [x] | Modify isCustomProvider check and UI |
 | Task 5: Frontend: Implement Restore Default Providers UI | [x] | Render restore section at the bottom of settings |
-| Task 6: Rebuild, restart, and verify the changes | [ ] | Run builds, check endpoints, manually verify functionality |
+| Task 6: Rebuild, restart, and verify the changes | [x] | Run builds, check endpoints, manually verify functionality |
