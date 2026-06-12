@@ -72,6 +72,7 @@ async function startServer() {
 
   // Helper to check if a model and its provider are active and enabled
   function isModelAndProviderEnabled(provider: string, modelId: string): boolean {
+    const builtInProviders = ["anthropic", "openai", "google", "deepseek", "qwen", "openrouter"];
     let modelsConfig: any = { providers: {} };
     try {
       if (fs.existsSync(modelsJsonPath)) {
@@ -81,6 +82,10 @@ async function startServer() {
     if (!modelsConfig.providers) {
       modelsConfig.providers = {};
     }
+
+    const customProviders = Object.keys(modelsConfig.providers);
+    const providersList = [...builtInProviders, ...customProviders];
+    if (!providersList.includes(provider)) return false;
 
     const authStatus = modelRegistry.getProviderAuthStatus(provider);
     const isConfigured = authStatus.configured || !!authStatus.source;
@@ -888,20 +893,22 @@ async function startServer() {
         };
       });
 
-      const modelsData = allModels.map((m) => {
-        const customModel = modelsConfig.providers?.[m.provider]?.models?.find((cm: any) => cm.id === m.id);
-        const isModelEnabled = customModel?.enabled !== undefined ? customModel.enabled : true;
+      const modelsData = allModels
+        .filter((m) => providersList.includes(m.provider))
+        .map((m) => {
+          const customModel = modelsConfig.providers?.[m.provider]?.models?.find((cm: any) => cm.id === m.id);
+          const isModelEnabled = customModel?.enabled !== undefined ? customModel.enabled : true;
 
-        return {
-          id: m.id,
-          name: m.name,
-          provider: m.provider,
-          reasoning: m.reasoning,
-          contextWindow: m.contextWindow,
-          maxTokens: m.maxTokens,
-          enabled: isModelEnabled
-        };
-      });
+          return {
+            id: m.id,
+            name: m.name,
+            provider: m.provider,
+            reasoning: m.reasoning,
+            contextWindow: m.contextWindow,
+            maxTokens: m.maxTokens,
+            enabled: isModelEnabled
+          };
+        });
 
       res.json({
         providers: providersData,

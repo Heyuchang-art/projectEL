@@ -202,7 +202,7 @@ export default function ChatCard() {
                   {(() => {
                     const filtered = availableModels.filter(m => {
                       const p = providers.find(prov => prov.id === m.provider);
-                      const isProviderEnabled = p ? p.enabled !== false : true;
+                      const isProviderEnabled = p ? p.enabled !== false : false;
                       const isModelEnabled = m.enabled !== false;
                       return isProviderEnabled && isModelEnabled;
                     });
