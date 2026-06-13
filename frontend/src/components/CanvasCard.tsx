@@ -8,7 +8,8 @@ import {
   Node,
   Position,
   ReactFlow,
-  ReactFlowInstance
+  ReactFlowProvider,
+  useReactFlow
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Copy, FilePlus2, Layers, Save, ShieldCheck, Trash2, X } from 'lucide-react';
@@ -180,9 +181,9 @@ function PaletteItem({ definition }: { definition: WorkflowNodeDefinition }) {
   );
 }
 
-export default function CanvasCard() {
+function CanvasCardInner() {
   const reactFlowWrapper = useRef<HTMLDivElement | null>(null);
-  const [reactFlowInstance, setReactFlowInstance] = React.useState<ReactFlowInstance | null>(null);
+  const { screenToFlowPosition } = useReactFlow();
   const [isNewWorkflowModalOpen, setIsNewWorkflowModalOpen] = React.useState(false);
   const [isDeleteWorkflowModalOpen, setIsDeleteWorkflowModalOpen] = React.useState(false);
   const [newWorkflowName, setNewWorkflowName] = React.useState('我的学习工作流');
@@ -252,15 +253,15 @@ export default function CanvasCard() {
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       const type = event.dataTransfer.getData('application/reactflow') as WorkflowNodeType;
-      if (!type || !reactFlowInstance) return;
+      if (!type) return;
 
-      const position = reactFlowInstance.screenToFlowPosition({
+      const position = screenToFlowPosition({
         x: event.clientX,
         y: event.clientY
       });
       addNode(type, position);
     },
-    [addNode, reactFlowInstance]
+    [addNode, screenToFlowPosition]
   );
 
   const errorCount = validation.items.filter((item) => item.level === 'error').length;
@@ -411,7 +412,7 @@ export default function CanvasCard() {
             onNodeClick={onNodeClick}
             onEdgeClick={onEdgeClick}
             onPaneClick={onPaneClick}
-            onInit={setReactFlowInstance}
+
             onNodesDelete={(deletedNodes) => {
               deletedNodes.forEach((node) => deleteNode(node.id));
             }}
@@ -661,5 +662,13 @@ export default function CanvasCard() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CanvasCard() {
+  return (
+    <ReactFlowProvider>
+      <CanvasCardInner />
+    </ReactFlowProvider>
   );
 }
