@@ -399,8 +399,7 @@ function CanvasCardInner() {
         <div
           ref={reactFlowWrapper}
           className="workflow-flow-area"
-          onDrop={onDrop}
-          onDragOver={onDragOver}
+          style={{ height: '100%' }}
         >
           <ReactFlow
             nodes={nodes}
@@ -412,7 +411,8 @@ function CanvasCardInner() {
             onNodeClick={onNodeClick}
             onEdgeClick={onEdgeClick}
             onPaneClick={onPaneClick}
-
+            onDrop={onDrop}
+            onDragOver={onDragOver}
             onNodesDelete={(deletedNodes) => {
               deletedNodes.forEach((node) => deleteNode(node.id));
             }}
