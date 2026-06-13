@@ -8,5 +8,5 @@
 | Task 4 | Brainstorming: Ask clarifying questions | [x] |
 | Task 5 | Brainstorming: Propose 2-3 approaches | [x] |
 | Task 6 | Brainstorming: Present design sections | [x] |
-| Task 7 | Brainstorming: Write design doc | [/] |
-| Task 8 | Brainstorming: Transition to implementation | [ ] |
+| Task 7 | Brainstorming: Write design doc | [x] |
+| Task 8 | Brainstorming: Transition to implementation | [x] |
