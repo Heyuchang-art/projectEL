@@ -8,6 +8,113 @@
 
 ---
 
+## 快速开始
+
+### TL;DR
+
+```bash
+git clone <repo-url> && cd snapshot-pi
+scripts\setup.bat          # 首次一站式初始化 (依赖 + API Key + NapCat + 前端构建)
+start.bat                  # 日常启动 → 自动打开 http://localhost:3000
+```
+
+### 环境要求
+
+- Node.js >= 18.0.0
+- npm >= 9.0.0
+- Windows 10+（NapCat QQ Bot 功能需要）
+
+### 首次部署
+
+```bash
+# git clone 后运行一次，完成所有初始化:
+#   - npm install 安装依赖
+#   - API Key 配置向导
+#   - NapCat QQ Shell 自动部署
+#   - 前端资源构建
+scripts\setup.bat
+```
+
+`scripts\setup.bat` 是一站式初始化脚本，包含：
+
+| 步骤 | 内容 | 说明 |
+|:---|:---|:---|
+| 1 | 环境检查 | 检测 Node.js / npm 版本 |
+| 2 | npm install | 安装所有依赖 |
+| 3 | API Key 配置 | 交互式向导，写入 `.pi/auth.json` |
+| 4 | NapCat 部署 | 下载并解压 NapCat Shell (Node.zip)，部署配置模板 |
+| 5 | 前端构建 | 构建生产包到 `frontend/dist/` |
+
+> 部署完成后 `napcat/` 目录完全自包含，可整体复制到任意 Windows 机器。
+> 如需重装，重新运行 `scripts\setup.bat` 即可（支持 `--force` 参数强制重新初始化）。
+
+### 日常启动
+
+```bash
+# 双击 start.bat 或命令行:
+start.bat
+# → 浏览器自动打开 http://localhost:3000
+```
+
+`start.bat` 仅做两件事：
+- 启动后端服务（Express，端口 3000，内置静态托管前端）
+- 自动打开浏览器
+
+### 配置 API 密钥与模型
+
+项目支持以下模型服务商，在 Web 界面左下角 ⚙️ 齿轮按钮中配置：
+
+| 服务商 | 环境变量 | Base URL | 模型示例 |
+|:---|:---|:---|:---|
+| **DeepSeek** | `DEEPSEEK_API_KEY` | `https://api.deepseek.com` | DeepSeek V4 Pro / Flash |
+| **Qwen (DashScope)** | `DASHSCOPE_API_KEY` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | Qwen3.6 Plus / Flash / Max |
+| **Anthropic** | `ANTHROPIC_API_KEY` | `https://api.anthropic.com` | Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5 |
+| **OpenAI** | `OPENAI_API_KEY` | `https://api.openai.com/v1` | GPT-5.4 / GPT-5.4 Mini / GPT-4.1 |
+| **Google** | `GOOGLE_API_KEY` | `https://generativelanguage.googleapis.com/v1beta` | Gemini 3.1 Pro / 2.5 Pro / 2.5 Flash |
+| **OpenRouter** | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` | Claude / GPT / Gemini (聚合) |
+
+配置方式有两种：
+- **Web 界面**：启动后点击左下角 ⚙️ 齿轮按钮，填入 API Key / Base URL，点击"保存并生效"，自动持久化到 `.pi/auth.json` 和 `.pi/models.json`
+- **环境变量**：设置上表对应的环境变量，服务启动时自动加载
+
+### 配置 Qwen API（重要）
+
+使用 Qwen（通义千问）模型需要通过阿里云百炼平台获取 API Key：
+
+1. 访问 [阿里云百炼平台](https://bailian.console.aliyun.com/) 开通 DashScope 服务
+2. 在 **业务空间 → 模型广场** 中，手动开启你需要使用的模型授权（如 qwen3.6-plus、qwen3.6-flash 等），新开通的百炼账号默认不启用所有模型
+3. 获取 API Key：百炼控制台右上角 → API-KEY 管理 → 创建 AccessKey
+4. 在 Snapshot Pi 的 ⚙️ 设置面板中找到 **QWEN**，填入 API Key，点击"填官方参数"自动填入 Base URL，保存即可
+
+> **注意**：仅获取 API Key 不足以调用所有模型，必须在百炼平台业务空间中**逐模型开启授权**，否则 API 会返回模型未开通的错误。识图功能建议启用 `qwen3.6-flash` 或 `qwen-plus-latest` 等多模态模型。
+
+### 一键绿色包打包
+
+如需将项目打包为可直接分发的**绿色免安装一键包**（自带 Node.js 运行时，解压即用）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-onekey-package.ps1
+```
+
+打包脚本会自动完成：
+- 下载并集成免安装版 Node.js 运行时
+- 编译前端静态资源与后端 TypeScript
+- 拷贝 Pi SDK、预设配置、NapCat 组件
+- 精简安装生产依赖（排除 devDependencies）
+- 生成一键 `start.bat` 启动脚本
+
+产出目录 `dist_onekey/` 可直接压缩为 `.zip` 发送到任意 Windows 机器，双击 `start.bat` 即可运行。
+
+### 端口分配
+
+| 服务 | 端口 |
+|------|------|
+| 后端 API（Express + Socket.io，内置静态托管前端） | 3000 |
+| QQ WebSocket（NapCat 连接） | 3001 |
+| NapCat WebUI | 6099 |
+
+---
+
 ## 架构设计
 
 项目采用 **Monorepo** 单体多包架构管理，包含 React 前端卡片式 Web 界面、Node.js Express 统一后端网关，以及本地打包的 `pi-sdk` 内核组件。
@@ -213,7 +320,97 @@ graph TD
 
 ---
 
-## QQ Bot 集成 (个人学习智能助理)
+## 使用指南
+
+### Web UI 使用
+
+1. 启动项目后打开 `http://localhost:3000`。
+2. 左侧边栏可切换四个功能卡片：**聊天** / **工作流画板** / **知识库** / **QQ Bot**。
+3. 在聊天卡片中直接向 Agent 提问，例如：`动态规划核心思想是什么？`
+4. 如果命中知识库，聊天区会先出现系统提示：`已检索并注入 1 条知识库上下文`。
+5. 继续查看 Agent 回复，回答会优先基于命中的本地知识卡片或整理笔记。
+6. 在低代码工作流画板中，可以使用"写入知识库"节点，把自动化流程的结果沉淀回知识库。
+
+### 知识库使用
+
+知识库不是单纯的资料仓库，而是 projectEL 的"学习记忆系统"。它把 QQ 聊天、课件摘要、人工整理笔记和 Agent 对话连接起来，让智能体可以基于用户自己的学习资料回答问题。
+
+核心能力包括：
+
+- **保存学习资料**：支持 Wiki 知识卡片和人工整理笔记两类内容。Wiki 卡片适合快速沉淀概念、群聊结论和临时知识；整理笔记适合长期复习与结构化学习。
+- **检索知识内容**：按标题、正文、标签检索知识卡片和整理笔记。Agent 聊天时会自动检索相关内容，而不是只依赖模型通用知识。
+- **Agent 知识库问答**：用户在聊天框提问后，后端会先构建知识库上下文，再注入给 Pi Agent。命中时前端会显示"已检索并注入 N 条知识库上下文"，方便确认回答来源。
+- **工作流写入知识库**：React Flow 画板提供"写入知识库"节点，可以把 QQ 群消息、课件总结、学习日报或 LLM 结构化结果沉淀为知识。
+- **复习与记忆管理**：整理笔记支持 SM-2 间隔重复，记录复习次数、稳定性、难度和下次复习时间。
+- **置信度与归档**：Wiki 卡片会随时间发生置信度衰减；低置信度内容进入归档审查，可被归档并自动重写引用链路。
+
+> 当前 v1 使用本地关键词/标签/正文匹配完成检索，已经覆盖 Wiki 卡片和整理笔记。后续可升级为 embedding 向量检索，以支持语义相近但关键词不同的问题。
+
+### QQ Bot 使用
+
+#### 启动步骤
+
+1. 运行 `scripts\setup.bat` 完成首次部署（已部署则跳过）
+2. 运行 `start.bat` 启动服务
+3. 浏览器打开 `http://localhost:3000`，点击侧边栏 **QQ Bot** 图标
+4. 在卡片页头点击 **▶ 启动** 按钮
+5. 系统自动启动 NapCat Shell（**独立模式**：内嵌 Node.js，无需 QQ.exe 或管理员权限）
+6. 在后端终端中看到 NapCat 输出的 QR 码，用手机 QQ 扫码登录
+7. 登录成功后，卡片显示 **QQ xxx 在线**，Bot 开始响应私聊消息
+
+> ℹ️ **关于部署**
+>
+> NapCat 的 `node.exe`、`wrapper.node` 和核心文件由 `scripts\setup.bat` 自动部署。
+> 部署完成后 `napcat/` 目录完全自包含，可整体迁移到任意 Windows 机器。
+> 如果 NapCat 版本过旧，重新运行 `scripts\setup.bat` 即可（自动覆盖重装）。
+
+#### 聊天触发方式
+
+| 方式 | 行为 |
+|------|------|
+| 私聊提问 | AI 使用 Pi Agent 智能回复（Markdown → QQ 纯文本，公式自动渲染为图片） |
+| `/ai <问题>` | 强制调用 AI 助理回答 |
+| `/ask <问题>` | 同上 |
+| 私聊学习对话自动分析 | 对话沉淀一定字数后，后台自动提炼知识 → 创建 wiki 卡片到知识库 |
+
+#### 个人助理指令
+
+所有指令以 `/` 开头，在与 Bot 私聊中发送即可：
+
+##### 个人自测系统 (`/quiz`)
+
+| 命令 | 说明 |
+|------|------|
+| `/quiz start` | 开始一轮 AI 针对薄弱知识点的出题自测（默认 3 题） |
+| `/quiz stop` | 提前终止当前自测 |
+
+##### 个人统计 (`/stats`)
+
+| 命令 | 说明 |
+|------|------|
+| `/stats` | 查看个人目前的自测成绩与累积的个人学习 XP 积分 |
+
+##### 帮助 (`/help`)
+
+| 命令 | 说明 |
+|------|------|
+| `/help` | 显示所有可用命令列表 |
+
+##### 评分与 XP 奖励标准
+
+自测答题按正确性结合置信度评分，并奖励个人学习经验值（XP）：
+
+| Grade | 说明 | 奖励 XP |
+|:-----:|------|:--:|
+| 0 | 完全错误 | 0 |
+| 1 | 接近但错误 | 1 |
+| 2 | 基本正确 | 3 |
+| 3 | 完全正确 | 5 |
+| 4 | 完美答案 | 10 |
+
+---
+
+## QQ Bot 集成 (技术架构)
 
 Snapshot Pi 通过 **NapCatQQ 框架**（独立模式）实现 QQ 个人助理 AI 聊天交互、对话知识提取、个人自测系统与个人学习分析报告。
 
@@ -232,14 +429,6 @@ NapCatQQ (独立模式, 内嵌 Node.js)
                       ├─ ContentRouter    → Puppeteer KaTeX 公式渲染
                       └─ ReportGenerator  → 个人学习报告
 ```
-
-### 端口分配
-
-| 服务 | 端口 |
-|------|------|
-| 后端 API（Express + Socket.io，内置静态托管前端） | 3000 |
-| QQ WebSocket（NapCat 连接） | 3001 |
-| NapCat WebUI | 6099 |
 
 ### 配置
 
@@ -262,77 +451,6 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 | `rendering.maxMessageLength` | 单条消息最大字数 | `1500` |
 | `rendering.messageChunkOverlap` | 长消息分块重叠字数 | `100` |
 
-### 使用步骤
-
-1. 运行 `scripts\setup.bat` 完成首次部署（已部署则跳过）
-2. 运行 `start.bat` 启动服务
-3. 浏览器打开 `http://localhost:3000`，点击侧边栏 **QQ Bot** 图标
-4. 在卡片页头点击 **▶ 启动** 按钮
-5. 系统自动启动 NapCat Shell（**独立模式**：内嵌 Node.js，无需 QQ.exe 或管理员权限）
-6. 在后端终端中看到 NapCat 输出的 QR 码，用手机 QQ 扫码登录
-7. 登录成功后，卡片显示 **QQ xxx 在线**，Bot 开始响应群聊与私聊消息
-
-> ℹ️ **关于部署**
-> 
-> NapCat 的 `node.exe`、`wrapper.node` 和核心文件由 `scripts\setup.bat` 自动部署。
-> 部署完成后 `napcat/` 目录完全自包含，可整体迁移到任意 Windows 机器。
-> 如果 NapCat 版本过旧，重新运行 `scripts\setup.bat` 即可（自动覆盖重装）。
-
-### 个人聊天触发方式
-
-| 方式 | 行为 |
-|------|------|
-| 私聊提问 | AI 使用 Pi Agent 智能回复（Markdown → QQ 纯文本，公式自动渲染为图片） |
-| `/ai <问题>` | 强制调用 AI 助理回答 |
-| `/ask <问题>` | 同上 |
-| 私聊学习对话自动分析 | 对话沉淀一定字数后，后台自动提炼知识 → 创建 wiki 卡片到知识库 |
-
-### QQ 个人助理指令
-
-所有指令以 `/` 开头，在与 Bot 私聊中发送即可：
-
-#### 个人自测系统 (`/quiz`)
-
-| 命令 | 说明 |
-|------|------|
-| `/quiz start` | 开始一轮 AI 针对薄弱知识点的出题自测（默认 3 题） |
-| `/quiz stop` | 提前终止当前自测 |
-
-#### 个人统计 (`/stats`)
-
-| 命令 | 说明 |
-|------|------|
-| `/stats` | 查看个人目前的自测成绩与累积的个人学习 XP 积分 |
-
-#### 帮助 (`/help`)
-
-| 命令 | 说明 |
-|------|------|
-| `/help` | 显示所有可用命令列表 |
-
-#### 评分与 XP 奖励标准
-
-自测答题按正确性结合置信度评分，并奖励个人学习经验值（XP）：
-
-| Grade | 说明 | 奖励 XP |
-|:-----:|------|:--:|
-| 0 | 完全错误 | 0 |
-| 1 | 接近但错误 | 1 |
-| 2 | 基本正确 | 3 |
-| 3 | 完全正确 | 5 |
-| 4 | 完美答案 | 10 |
-
-### API 端点
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/qq/status` | 连接状态 + 在线账号列表 |
-| GET | `/api/qq/health` | 健康检查（在线数 / 运行时长） |
-| POST | `/api/qq/start` | 启动 QQ 服务（预检 + 初始化 WS 适配器 + 拉起 NapCat Shell，崩溃自动重启最多 3 次） |
-| POST | `/api/qq/stop` | 停止 QQ 服务（关闭适配器 + 终止 NapCat 进程，重置重启计数） |
-| GET | `/api/qq/report/weekly` | 个人学习分析周报（薄弱知识 / 自测打卡趋势） |
-| GET | `/api/qq/report/weekly/text` | 个人学习分析周报纯文本格式（可直接发送至个人收藏/设备） |
-
 ### WebUI 监控面板
 
 前端 `QQBotCard` 提供实时监控：
@@ -346,94 +464,7 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 
 ---
 
-## 项目文档
-
-项目的所有设计、架构及开发文档已整理至 [docs/](./docs/) 目录下：
-
-* **[开发者与进度指南 (plan—develop.md)](./docs/plan—develop.md)**：记录了当前开发进度、技术栈、双轨知识库机制及下一步开发指引。
-* **[WebUI 设计与方向规划白皮书 (webui.md)](./docs/webui.md)**：包含系统的视觉设计规范（2D 粒子拓扑图谱）及开发迁移阶段。
-* **[智能融合知识库架构白皮书 (knowledge_base_architecture_v2.md)](./docs/knowledge_base_architecture_v2.md)**：描述了时间维度的遗忘曲线算法、指数衰减模型、SM-2 间隔重复及归档审查 Veto 机制。
-* **[智能体内核与编排架构设计 (learning_agent_architecture.md)](./docs/learning_agent_architecture.md)**：详细拆解了 React Flow 低代码画布与 Pi SDK 编译热重载的闭环机制。
-
----
-
-## 快速开始
-
-### 环境要求
-
-- Node.js >= 18.0.0
-- npm >= 9.0.0
-- Windows 10+（NapCat QQ Bot 功能需要）
-
-### 首次部署
-
-```bash
-# git clone 后运行一次，完成所有初始化:
-#   - npm install 安装依赖
-#   - API Key 配置向导
-#   - NapCat QQ Shell 自动部署
-#   - 前端资源构建
-scripts\setup.bat
-```
-
-`scripts\setup.bat` 是一站式初始化脚本，包含：
-
-| 步骤 | 内容 | 说明 |
-|:---|:---|:---|
-| 1 | 环境检查 | 检测 Node.js / npm 版本 |
-| 2 | npm install | 安装所有依赖 |
-| 3 | API Key 配置 | 交互式向导，写入 `.pi/auth.json` |
-| 4 | NapCat 部署 | 下载并解压 NapCat Shell (Node.zip)，部署配置模板 |
-| 5 | 前端构建 | 构建生产包到 `frontend/dist/` |
-
-> 部署完成后 `napcat/` 目录完全自包含，可整体复制到任意 Windows 机器。
-> 如需重装，重新运行 `scripts\setup.bat` 即可。
-
-### 日常启动
-
-```bash
-# 双击 start.bat 或命令行:
-start.bat
-# → 浏览器自动打开 http://localhost:3000
-```
-
-`start.bat` 仅做两件事：
-- 启动后端服务（Express，端口 3000，内置静态托管前端）
-- 自动打开浏览器
-
-启动后可以在终端中看到 NapCat 的 QR 码输出（如果已部署），用手机 QQ 扫码即可登录 Bot。
-
-### 配置 API 密钥与模型
-
-项目支持以下模型服务商，在 Web 界面左下角 ⚙️ 齿轮按钮中配置：
-
-| 服务商 | 环境变量 | Base URL | 模型示例 |
-|:---|:---|:---|:---|
-| **DeepSeek** | `DEEPSEEK_API_KEY` | `https://api.deepseek.com` | DeepSeek V4 Pro / Flash |
-| **Qwen (DashScope)** | `DASHSCOPE_API_KEY` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | Qwen3.6 Plus / Flash / Max |
-| **Anthropic** | `ANTHROPIC_API_KEY` | `https://api.anthropic.com` | Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5 |
-| **OpenAI** | `OPENAI_API_KEY` | `https://api.openai.com/v1` | GPT-5.4 / GPT-5.4 Mini / GPT-4.1 |
-| **Google** | `GOOGLE_API_KEY` | `https://generativelanguage.googleapis.com/v1beta` | Gemini 3.1 Pro / 2.5 Pro / 2.5 Flash |
-| **OpenRouter** | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` | Claude / GPT / Gemini (聚合) |
-
-配置方式有两种：
-- **Web 界面**：启动后点击左下角 ⚙️ 齿轮按钮，填入 API Key / Base URL，点击"保存并生效"，自动持久化到 `.pi/auth.json` 和 `.pi/models.json`
-- **环境变量**：设置上表对应的环境变量，服务启动时自动加载
-
-### 配置 Qwen API（重要）
-
-使用 Qwen（通义千问）模型需要通过阿里云百炼平台获取 API Key：
-
-1. 访问 [阿里云百炼平台](https://bailian.console.aliyun.com/) 开通 DashScope 服务
-2. 在 **业务空间 → 模型广场** 中，手动开启你需要使用的模型授权（如 qwen3.6-plus、qwen3.6-flash 等），新开通的百炼账号默认不启用所有模型
-3. 获取 API Key：百炼控制台右上角 → API-KEY 管理 → 创建 AccessKey
-4. 在 Snapshot Pi 的 ⚙️ 设置面板中找到 **QWEN**，填入 API Key，点击"填官方参数"自动填入 Base URL，保存即可
-
-> **注意**：仅获取 API Key 不足以调用所有模型，必须在百炼平台业务空间中**逐模型开启授权**，否则 API 会返回模型未开通的错误。识图功能建议启用 `qwen3.6-flash` 或 `qwen-plus-latest` 等多模态模型。
-
----
-
-## API 端点
+## API 参考
 
 ### 会话管理 (Sessions)
 
@@ -489,40 +520,16 @@ start.bat
 | POST | `/api/knowledge/archive/execute` | 执行归档 |
 | GET | `/api/knowledge/stats` | 统计数据 |
 
-#### 知识库能做什么
-
-知识库不是单纯的资料仓库，而是 projectEL 的“学习记忆系统”。它把 QQ 群消息、课件摘要、人工整理笔记和 Agent 对话连接起来，让智能体可以基于用户自己的学习资料回答问题。
-
-核心能力包括：
-
-- **保存学习资料**：支持 Wiki 知识卡片和人工整理笔记两类内容。Wiki 卡片适合快速沉淀概念、群聊结论和临时知识；整理笔记适合长期复习与结构化学习。
-- **检索知识内容**：按标题、正文、标签检索知识卡片和整理笔记。Agent 聊天时会自动检索相关内容，而不是只依赖模型通用知识。
-- **Agent 知识库问答**：用户在聊天框提问后，后端会先构建知识库上下文，再注入给 Pi Agent。命中时前端会显示“已检索并注入 N 条知识库上下文”，方便确认回答来源。
-- **工作流写入知识库**：React Flow 画板提供“写入知识库”节点，可以把 QQ 群消息、课件总结、学习日报或 LLM 结构化结果沉淀为知识。
-- **复习与记忆管理**：整理笔记支持 SM-2 间隔重复，记录复习次数、稳定性、难度和下次复习时间。
-- **置信度与归档**：Wiki 卡片会随时间发生置信度衰减；低置信度内容进入归档审查，可被归档并自动重写引用链路。
-
-#### 在网页中如何使用
-
-1. 启动项目后打开 `http://localhost:3000`。
-2. 点击左侧“知识库”图标，可以查看 Wiki 卡片、整理笔记、归档审查和统计信息。
-3. 在聊天卡片中直接向 Agent 提问，例如：`动态规划核心思想是什么？`
-4. 如果命中知识库，聊天区会先出现系统提示：`已检索并注入 1 条知识库上下文`。
-5. 继续查看 Agent 回复，回答会优先基于命中的本地知识卡片或整理笔记。
-6. 在低代码工作流画板中，可以使用“写入知识库”节点，把自动化流程的结果沉淀回知识库。
-
-当前 v1 使用本地关键词/标签/正文匹配完成检索，已经覆盖 Wiki 卡片和整理笔记。后续可升级为 embedding 向量检索，以支持语义相近但关键词不同的问题。
-
-### QQ Bot 服务 (QQ Bot Service)
+### QQ Bot 服务
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/api/qq/status` | 连接状态 (在线账号 / 运行状态) |
-| GET | `/api/qq/report/weekly` | 个人学习周报 (个人自测统计 / 薄弱知识点 / XP 积分趋势) |
-| GET | `/api/qq/report/weekly/text` | 个人学习周报 QQ 纯文本格式 (适合保存或转发给自己) |
-| GET | `/api/qq/health` | 健康检查 (在线数 / 运行时长) |
-| POST | `/api/qq/start` | 启动 QQ 服务 (预检 + 初始化适配器 + 拉起 NapCat Shell，崩溃自动重启) |
-| POST | `/api/qq/stop` | 停止 QQ 服务 (关闭适配器 + 终止 NapCat 进程 + 重置重启计数) |
+| GET | `/api/qq/status` | 连接状态 + 在线账号列表 |
+| GET | `/api/qq/health` | 健康检查（在线数 / 运行时长） |
+| POST | `/api/qq/start` | 启动 QQ 服务（预检 + 初始化 WS 适配器 + 拉起 NapCat Shell，崩溃自动重启最多 3 次） |
+| POST | `/api/qq/stop` | 停止 QQ 服务（关闭适配器 + 终止 NapCat 进程，重置重启计数） |
+| GET | `/api/qq/report/weekly` | 个人学习分析周报（薄弱知识 / 自测打卡趋势） |
+| GET | `/api/qq/report/weekly/text` | 个人学习分析周报纯文本格式（可直接发送至个人收藏/设备） |
 
 ### WebSocket 事件 (Socket.io)
 
@@ -585,6 +592,17 @@ start.bat
 
 ---
 
+## 项目文档
+
+项目的所有设计、架构及开发文档已整理至 [docs/](./docs/) 目录下：
+
+* **[开发者与进度指南 (plan—develop.md)](./docs/plan—develop.md)**：记录了当前开发进度、技术栈、双轨知识库机制及下一步开发指引。
+* **[WebUI 设计与方向规划白皮书 (webui.md)](./docs/webui.md)**：包含系统的视觉设计规范（2D 粒子拓扑图谱）及开发迁移阶段。
+* **[智能融合知识库架构白皮书 (knowledge_base_architecture_v2.md)](./docs/knowledge_base_architecture_v2.md)**：描述了时间维度的遗忘曲线算法、指数衰减模型、SM-2 间隔重复及归档审查 Veto 机制。
+* **[智能体内核与编排架构设计 (learning_agent_architecture.md)](./docs/learning_agent_architecture.md)**：详细拆解了 React Flow 低代码画布与 Pi SDK 编译热重载的闭环机制。
+
+---
+
 ## Roadmap
 
 - [x] **QQ Bot 适配**: NapCat QQ 框架 WebSocket 桥接，AI 智能回复，Quiz 测验推送与答题反馈
@@ -606,4 +624,3 @@ start.bat
 * **Express & Socket.io**: [MIT License](https://opensource.org/licenses/MIT)
 * **KaTeX** (数学公式渲染): [MIT License](https://opensource.org/licenses/MIT)
 * **Puppeteer** (无头浏览器内核): [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
-
