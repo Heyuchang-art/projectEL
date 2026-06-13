@@ -7,6 +7,17 @@
     "strict": true,
     "skipLibCheck": true,
     "declaration": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@earendil-works/pi-ai": ["./pi-sdk/packages/ai/src/index.ts"],
+      "@earendil-works/pi-ai/*": ["./pi-sdk/packages/ai/src/*"],
+      "@earendil-works/pi-agent-core": ["./pi-sdk/packages/agent/src/index.ts"],
+      "@earendil-works/pi-agent-core/*": ["./pi-sdk/packages/agent/src/*"],
+      "@earendil-works/pi-tui": ["./pi-sdk/packages/tui/src/index.ts"],
+      "@earendil-works/pi-tui/*": ["./pi-sdk/packages/tui/src/*"],
+      "@earendil-works/pi-coding-agent": ["./pi-sdk/packages/coding-agent/src/index.ts"],
+      "@earendil-works/pi-coding-agent/*": ["./pi-sdk/packages/coding-agent/src/*"]
+    }
   }
 }
