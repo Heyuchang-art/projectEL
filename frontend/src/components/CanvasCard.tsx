@@ -161,26 +161,25 @@ function FieldEditor({
 function PaletteItem({ definition }: { definition: WorkflowNodeDefinition }) {
   const Icon = definition.icon;
 
-  const onDragStart = (event: DragEvent<HTMLButtonElement>) => {
+  const onDragStart = (event: DragEvent<HTMLDivElement>) => {
+    console.log('onDragStart: dragging node type:', definition.type);
     event.dataTransfer.setData('application/reactflow', definition.type);
     event.dataTransfer.effectAllowed = 'move';
   };
 
   return (
-    <button
+    <div
       draggable
       onDragStart={onDragStart}
       className="workflow-palette-item"
       title={definition.description}
-      type="button"
-      style={{ borderColor: definition.color }}
+      style={{ borderColor: definition.color, cursor: 'grab' }}
     >
       <Icon size={15} style={{ color: definition.color, flexShrink: 0 }} />
       <span>{definition.label}</span>
-    </button>
+    </div>
   );
 }
-
 function CanvasCardInner() {
   const reactFlowWrapper = useRef<HTMLDivElement | null>(null);
   const { screenToFlowPosition } = useReactFlow();
@@ -246,19 +245,26 @@ function CanvasCardInner() {
 
   const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+    console.log('onDragOver: dragging over ReactFlow canvas');
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
   const onDrop = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
+      console.log('onDrop: drop event fired on ReactFlow canvas');
       const type = event.dataTransfer.getData('application/reactflow') as WorkflowNodeType;
-      if (!type) return;
+      console.log('onDrop: read node type:', type);
+      if (!type) {
+        console.warn('onDrop: type is empty, skipping node addition');
+        return;
+      }
 
       const position = screenToFlowPosition({
         x: event.clientX,
         y: event.clientY
       });
+      console.log('onDrop: screenToFlowPosition calculated position:', position);
       addNode(type, position);
     },
     [addNode, screenToFlowPosition]
