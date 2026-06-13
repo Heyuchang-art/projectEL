@@ -158,26 +158,20 @@ function FieldEditor({
   );
 }
 
-function PaletteItem({ definition }: { definition: WorkflowNodeDefinition }) {
+function PaletteItem({ definition, onClick }: { definition: WorkflowNodeDefinition; onClick: () => void }) {
   const Icon = definition.icon;
 
-  const onDragStart = (event: DragEvent<HTMLDivElement>) => {
-    console.log('onDragStart: dragging node type:', definition.type);
-    event.dataTransfer.setData('application/reactflow', definition.type);
-    event.dataTransfer.effectAllowed = 'move';
-  };
-
   return (
-    <div
-      draggable
-      onDragStart={onDragStart}
+    <button
+      onClick={onClick}
       className="workflow-palette-item"
       title={definition.description}
-      style={{ borderColor: definition.color, cursor: 'grab' }}
+      type="button"
+      style={{ borderColor: definition.color, cursor: 'pointer' }}
     >
       <Icon size={15} style={{ color: definition.color, flexShrink: 0 }} />
       <span>{definition.label}</span>
-    </div>
+    </button>
   );
 }
 function CanvasCardInner() {
@@ -243,28 +237,15 @@ function CanvasCardInner() {
     setSelectedEdge(null);
   }, [setSelectedNode, setSelectedEdge]);
 
-  const onDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    console.log('onDragOver: dragging over ReactFlow canvas');
-    event.dataTransfer.dropEffect = 'move';
-  }, []);
-
-  const onDrop = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      console.log('onDrop: drop event fired on ReactFlow canvas');
-      const type = event.dataTransfer.getData('application/reactflow') as WorkflowNodeType;
-      console.log('onDrop: read node type:', type);
-      if (!type) {
-        console.warn('onDrop: type is empty, skipping node addition');
-        return;
-      }
-
+  const handlePaletteClick = useCallback(
+    (type: WorkflowNodeType) => {
+      const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
+      const centerX = reactFlowBounds ? reactFlowBounds.width / 2 : 300;
+      const centerY = reactFlowBounds ? reactFlowBounds.height / 2 : 200;
       const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY
+        x: (reactFlowBounds?.left ?? 0) + centerX,
+        y: (reactFlowBounds?.top ?? 0) + centerY
       });
-      console.log('onDrop: screenToFlowPosition calculated position:', position);
       addNode(type, position);
     },
     [addNode, screenToFlowPosition]
@@ -396,7 +377,7 @@ function CanvasCardInner() {
             <div key={group} className="workflow-palette-group">
               <div className="workflow-group-label">{group}</div>
               {definitions.map((definition) => (
-                <PaletteItem key={definition.type} definition={definition} />
+                <PaletteItem key={definition.type} definition={definition} onClick={() => handlePaletteClick(definition.type)} />
               ))}
             </div>
           ))}
@@ -417,8 +398,7 @@ function CanvasCardInner() {
             onNodeClick={onNodeClick}
             onEdgeClick={onEdgeClick}
             onPaneClick={onPaneClick}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
+
             onNodesDelete={(deletedNodes) => {
               deletedNodes.forEach((node) => deleteNode(node.id));
             }}

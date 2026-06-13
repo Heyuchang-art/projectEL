@@ -398,7 +398,7 @@ body {
   font-size: 10px;
   font-weight: 900;
   text-transform: uppercase;
-  cursor: grab;
+  cursor: pointer;
   padding: 6px 8px;
 }
 
@@ -408,7 +408,6 @@ body {
 }
 
 .workflow-palette-item:active {
-  cursor: grabbing;
   transform: translate(1px, 1px);
   box-shadow: 1px 1px 0px #000000;
 }
