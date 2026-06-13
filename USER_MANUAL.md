@@ -102,21 +102,25 @@ start.bat
 
 主界面由以下部分组成：
 
-```
-┌──────────┬──────────────────────────────────────┐
-│          │  知识库切换  │                        │
-│  侧边栏  ├──────────────────────────────────────┤
-│          │                                      │
-│  图标    │          工作区（Workspace）           │
-│  导航    │    ┌─────────┐  ┌─────────┐         │
-│          │    │ Chat 卡 │  │Canvas 卡│         │
-│  Chat    │    │         │  │         │         │
-│  Canvas  │    └─────────┘  └─────────┘         │
-│  Know.   │    ┌─────────┐  ┌─────────┐         │
-│  QQ Bot  │    │Know. 卡 │  │QQ Bot 卡│         │
-│          │    │         │  │         │         │
-│   ⚙️设置  │    └─────────┘  └─────────┘         │
-└──────────┴──────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph MainLayout ["系统主界面布局"]
+        direction LR
+        Sidebar["左侧导航栏 (Sidebar)<br/>- 💬 Chat (对话卡)<br/>- 🎨 Canvas (画布卡)<br/>- 📚 Know. (知识库)<br/>- 🤖 QQ Bot (机器人)<br/>- ⚙️ 设置 (齿轮)"]
+        
+        subgraph Workspace ["工作区 (Workspace)"]
+            direction TB
+            Header["顶部控制栏 (切换知识库)"]
+            subgraph Cards ["卡片区域 (支持自由拖拽/调整宽度)"]
+                ChatCard["对话卡片 (Chat)"]
+                CanvasCard["画布卡片 (Canvas)"]
+                KnowCard["知识库卡片 (Knowledge)"]
+                BotCard["QQ机器人卡片 (QQ Bot)"]
+            end
+            Header --> Cards
+        end
+        Sidebar --> Workspace
+    end
 ```
 
 - **侧边栏（Sidebar）**：左侧图标栏，用于切换显示/隐藏各功能卡片
