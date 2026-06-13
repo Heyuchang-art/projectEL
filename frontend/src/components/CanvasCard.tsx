@@ -157,13 +157,7 @@ function FieldEditor({
   );
 }
 
-function PaletteItem({
-  definition,
-  onAdd
-}: {
-  definition: WorkflowNodeDefinition;
-  onAdd: (type: WorkflowNodeType) => void;
-}) {
+function PaletteItem({ definition }: { definition: WorkflowNodeDefinition }) {
   const Icon = definition.icon;
 
   const onDragStart = (event: DragEvent<HTMLButtonElement>) => {
@@ -175,7 +169,6 @@ function PaletteItem({
     <button
       draggable
       onDragStart={onDragStart}
-      onClick={() => onAdd(definition.type)}
       className="workflow-palette-item"
       title={definition.description}
       type="button"
@@ -264,31 +257,6 @@ export default function CanvasCard() {
       const position = reactFlowInstance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY
-      });
-      addNode(type, position);
-    },
-    [addNode, reactFlowInstance]
-  );
-
-  const onPaletteItemClick = useCallback(
-    (type: WorkflowNodeType) => {
-      if (!reactFlowInstance) {
-        addNode(type, { x: 150, y: 150 });
-        return;
-      }
-      const container = reactFlowWrapper.current;
-      if (!container) {
-        addNode(type, { x: 150, y: 150 });
-        return;
-      }
-      const rect = container.getBoundingClientRect();
-      const centerScreenX = rect.left + rect.width / 2;
-      const centerScreenY = rect.top + rect.height / 2;
-      // Add a small random offset so multiple clicked nodes don't overlap perfectly
-      const offset = (Math.random() - 0.5) * 60;
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: centerScreenX + offset,
-        y: centerScreenY + offset
       });
       addNode(type, position);
     },
@@ -421,11 +389,7 @@ export default function CanvasCard() {
             <div key={group} className="workflow-palette-group">
               <div className="workflow-group-label">{group}</div>
               {definitions.map((definition) => (
-                <PaletteItem
-                  key={definition.type}
-                  definition={definition}
-                  onAdd={onPaletteItemClick}
-                />
+                <PaletteItem key={definition.type} definition={definition} />
               ))}
             </div>
           ))}
