@@ -11,6 +11,7 @@ This profile adapts Superpowers workflows for Antigravity with strict single-flo
 3. Use `browser_subagent` only for browser automation tasks.
 4. Track checklist progress in `<project-root>/docs/plans/task.md` (table-only live tracker).
 5. Keep changes scoped to the requested task and verify before completion claims.
+6. When creating, modifying, or debugging visual canvas workflow skills under the `skills/` directory, you MUST load and strictly adhere to the project-local skill `.agent/skills/writing-canvas-skills/SKILL.md` and run the verification command `npx tsx scripts/compile-skill.ts <skillId>` before declaring completion.
 
 ## Tool Translation Contract
 
