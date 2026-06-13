@@ -21,8 +21,10 @@ wiki_core/archive/*
 
 # QQ Bot Logger output & checkin logs in knowledge bases
 inbox/qq-logs/
-knowledge_bases/*/inbox/qq-logs/
 **/inbox/checkin_logs.jsonl
+
+# Knowledge bases
+knowledge_bases/
 
 # NapCat: entire directory auto-deployed by scripts/setup-napcat.ps1
 # QQ NT runtime creates temp dirs in its working directory (TCD*.tmp,
