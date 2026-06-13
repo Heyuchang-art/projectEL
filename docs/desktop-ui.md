@@ -1,14 +1,56 @@
-# Desktop Client Integration Implementation Plan
+# Desktop Client Design and Implementation Spec (desktop-ui.md)
 
-> **For Antigravity:** REQUIRED WORKFLOW: Use `.agent/workflows/execute-plan.md` to execute this plan in single-flow mode.
-
-**Goal:** Wrap the current React frontend and Node.js backend into a single Windows desktop client using Electron, configure TailwindCSS/Shadcn UI, and set up Google AI Studio-style layout.
-
-**Architecture:** Electron acts as the desktop wrapper that launches the Node.js backend as a child process. The React frontend is styled with TailwindCSS and Shadcn UI, utilizing dynamic background gradients and side-by-side splits.
-
-**Tech Stack:** Electron, React, TailwindCSS, Vite, vite-plugin-electron, electron-builder.
+This guiding document outlines the design specification and step-by-step implementation plan for wrapping the React frontend and Node.js backend into a single Windows desktop client using Electron, configuring TailwindCSS/Shadcn UI, and implementing a Google AI Studio-style layout.
 
 ---
+
+## 🎨Part 1: UI & Architecture Design Specification
+
+### 1. Technology Stack & Directory Architecture
+We utilize an **Integrated Monorepo** where Electron dependencies are added directly inside the frontend folder, keeping the codebase unified and simple to package.
+
+```text
+projectEL/
+├── package.json                   # Root package manager for quick desktop-dev scripts
+├── electron/                      # Electron main process code
+│   ├── main.ts                    # Main process (handles window life, child process spawn, logger redirect)
+│   └── preload.ts                 # Preload script (exposes safe IPC channels to React)
+├── backend/                       # Node.js backend
+│   └── dist/server.js             # Compiled entry point
+└── frontend/                      # React frontend
+    ├── package.json               # Refactored: Added Tailwind, PostCSS, and vite-plugin-electron
+    ├── tailwind.config.js         # Configures colors, animations, and shadows mapping to current design
+    ├── postcss.config.js          # PostCSS configuration
+    ├── vite.config.ts             # Refactored: Integrates vite-plugin-electron
+    └── src/
+        ├── index.css              # Refactored: Merged Tailwind directives with existing Glassmorphism styles
+        └── components/
+            ├── ui/                # Shadcn UI components (restyled with sharp borders and spring transitions)
+            ├── Sidebar.tsx        # Left side panel for workspace navigation
+            ├── ChatCard.tsx       # Main prompt & message stream workspace (Center)
+            └── AgentSettings.tsx  # Google AI Studio inspired right panel for System Prompt & model tunings
+```
+
+### 2. Process Management & Lifecycle (Backend Sidecar)
+Electron's main process (`electron/main.ts`) runs the Node.js backend as a child process:
+*   **Startup**: On application launch, checks if ports `3000`/`3001` are in use. If clear, it runs `child_process.fork` pointing to `backend/dist/server.js` in production, or `backend/src/server.ts` via `tsx` in development.
+*   **Log Handling**: Collects child process console stdout/stderr and logs them to a local file (`%APPDATA%/projectEL/logs/backend.log`).
+*   **Process Protection**:
+    - Listens to Electron's `before-quit` and `will-quit` events. Executes `kill()` on the child process to avoid zombie backend processes.
+    - Inside `backend/src/server.ts`, an interval checks if `process.parent` is alive. If the parent exits unexpectedly, the server shuts itself down.
+
+### 3. Google AI Studio Layout & Apple Glassmorphism
+*   **Google AI Studio Layout**: The interface is split side-by-side:
+    - **Left Sidebar (10%)**: Collapsible navigation bar.
+    - **Center Workspace (60%)**: Chat message stream + Capsule input bar with Token statistics and `/` suggestion popovers.
+    - **Right Panel (30%)**: System Instructions editor + model selection dropdown + sliders for Temperature, Max Tokens, and Safety settings.
+*   **Apple Glassmorphism**: Cards styled with `backdrop-filter: blur(20px)` and semi-transparent border `border-white/8`. Background features 3 animated blur spheres.
+
+---
+
+## 🛠️Part 2: Step-by-Step Implementation Plan
+
+> **For Antigravity:** REQUIRED WORKFLOW: Use `.agent/workflows/execute-plan.md` to execute this plan in single-flow mode.
 
 ### Task 1: Configure Tailwind CSS in Frontend
 
