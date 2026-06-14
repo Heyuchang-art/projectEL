@@ -8,285 +8,138 @@
 
 ---
 
-## 快速开始
+## 1. 作品介绍与核心目标
 
-### TL;DR
+### 1.1 项目背景与定位
+在信息爆炸的时代，主动学习与知识内化变得愈发困难。普通的笔记软件仅停留在“收集”阶段，而传统的 AI 助手则倾向于直接给出答案，剥夺了学习者主动思考的过程。
 
+`Snapshot Pi` 的定位是**“第二大脑”与“启发式导师”的结合体**。它不单是一个工具，而是一个陪伴用户成长的学习生态系统。系统通过启发式的对话引导用户深挖概念，并自动将学习成果沉淀到双链知识库中，通过科学 the 遗忘曲线算法（SM-2）安排复习，实现知识的闭环管理。
+
+### 1.2 核心系统架构
+项目采用一体化的多包管理模式，包含以下四个核心功能层：
+* **前端交互层 (Frontend)**：提供多窗口拖拽分栏的卡片式工作区，以及低代码工作流画布。目前处于向 Glassmorphism 和 2D 力导向拓扑关系知识图谱重构的阶段。
+* **后端网关层 (Backend)**：提供统一的数据服务 and 多会话管理，并利用 Socket.io 实现高实时性的双向消息流。
+* **智能体内核 (Pi SDK)**：驱动智能体的逻辑编排、工作流技能动态编译与热重载。
+* **移动辅助端 (QQ Bot)**：通过嵌入式协议适配器（NapCat）实现与个人 QQ 账号的绑定，提供随时随地的移动端对话、自测与学习监控。
+
+---
+
+## 2. 团队分工与开发进度
+
+### 2.1 团队成员与分工规划
+为保障项目在前端视觉、AI 内核、学习闭环及**桌面客户端（Electron）封装**维度上全面推进，4 名团队成员的分工及各模块的开发状态如下：
+
+| 团队成员 | 负责领域 | 具体开发任务 | 完成状态 | 说明 |
+| :--- | :--- | :--- | :---: | :--- |
+| **李佳骏** | **AI 交互与核心算法** | 多智能体编排框架 (串行/并行/监督/路由) | ⏳ 待开发 | 处于规划中，用于后续复杂任务链式拆解 |
+| | | 启发式交互逻辑与 prompt 注入机制 | ✅ 已完成 | 基于 Pi SDK 的拦截器实现角色和引导规则注入 |
+| | | 指数衰减与 SM-2 复习算法演进 | ✅ 已完成 | 知识库掌握度评估模型与时间周期调度算法 |
+| | | 多供应商大模型适配器 | ✅ 已完成 | 适配 DeepSeek, Qwen, Anthropic, Gemini 等 |
+| | **系统集成与质量保障** | 低代码拓扑编译器 (工作流 → 技能) | ✅ 已完成 | 实现可视化连线图的拓扑排序编译及热重载闭环 |
+| | | SM-2 / 置信度 算法单元测试 | ⏳ 待开发 | 核心逻辑与极限边界的自动化覆盖测试 |
+| | | E2E 端到端功能测试 | ⏳ 待开发 | 用户主链路操作的自动化测试套件搭建 |
+| | | 多环境自适应对齐工具 | ✅ 已完成 | 开发 QQNT/NapCat 版本自动化对齐与同步脚本 |
+| | | Electron 主进程与 Preload 脚本编写 | ⏳ 待开发 | 实现 Sidecar 后端子进程生命周期管理与 IPC 桥接 |
+| | | 基于 `electron-builder` 的 EXE 打包发布 | ⏳ 待开发 | 自动化桌面包（NSIS/ZIP）编译输出 |
+| **苏雨<br>唐韵哲** | **后端业务与消息网关** | QQ Bot 适配：限流、心跳、公式渲染 | ✅ 已完成 | 实现 OneBot WS 连接与 Puppeteer 截图公式服务 |
+| | | 会话与预设管理后端逻辑 | ✅ 已完成 | 多会话切换、历史消息持久化与预设模板机制 |
+| | | 自测题库生成与 XP 统计 | ✅ 已完成 | 基于薄弱知识点自动出题及用户学习经验计算 |
+| | | 数据统计与学习周报导出 | ✅ 已完成 | 导出 Markdown 纯文本/结构化学习周报 |
+| **何予畅** | **前端界面与可视化交互** | Glassmorphism 毛玻璃双主题 | ⏳ 待开发 | 视觉界面向苹果毛玻璃精美风格的整体重写 |
+| | | 2D 力导向知识图谱可视化 | ⏳ 待开发 | 实现 Wiki 双链关系粒子的拓扑网络动态渲染 |
+| | | React Flow 画布节点与 AI 协写 | ✅ 已完成 | 核心节点已扩充，并集成 AI 辅助自动生成与修改工作流能力 |
+| | | 流式 Markdown 渲染与代码复制 | 🟡 部分完成 | 已实现流式 Markdown 解析，代码复制与高亮待优化 |
+| | | Tailwind CSS 与 Shadcn UI 基础集成 | ⏳ 待开发 | 引入 Tailwind 和 UI 基础库并进行微改造 |
+
+> *注：四人共同承担代码开发工作，每人聚焦不同维度，协同推进项目。
+
+### 2.2 目前开发进度阶段
+目前项目处于 **V0.1 核心骨架搭建与功能闭环阶段**。
+* **已完成部分**：完成了系统的脚手架搭建、后端网关服务、Pi Agent 内核交互、基于 SQLite 风格的本地 JSONL 多会话管理、双链知识库算法基础（SM-2 / 指数置信度衰减）、可视工作流技能编译与热重载、**画布 AI 协写配置**，以及基于 NapCat 的 QQ Bot 机器人核心服务（含自测答题系统、周报生成）。
+* **待完成部分**：前端 Glassmorphism 高保真视觉重构、2D 力导向拓扑关系图谱、复杂的 Sub-Agent 多代理协作流编排、核心算法单元测试、Playwright 端到端（E2E）测试，以及 **Electron 桌面客户端封装**。
+
+---
+
+## 3. 部署指南
+
+### 3.1 环境要求
+- **操作系统**：Windows 10+ （NapCat QQ Bot 功能需要，独立模式运行，无需管理员权限）
+- **Node.js** >= 18.0.0
+- **npm** >= 9.0.0
+
+### 3.2 首次部署
+1. 克隆项目到本地：
+   ```bash
+   git clone <repo-url> && cd snapshot-pi
+   ```
+2. 运行一键初始化脚本进行部署：
+   ```bash
+   scripts\setup.bat
+   ```
+   *该脚本会自动完成：环境检查、`npm install` 安装所有依赖、API Key 交互式配置向导、NapCat 依赖自动下载解压，以及前端静态资源编译。*
+
+### 3.3 日常启动
+双击运行项目根目录下的启动脚本，或命令行运行：
 ```bash
-git clone <repo-url> && cd snapshot-pi
-scripts\setup.bat          # 首次一站式初始化 (依赖 + API Key + NapCat + 前端构建)
-start.bat                  # 日常启动 → 自动打开 http://localhost:3000
-```
-
-### 环境要求
-
-- Node.js >= 18.0.0
-- npm >= 9.0.0
-- Windows 10+（NapCat QQ Bot 功能需要）
-
-### 首次部署
-
-```bash
-# git clone 后运行一次，完成所有初始化:
-#   - npm install 安装依赖
-#   - API Key 配置向导
-#   - NapCat QQ Shell 自动部署
-#   - 前端资源构建
-scripts\setup.bat
-```
-
-`scripts\setup.bat` 是一站式初始化脚本，包含：
-
-| 步骤 | 内容 | 说明 |
-|:---|:---|:---|
-| 1 | 环境检查 | 检测 Node.js / npm 版本 |
-| 2 | npm install | 安装所有依赖 |
-| 3 | API Key 配置 | 交互式向导，写入 `.pi/auth.json` |
-| 4 | NapCat 部署 | 下载并解压 NapCat Shell (Node.zip)，部署配置模板 |
-| 5 | 前端构建 | 构建生产包到 `frontend/dist/` |
-
-> 部署完成后 `napcat/` 目录完全自包含，可整体复制到任意 Windows 机器。
-> 如需重装，重新运行 `scripts\setup.bat` 即可（支持 `--force` 参数强制重新初始化）。
-
-### 日常启动
-
-```bash
-# 双击 start.bat 或命令行:
 start.bat
-# → 浏览器自动打开 http://localhost:3000
 ```
+*启动后，后端服务（端口 `3000`）将自动运行，且会自动在您的默认浏览器中打开系统主页 `http://localhost:3000`。*
 
-`start.bat` 仅做两件事：
-- 启动后端服务（Express，端口 3000，内置静态托管前端）
-- 自动打开浏览器
+### 3.4 配置 API 密钥与模型
+项目支持多种模型服务商，您可以通过两种方式配置密钥：
+1. **Web 界面配置（推荐）**：启动系统后，点击左下角的 ⚙️ 齿轮按钮，在滑出的设置面板中填写 API Key 和 Base URL，点击保存即可，配置文件会自动存入本地 `.pi/auth.json`。
+2. **环境变量配置**：在启动服务前，设置相应的系统/用户环境变量：
 
-### 配置 API 密钥与模型
-
-项目支持以下模型服务商，在 Web 界面左下角 ⚙️ 齿轮按钮中配置：
-
-| 服务商 | 环境变量 | Base URL | 模型示例 |
+| 服务商 | 环境变量 | 官方 Base URL | 适用模型示例 |
 |:---|:---|:---|:---|
 | **DeepSeek** | `DEEPSEEK_API_KEY` | `https://api.deepseek.com` | DeepSeek V4 Pro / Flash |
-| **Qwen (DashScope)** | `DASHSCOPE_API_KEY` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | Qwen3.6 Plus / Flash / Max |
-| **Anthropic** | `ANTHROPIC_API_KEY` | `https://api.anthropic.com` | Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5 |
-| **OpenAI** | `OPENAI_API_KEY` | `https://api.openai.com/v1` | GPT-5.4 / GPT-5.4 Mini / GPT-4.1 |
-| **Google** | `GOOGLE_API_KEY` | `https://generativelanguage.googleapis.com/v1beta` | Gemini 3.1 Pro / 2.5 Pro / 2.5 Flash |
-| **OpenRouter** | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/v1` | Claude / GPT / Gemini (聚合) |
+| **Qwen (DashScope)** | `QWEN_API_KEY` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | Qwen3.6 Plus / Flash / Max |
+| **Anthropic** | `ANTHROPIC_API_KEY` | `https://api.anthropic.com` | Claude Sonnet 4.6 / Haiku 4.5 |
+| **Google** | `GOOGLE_API_KEY` | `https://generativelanguage.googleapis.com/v1beta` | Gemini 2.5 Flash / Pro |
 
-配置方式有两种：
-- **Web 界面**：启动后点击左下角 ⚙️ 齿轮按钮，填入 API Key / Base URL，点击"保存并生效"，自动持久化到 `.pi/auth.json` 和 `.pi/models.json`
-- **环境变量**：设置上表对应的环境变量，服务启动时自动加载
+> **Qwen API 配置提示**：使用通义千问模型，需前往 [阿里云百炼平台](https://bailian.console.aliyun.com/) 获取 API-KEY。请确保您已在百炼平台的**“模型广场”**中手动开启了所需模型的授权，否则 API 会报错。
 
-### 配置 Qwen API（重要）
-
-使用 Qwen（通义千问）模型需要通过阿里云百炼平台获取 API Key：
-
-1. 访问 [阿里云百炼平台](https://bailian.console.aliyun.com/) 开通 DashScope 服务
-2. 在 **业务空间 → 模型广场** 中，手动开启你需要使用的模型授权（如 qwen3.6-plus、qwen3.6-flash 等），新开通的百炼账号默认不启用所有模型
-3. 获取 API Key：百炼控制台右上角 → API-KEY 管理 → 创建 AccessKey
-4. 在 Snapshot Pi 的 ⚙️ 设置面板中找到 **QWEN**，填入 API Key，点击"填官方参数"自动填入 Base URL，保存即可
-
-> **注意**：仅获取 API Key 不足以调用所有模型，必须在百炼平台业务空间中**逐模型开启授权**，否则 API 会返回模型未开通的错误。识图功能建议启用 `qwen3.6-flash` 或 `qwen-plus-latest` 等多模态模型。
-
-### 一键绿色包打包
-
-如需将项目打包为可直接分发的**绿色免安装一键包**（自带 Node.js 运行时，解压即用）：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\build-onekey-package.ps1
-```
-
-打包脚本会自动完成：
-- 下载并集成免安装版 Node.js 运行时
-- 编译前端静态资源与后端 TypeScript
-- 拷贝 Pi SDK、预设配置、NapCat 组件
-- 精简安装生产依赖（排除 devDependencies）
-- 生成一键 `start.bat` 启动脚本
-
-产出目录 `dist_onekey/` 可直接压缩为 `.zip` 发送到任意 Windows 机器，双击 `start.bat` 即可运行。
-
-### 端口分配
-
-| 服务 | 端口 |
-|------|------|
-| 后端 API（Express + Socket.io，内置静态托管前端） | 3000 |
-| QQ WebSocket（NapCat 连接） | 3001 |
-| NapCat WebUI | 6099 |
+### 3.5 端口分配
+| 服务 | 默认端口 |
+| :--- | :---: |
+| 后端 API 服务（Express + Socket.io，内置静态托管前端） | 3000 |
+| QQ WebSocket 服务（NapCat 连接） | 3001 |
+| NapCat 本地 WebUI 监控后台 | 6099 |
 
 ---
 
-## 架构设计
+## 4. 使用指南
 
-项目采用 **Monorepo** 单体多包架构管理，包含 React 前端卡片式 Web 界面、Node.js Express 统一后端网关，以及本地打包的 `pi-sdk` 内核组件。
+### 4.1 Web UI 核心功能卡片
+系统主页包含四个核心工作区卡片，您可以通过左侧边栏自由切换和拖拽布局：
+1. **AI 对话（Chat）**：与您的专属学习智能体互动。支持流式 Markdown 输出和直接拖入/上传图片。
+2. **工作流画布（Canvas）**：React Flow 可视化技能画布。拖拽并连接控制节点，可一键将其编译成 SKILL.md 文件并热重载到智能体中。
+3. **双轨知识库（Knowledge）**：管理整理笔记 and Wiki 卡片，查看其置信度变化，或在此处管理归档与复习任务。
+4. **QQ Bot 监控面版**：一键启停 QQNT 协议服务，扫码登录，查看答题记录与自测数据。
 
-### 目录结构
+### 4.2 知识库使用与学习检索
+* **常青记忆检索**：当您在聊天卡片提问时，后端会自动匹配知识库中的 Wiki 卡片或整理笔记内容，并静默注入到 Agent 会话上下文中。命中时系统会显示 `已检索并注入 N 条知识库上下文`。
+* **低代码沉淀**：您可以在画布中配置“写入知识库”节点，在自动化流程执行完后将特定高价值信息沉淀进知识库。
 
-```
-snapshot-pi/
-├── backend/                          # Node.js Express 后端网关服务
-│   └── src/
-│       ├── server.ts                 # WebSocket/HTTP 网关，多会话管理、Pi Session 生命周期
-│       ├── compiler.ts               # 工作流 JSON → SKILL.md 编译器 (拓扑排序)
-│       ├── study-agent-extension.ts  # Pi Agent 扩展：预设 System Prompt 注入、Qwen 识图拦截器、write_workflow 工具
-│       ├── qq-adapter.ts             # QQ Bot 个人学习助手适配器 (OneBot v11 WS 服务端、AI 桥接、限流)
-│       ├── qq-renderer.ts            # Puppeteer 浏览器池 + KaTeX 公式渲染
-│       ├── qq-chat-refiner.ts        # 对话知识提取 → 自动创建 wiki 卡片
-│       ├── qq-quiz-service.ts        # AI 个人自测系统 (SM-2 置信度与个人学习反馈联动)
-│       ├── qq-report-generator.ts    # 个人学习分析报告生成器 (薄弱知识/学习趋势分析)
-│       ├── qq-logger.ts              # 结构化 JSONL 日志器 (日轮转 + 缓冲区刷新)
-│       └── knowledge-base/           # 知识库后端模块
-│           ├── types.ts              # Wiki 卡片 / 笔记 / 归档类型定义
-│           ├── knowledge-base-service.ts  # 核心服务 (CRUD / 指数衰减 / SM-2 / 归档 Veto)
-│           └── knowledge-routes.ts   # REST 路由 (16 个端点)
-├── frontend/                         # Vite + React + TypeScript + React Flow 前端 UI
-│   └── src/
-│       ├── App.tsx                   # 主应用入口 (Context Provider 嵌套 + 卡片路由)
-│       ├── contexts/                 # React Context 全局状态管理层
-│       │   ├── ChatContext.tsx       # 聊天消息流 / Socket.io 通信 / 多会话切换
-│       │   ├── CanvasContext.tsx     # React Flow 画布节点/边状态管理
-│       │   └── WorkspaceContext.tsx  # 多卡片布局 / 抽屉面板状态
-│       ├── components/
-│       │   ├── ChatCard.tsx          # AI 对话卡片 (流式渲染 / 图片上传)
-│       │   ├── CanvasCard.tsx        # 工作流画布卡片 (React Flow 可视化编辑器)
-│       │   ├── KnowledgeCard/        # 知识库卡片组件集
-│       │   │   ├── KnowledgeCard.tsx     # 主组件 (Wiki/笔记视图路由)
-│       │   │   ├── WikiDetailView.tsx    # Wiki 卡片详情与编辑
-│       │   │   ├── WikiFormView.tsx      # 创建/编辑表单
-│       │   │   ├── ArchiveReview.tsx     # 归档审查 (Lint + Veto + 链接重写)
-│       │   │   └── ConfidenceBadge.tsx   # 置信度徽章 (绿/黄/红/灰)
-│       │   ├── Sidebar.tsx           # 侧边导航栏 (卡片切换 / 会话管理 / 预设选择)
-│       │   ├── Workspace.tsx         # 多卡片工作区 (拖拽分栏 / 大小调整)
-│       │   ├── SlideDrawer.tsx       # 全局滑出抽屉
-│       │   ├── SettingsPanel.tsx     # 模型与 API 凭证配置面板
-│       │   └── QQBotCard.tsx         # QQ Bot 监控面板 (启停控制 + 个人学习状态监控)
-│       └── hooks/
-│           └── useKnowledgeBase.ts   # 知识库 API 请求 Hook
-├── wiki_core/                        # Layer 3: LLM 动态知识网 (Markdown)
-│   ├── concepts/                     #   常青/标准概念
-│   ├── temporary/                    #   快速衰减知识
-│   └── archive/                      #   归档 (置信度 < 0.15)
-├── curated_notes/                    # Layer 2: 人类整理笔记 (SM-2 间隔重复)
-├── inbox/                            # 暂存区 + archive_review.md
-├── sources/                          # Layer 1: 外部参考源材料
-├── pi-sdk/                           # 本地 Pi Agent 内核开发套件 (workspace 包)
-│   └── packages/
-│       ├── agent/                    # @earendil-works/pi-agent
-│       ├── ai/                       # @earendil-works/pi-ai
-│       └── coding-agent/             # @earendil-works/pi-coding-agent
-├── skills/                           # 智能体预设 & 工作流定义
-│   └── agent-presets.json            # 预设配置 (苏格拉底导师 / 代码专家)
-├── .pi/                              # Pi 内核运行时数据
-│   ├── skills/                       # 编译后的 SKILL.md 技能文件
-│   ├── extensions/                   # 扩展脚本 (server 启动时自动复制)
-│   ├── agent/sessions/               # 会话持久化 (JSONL)
-│   ├── auth.json                     # API 密钥持久化存储
-│   └── models.json                   # 模型注册表 & Provider 配置
-├── napcat/                            # ⚠️ gitignore — 由 scripts/setup.bat 自动部署
-│   ├── napcat.bat                      # Shell 入口
-│   ├── node.exe                        # 嵌入式 Node.js (自包含)
-│   ├── index.js                        # 自定义启动器
-│   ├── wrapper.node                    # QQNT Wrapper 原生模块
-│   ├── napcat/                         # NapCat 核心模块
-│   │   ├── napcat.mjs                  # NapCat 主入口
-│   │   └── config/                     # OneBot v11 / WebUI 配置 (从 config/napcat-templates/ 复制)
-├── config/
-│   ├── qq-bot-config.json            # QQ Bot 运行时配置 (关键词/限流/渲染/测验)
-│   └── napcat-templates/             # NapCat 配置模板 (由 scripts/setup.bat 部署到 napcat/napcat/config/)
-├── docs/                             # 设计文档
-│   ├── plan—develop.md               # 开发进度与规划
-│   ├── webui.md                      # WebUI 设计规范
-│   ├── knowledge_base_architecture_v2.md  # 知识库架构白皮书
-│   ├── qq_bot_development_proposal.md     # QQ Bot 开发提案
-│   └── developer_guide.md            # 开发者指南
-├── start.bat                         # Windows 一键启动脚本
-├── setup.bat                         # Windows 首次部署脚本 (调用 scripts/setup.bat)
-├── package.json                      # 根配置与 workspaces
-└── tsconfig.base.json                # 共享 TypeScript 配置
-```
-
-### 前端状态管理架构
-
-```
-App.tsx
-  └─ <ChatProvider>          # Socket.io 连接、消息流、多会话管理
-       └─ <WorkspaceProvider>  # 卡片布局、抽屉面板、拖拽分栏
-            └─ <CanvasProvider> # React Flow 节点/边状态、工作流编译
-                 └─ <MainLayout>
-                      ├─ Sidebar       (导航 / 会话列表 / 预设切换)
-                      ├─ Workspace     (多卡片拖拽容器)
-                      │   ├─ ChatCard
-                      │   ├─ CanvasCard
-                      │   ├─ KnowledgeCard
-                      │   └─ QQBotCard
-                      └─ SlideDrawer   (SettingsPanel)
-```
+### 4.3 QQ 移动辅助端使用
+1. **启动服务**：进入 Web UI 的 **QQ Bot 卡片**，点击页头 **▶ 启动**。
+2. **扫码登录**：在后端命令行窗口中会出现生成的登录二维码，使用手机 QQ 扫码即可登录绑定。
+3. **私聊对话与触发**：
+   - 私聊发送消息，Bot 会使用 Pi Agent 智能回复。
+   - 数学公式会自动被渲染为美观的 KaTeX 图片，长内容会自动被分段，便于在手机端阅读。
+   - 使用 `/ai <问题>` 或 `/ask <问题>` 强制触发 AI。
+   - 后台会自动提取高频或高价值的对话内容，生成 Wiki 卡片存入您的常青知识库中。
+4. **QQ 端自测与学习指令**：
+   - `/quiz start`：启动一轮针对您置信度较低知识点的 AI 自动出题测试。
+   - `/quiz stop`：终止当前测试。
+   - `/stats`：查看您的 XP 经验值打卡积分与错题统计。
+   - `/help`：获取全部命令帮助。
 
 ---
 
-## 双环编译与热重载
+## 5. 核心系统特性与完成进度
 
-支持**用户端（画板可视化配置）**与**智能体端（Agent 自我演化）**的双向技能重塑机制，核心编译逻辑位于 `backend/src/compiler.ts`。
-
-### A环：用户低代码画板编译流
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant U as 用户 (React Flow 画板)
-    participant F as 前端 (CanvasContext.tsx)
-    participant B as 后端网关 (server.ts)
-    participant C as 编译器 (compiler.ts)
-    participant P as Pi SDK Session
-
-    U->>F: 拖拽/编辑节点并点击保存
-    F->>B: POST /api/workflow/:id
-    B->>B: 保存至 skills/:id/workflow.json
-    B->>C: 调用 compileWorkflowToSkill() (拓扑排序)
-    C->>B: 编译为 SKILL.md 并写入 .pi/skills/
-    B->>P: 发送 "/reload" 指令
-    P->>P: 热加载新技能
-    P-->>F: 广播重载成功
-    F-->>U: 技能立即生效
-```
-
-### B环：智能体自我修饰流
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant A as Pi 主智能体
-    participant T as study-agent-extension.ts (write_workflow)
-    participant C as 编译器 (compiler.ts)
-    participant P as Pi SDK Session
-
-    A->>T: 调用 write_workflow(skillId, workflowData)
-    T->>T: 保存 JSON 至 skills/:id/workflow.json
-    T->>C: 调用 compileWorkflowToSkill()
-    T->>P: 发送 "/reload"
-    P->>P: 加载新技能，实现自我演化
-    P-->>A: 下一回合可直接调用新技能
-```
-
----
-
-## Qwen 识图子智能体协作流
-
-`backend/src/study-agent-extension.ts` 中实现的多模态拦截器：用户上传图片且当前主模型不支持视觉输入时，自动调用 Qwen-VL 等多模态模型提取图像描述，注入主模型 prompt。
-
-```mermaid
-graph TD
-    User([用户上传图片 + 提问]) --> InputFilter[pi.on 'input' 拦截器]
-    InputFilter -->|检测到图片 + 主模型不支持视觉| FindModel[遍历模型注册表寻找可用识图模型]
-    FindModel --> QwenCall[优先 Qwen3.6-Flash，降级搜索其他视觉模型]
-    QwenCall --> DetailExtract[获取结构化图片文本描述]
-    DetailExtract --> PromptInject[清空图片数组，描述注入 prompt 顶部]
-    PromptInject --> MainLLM[驱动主模型安全回答]
-    MainLLM --> UserResponse[返回高质量回复]
-```
-
----
-
-## 功能特性
+系统目前核心功能的开发进度对齐如下：
 
 | 模块 | 功能 | 状态 | 代码位置 |
 |:---|:---|:---:|:---|
@@ -320,258 +173,148 @@ graph TD
 
 ---
 
-## 使用指南
+## 6. 架构设计
 
-### Web UI 使用
+项目采用 **Monorepo** 单体多包架构管理，包含 React 前端卡片式 Web 界面、Node.js Express 统一后端网关，以及本地打包的 `pi-sdk` 内核组件。
 
-1. 启动项目后打开 `http://localhost:3000`。
-2. 左侧边栏可切换四个功能卡片：**聊天** / **工作流画板** / **知识库** / **QQ Bot**。
-3. 在聊天卡片中直接向 Agent 提问，例如：`动态规划核心思想是什么？`
-4. 如果命中知识库，聊天区会先出现系统提示：`已检索并注入 1 条知识库上下文`。
-5. 继续查看 Agent 回复，回答会优先基于命中的本地知识卡片或整理笔记。
-6. 在低代码工作流画板中，可以使用"写入知识库"节点，把自动化流程的结果沉淀回知识库。
-
-### 知识库使用
-
-知识库不是单纯的资料仓库，而是 projectEL 的"学习记忆系统"。它把 QQ 聊天、课件摘要、人工整理笔记和 Agent 对话连接起来，让智能体可以基于用户自己的学习资料回答问题。
-
-核心能力包括：
-
-- **保存学习资料**：支持 Wiki 知识卡片和人工整理笔记两类内容。Wiki 卡片适合快速沉淀概念、群聊结论和临时知识；整理笔记适合长期复习与结构化学习。
-- **检索知识内容**：按标题、正文、标签检索知识卡片和整理笔记。Agent 聊天时会自动检索相关内容，而不是只依赖模型通用知识。
-- **Agent 知识库问答**：用户在聊天框提问后，后端会先构建知识库上下文，再注入给 Pi Agent。命中时前端会显示"已检索并注入 N 条知识库上下文"，方便确认回答来源。
-- **工作流写入知识库**：React Flow 画板提供"写入知识库"节点，可以把 QQ 群消息、课件总结、学习日报或 LLM 结构化结果沉淀为知识。
-- **复习与记忆管理**：整理笔记支持 SM-2 间隔重复，记录复习次数、稳定性、难度和下次复习时间。
-- **置信度与归档**：Wiki 卡片会随时间发生置信度衰减；低置信度内容进入归档审查，可被归档并自动重写引用链路。
-
-> 当前 v1 使用本地关键词/标签/正文匹配完成检索，已经覆盖 Wiki 卡片和整理笔记。后续可升级为 embedding 向量检索，以支持语义相近但关键词不同的问题。
-
-### QQ Bot 使用
-
-#### 启动步骤
-
-1. 运行 `scripts\setup.bat` 完成首次部署（已部署则跳过）
-2. 运行 `start.bat` 启动服务
-3. 浏览器打开 `http://localhost:3000`，点击侧边栏 **QQ Bot** 图标
-4. 在卡片页头点击 **▶ 启动** 按钮
-5. 系统自动启动 NapCat Shell（**独立模式**：内嵌 Node.js，无需 QQ.exe 或管理员权限）
-6. 在后端终端中看到 NapCat 输出的 QR 码，用手机 QQ 扫码登录
-7. 登录成功后，卡片显示 **QQ xxx 在线**，Bot 开始响应私聊消息
-
-> ℹ️ **关于部署**
->
-> NapCat 的 `node.exe`、`wrapper.node` 和核心文件由 `scripts\setup.bat` 自动部署。
-> 部署完成后 `napcat/` 目录完全自包含，可整体迁移到任意 Windows 机器。
-> 如果 NapCat 版本过旧，重新运行 `scripts\setup.bat` 即可（自动覆盖重装）。
-
-#### 聊天触发方式
-
-| 方式 | 行为 |
-|------|------|
-| 私聊提问 | AI 使用 Pi Agent 智能回复（Markdown → QQ 纯文本，公式自动渲染为图片） |
-| `/ai <问题>` | 强制调用 AI 助理回答 |
-| `/ask <问题>` | 同上 |
-| 私聊学习对话自动分析 | 对话沉淀一定字数后，后台自动提炼知识 → 创建 wiki 卡片到知识库 |
-
-#### 个人助理指令
-
-所有指令以 `/` 开头，在与 Bot 私聊中发送即可：
-
-##### 个人自测系统 (`/quiz`)
-
-| 命令 | 说明 |
-|------|------|
-| `/quiz start` | 开始一轮 AI 针对薄弱知识点的出题自测（默认 3 题） |
-| `/quiz stop` | 提前终止当前自测 |
-
-##### 个人统计 (`/stats`)
-
-| 命令 | 说明 |
-|------|------|
-| `/stats` | 查看个人目前的自测成绩与累积的个人学习 XP 积分 |
-
-##### 帮助 (`/help`)
-
-| 命令 | 说明 |
-|------|------|
-| `/help` | 显示所有可用命令列表 |
-
-##### 评分与 XP 奖励标准
-
-自测答题按正确性结合置信度评分，并奖励个人学习经验值（XP）：
-
-| Grade | 说明 | 奖励 XP |
-|:-----:|------|:--:|
-| 0 | 完全错误 | 0 |
-| 1 | 接近但错误 | 1 |
-| 2 | 基本正确 | 3 |
-| 3 | 完全正确 | 5 |
-| 4 | 完美答案 | 10 |
-
----
-
-## QQ Bot 集成 (技术架构)
-
-Snapshot Pi 通过 **NapCatQQ 框架**（独立模式）实现 QQ 个人助理 AI 聊天交互、对话知识提取、个人自测系统与个人学习分析报告。
-
-### 架构
+### 6.1 目录结构
 
 ```
-NapCatQQ (独立模式, 内嵌 Node.js)
-  └─ OneBot v11 WebSocket Client
-       └─ ws://127.0.0.1:3001/qq/ws
-            └─ QQWebSocketServer (backend, port 3001)
-                 ├─ QQConnection       心跳检测 + API 调用重试
-                 ├─ OneBotMessageHandler  限流 + 私聊过滤 + 命令路由
-                 └─ QQAIService        Pi Agent AI 桥接
-                      ├─ ChatRefiner      → 个人对话知识提取 → wiki_core/
-                      ├─ QuizService      → AI 出题自测 → checkin_logs.jsonl
-                      ├─ ContentRouter    → Puppeteer KaTeX 公式渲染
-                      └─ ReportGenerator  → 个人学习报告
+snapshot-pi/
+├── backend/                          # Node.js Express 后端网关服务
+│   └── src/
+│       ├── server.ts                 # WebSocket/HTTP 网关，多会话管理、Pi Session 生命周期
+│       ├── compiler.ts               # 工作流 JSON → SKILL.md 编译器 (拓扑排序)
+│       ├── study-agent-extension.ts  # Pi Agent 扩展：预设 System Prompt 注入、Qwen 识图拦截器等
+│       ├── qq-adapter.ts             # QQ Bot 个人学习助手适配器 (OneBot v11 WS、限流等)
+│       ├── qq-renderer.ts            # Puppeteer 浏览器池 + KaTeX 公式渲染
+│       ├── qq-chat-refiner.ts        # 对话知识提取 → 自动创建 wiki 卡片
+│       ├── qq-quiz-service.ts        # AI 个人自测系统 (与个人学习反馈联动)
+│       ├── qq-report-generator.ts    # 个人学习分析报告生成器 (薄弱知识/学习趋势分析)
+│       ├── qq-logger.ts              # 结构化 JSONL 日志器 (日常轮转)
+│       └── knowledge-base/           # 知识库后端模块
+│           ├── types.ts              # Wiki 卡片 / 笔记 / 归档类型定义
+│           ├── knowledge-base-service.ts  # 核心服务 (CRUD / 指数衰减 / SM-2 / 归档 Veto)
+│           └── knowledge-routes.ts   # REST 路由 (16 个端点)
+├── frontend/                         # Vite + React + TypeScript + React Flow 前端 UI
+│   └── src/
+│       ├── App.tsx                   # 主应用入口 (Context Provider 嵌套 + 卡片路由)
+│       ├── contexts/                 # React Context 全局状态管理层
+│       │   ├── ChatContext.tsx       # 聊天消息流 / Socket.io 通信 / 多会话切换
+│       │   ├── CanvasContext.tsx     # React Flow 画布节点/边状态管理
+│       │   └── WorkspaceContext.tsx  # 多卡片布局 / 抽屉面板状态
+│       ├── components/
+│       │   ├── ChatCard.tsx          # AI 对话卡片 (流式渲染 / 图片上传)
+│       │   ├── CanvasCard.tsx        # 工作流画布卡片 (React Flow 可视化编辑器)
+│       │   ├── KnowledgeCard/        # 知识库卡片组件集
+│       │   ├── Sidebar.tsx           # 侧边导航栏
+│       │   ├── Workspace.tsx         # 多卡片工作区
+│       │   ├── SettingsPanel.tsx     # 模型与 API 凭证配置面板
+│       │   └── QQBotCard.tsx         # QQ Bot 监控面板
+│       └── hooks/
+│           └── useKnowledgeBase.ts   # 知识库 API 请求 Hook
+├── wiki_core/                        # Layer 3: LLM 动态知识网 (Markdown)
+│   ├── concepts/                     #   常青/标准概念
+│   ├── temporary/                    #   快速衰减知识
+│   └── archive/                      #   归档 (置信度 < 0.15)
+├── curated_notes/                    # Layer 2: 人类整理笔记 (SM-2 间隔重复)
+├── inbox/                            # 暂存区 + archive_review.md
+├── sources/                          # Layer 1: 外部参考源材料
+├── pi-sdk/                           # 本地 Pi Agent 内核开发套件 (workspace 包)
+├── skills/                           # 智能体预设 & 工作流定义
+├── .pi/                              # Pi 内核运行时数据
+├── config/
+│   ├── qq-bot-config.json            # QQ Bot 运行时配置 (关键词/限流/渲染/测验)
+│   └── napcat-templates/             # NapCat 配置模板
+├── start.bat                         # Windows 一键启动脚本
+├── setup.bat                         # Windows 首次部署脚本
+├── package.json                      # 根配置与 workspaces
+└── tsconfig.base.json                # 共享 TypeScript 配置
 ```
 
-### 配置
+### 6.2 前端状态管理架构
 
-`config/qq-bot-config.json` 控制运行参数：
-
-| 字段 | 说明 | 默认值 |
-|------|------|--------|
-| `enabled` | 是否随服务启动 | `false` |
-| `wsPath` | WebSocket 路径 | `/qq/ws` |
-| `accessToken` | 接入令牌（留空不校验） | `""` |
-| `dedicatedPresetId` | 绑定的 AI 预设 | `"qq-tutor"` |
-| `maxGroupContextMessages` | 个人会话上下文消息数 | `20` |
-| `rateLimit.maxMessages` | 限流窗口内最大消息数 | `5` |
-| `rateLimit.windowSeconds` | 限流窗口（秒） | `10` |
-| `triggerKeywords` | 触发 AI 的关键词（适用于私聊或特定前缀） | `["/ai", "/ask"]` |
-| `quiz.enabled` | 启用个人自测功能 | `true` |
-| `quiz.questionsPerRound` | 每轮自测题目数 | `3` |
-| `quiz.xpPerGrade` | 自测评分→XP 映射 | `{"0":0,"1":1,"2":3,"3":5,"4":10}` |
-| `rendering.formulaImageWidth` | 公式渲染宽度 (px) | `800` |
-| `rendering.maxMessageLength` | 单条消息最大字数 | `1500` |
-| `rendering.messageChunkOverlap` | 长消息分块重叠字数 | `100` |
-
-### WebUI 监控面板
-
-前端 `QQBotCard` 提供实时监控：
-
-| 面板 | 内容 |
-|------|------|
-| **连接状态** | 个人 QQ 账号在线/离线状态 + 昵称 |
-| **答题统计** | 个人自测答题总次数 + 每日趋势迷你柱状图 |
-| **个人进度** | 个人自测总正确率与当前学习 XP 积分 |
-| **薄弱知识点** | AI 根据置信度分析出的最薄弱知识卡片 |
+```
+App.tsx
+  └─ <ChatProvider>          # Socket.io 连接、消息流、多会话管理
+       └─ <WorkspaceProvider>  # 卡片布局、抽屉面板、拖拽分栏
+            └─ <CanvasProvider> # React Flow 节点/边状态、工作流编译
+                 └─ <MainLayout>
+                      ├─ Sidebar       (导航 / 会话列表 / 预设切换)
+                      ├─ Workspace     (多卡片拖拽容器)
+                      │   ├─ ChatCard
+                      │   ├─ CanvasCard
+                      │   ├─ KnowledgeCard
+                      │   └─ QQBotCard
+                      └─ SlideDrawer   (SettingsPanel)
+```
 
 ---
 
-## API 参考
+## 7. 核心机制设计
 
-### 会话管理 (Sessions)
+### 7.1 双环编译与热重载
+支持**用户端（画板可视化配置）**与**智能体端（Agent 自我演化）**的双向技能重塑机制，核心编译逻辑位于 `backend/src/compiler.ts`。
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/sessions` | 列出所有会话 |
-| POST | `/api/sessions/create` | 创建新会话 (可选 presetId) |
-| POST | `/api/sessions/switch` | 切换到指定会话 |
-| DELETE | `/api/sessions/:id` | 删除会话 (不可删除 default-session) |
+#### A环：用户低代码画板编译流
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as 用户 (React Flow 画板)
+    participant F as 前端 (CanvasContext.tsx)
+    participant B as 后端网关 (server.ts)
+    participant C as 编译器 (compiler.ts)
+    participant P as Pi SDK Session
 
-### 智能体预设 (Agent Presets)
+    U->>F: 拖拽/编辑节点并点击保存
+    F->>B: POST /api/workflow/:id
+    B->>B: 保存至 skills/:id/workflow.json
+    B->>C: 调用 compileWorkflowToSkill() (拓扑排序)
+    C->>B: 编译为 SKILL.md 并写入 .pi/skills/
+    B->>P: 发送 "/reload" 指令
+    P->>P: 热加载新技能
+    P-->>F: 广播重载成功
+    F-->>U: 技能立即生效
+```
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/agents` | 获取所有预设 |
-| POST | `/api/agents` | 创建预设 |
-| PUT | `/api/agents/:id` | 更新预设 |
-| DELETE | `/api/agents/:id` | 删除预设 |
+#### B环：智能体自我修饰流
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Pi 主智能体
+    participant T as study-agent-extension.ts (write_workflow)
+    participant C as 编译器 (compiler.ts)
+    participant P as Pi SDK Session
 
-### 模型管理 (Models)
+    A->>T: 调用 write_workflow(skillId, workflowData)
+    T->>T: 保存 JSON 至 skills/:id/workflow.json
+    T->>C: 调用 compileWorkflowToSkill()
+    T->>P: 发送 "/reload"
+    P->>P: 加载新技能，实现自我演化
+    P-->>A: 下一回合可直接调用新技能
+```
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/models?sessionId=` | 获取所有模型 / Provider 状态 / 激活模型 |
-| POST | `/api/models/configure` | 配置 Provider (API Key / Base URL / 自定义模型) |
-| POST | `/api/models/select` | 切换激活模型与思考等级 |
+### 7.2 Qwen 识图子智能体协作流
+`backend/src/study-agent-extension.ts` 中实现的多模态拦截器：用户上传图片且当前主模型不支持视觉输入时，自动调用 Qwen-VL 等多模态模型提取图像描述，注入主模型 prompt。
+```mermaid
+graph TD
+    User([用户上传图片 + 提问]) --> InputFilter[pi.on 'input' 拦截器]
+    InputFilter -->|检测到图片 + 主模型不支持视觉| FindModel[遍历模型注册表寻找可用识图模型]
+    FindModel --> QwenCall[优先 Qwen3.6-Flash，降级搜索其他视觉模型]
+    QwenCall --> DetailExtract[获取结构化图片文本描述]
+    DetailExtract --> PromptInject[清空图片数组，描述注入 prompt 顶部]
+    PromptInject --> MainLLM[驱动主模型安全回答]
+    MainLLM --> UserResponse[返回高质量回复]
+```
 
-### 工作流 (Workflow)
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/workflow/:id` | 获取技能的可视化工作流 JSON |
-| POST | `/api/workflow/:id` | 保存并编译工作流 → SKILL.md + 热重载 |
-
-### 知识库 (Knowledge Base)
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/knowledge/cards` | 列出所有 Wiki 卡片 |
-| GET | `/api/knowledge/cards/search?q=` | 搜索卡片 |
-| GET | `/api/knowledge/cards/:id` | 获取单张卡片 |
-| POST | `/api/knowledge/cards` | 创建卡片 |
-| PUT | `/api/knowledge/cards/:id` | 更新卡片 |
-| DELETE | `/api/knowledge/cards/:id` | 删除卡片 |
-| POST | `/api/knowledge/cards/:id/boost` | 提升置信度 +0.2 |
-| GET | `/api/knowledge/notes` | 列出笔记 |
-| POST | `/api/knowledge/notes` | 创建笔记 |
-| PUT | `/api/knowledge/notes/:id` | 更新笔记 |
-| POST | `/api/knowledge/notes/:id/review` | SM-2 复习 (grade 0-4) |
-| GET | `/api/knowledge/archive/list` | 列出已归档卡片 |
-| GET | `/api/knowledge/archive/review` | 获取归档预告清单 |
-| POST | `/api/knowledge/archive/lint` | 扫描低置信度卡片 |
-| POST | `/api/knowledge/archive/execute` | 执行归档 |
-| GET | `/api/knowledge/stats` | 统计数据 |
-
-### QQ Bot 服务
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/qq/status` | 连接状态 + 在线账号列表 |
-| GET | `/api/qq/health` | 健康检查（在线数 / 运行时长） |
-| POST | `/api/qq/start` | 启动 QQ 服务（预检 + 初始化 WS 适配器 + 拉起 NapCat Shell，崩溃自动重启最多 3 次） |
-| POST | `/api/qq/stop` | 停止 QQ 服务（关闭适配器 + 终止 NapCat 进程，重置重启计数） |
-| GET | `/api/qq/report/weekly` | 个人学习分析周报（薄弱知识 / 自测打卡趋势） |
-| GET | `/api/qq/report/weekly/text` | 个人学习分析周报纯文本格式（可直接发送至个人收藏/设备） |
-
-### WebSocket 事件 (Socket.io)
-
-客户端通过 Socket.io 连接 `http://localhost:3000` 进行实时双向通信：
-
-| 事件 (客户端→服务端) | 说明 |
-|:---|:---|
-| `join-session` | 加入指定会话房间，接收该会话的消息流 |
-| `leave-session` | 离开会话房间 |
-| `send-message` | 发送用户消息 (支持文本 + 图片) |
-| `abort` | 中断当前 AI 生成 |
-| `clear-session` | 清空对话历史 |
-
-| 事件 (服务端→客户端) | 说明 |
-|:---|:---|
-| `session-state` | 会话状态同步 (消息历史 / 模型 / 思考等级) |
-| `pi-event` | Pi Agent 流式事件 (agent_start / message_start / message_update / message_end / tool_execution_*) |
-| `knowledge:context-used` | Agent 回答前命中知识库时触发，返回本轮注入的卡片/笔记引用 |
-| `pi-error` | Pi 内核错误通知 |
-
----
-
-## 知识库架构（V2 遗忘曲线）
-
-系统采用双轨遗忘曲线设计：
-
-### Layer 3: LLM 动态编译知识网
-
+### 7.3 双轨遗忘曲线机制
+#### Layer 3: LLM 动态编译知识网
 使用指数衰减模型：**有效置信度 = C₀ × e^(-λ × t)**
-
-| 生命周期 | 衰减率 λ | 半衰期 | 行为 |
-|----------|----------|--------|------|
-| `immortal` | 0 | ∞ | 永不衰减 |
-| `standard` | 0.0038 | ~180 天 | 标准衰减 |
-| `decay_fast` | 0.0495 | ~14 天 | 快速衰减 |
-
 - 置信度 < 0.15 → 进入归档候选
 - Boost 操作 +0.2，上限 1.0
 - 归档时自动重写 `[[链接]]` 为 `**名称[已归档]**`
 
-### Layer 2: 人类整理笔记
-
+#### Layer 2: 人类整理笔记
 使用 SM-2 间隔重复算法：
 - Grade ≥ 3: 稳定性递增（1 → 6 → 自定义），难度递减
 - Grade < 3: 重置稳定性，难度递增
@@ -579,7 +322,43 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 
 ---
 
-## 智能体预设系统
+## 8. 桌面客户端（Electron）开发计划
+
+为了向用户提供更加原生的系统桌面 GUI 体验，并实现更稳健的后端子进程（Sidecar）监控拉起机制，桌面客户端的开发规范和步骤设计如下（详见 [desktop-ui.md](file:///c:/Users/lisky/Desktop/projectEL/docs/desktop-ui.md)）：
+
+### 8.1 客户端架构设计
+Electron 桌面端包含两个主要进程：
+1. **主进程（Main Process）**：负责管理桌面窗口的生命周期；在后台使用 `child_process.fork/spawn` 默默拉起 Node.js 后端网关服务（作为 Sidecar 子进程）；捕获退出事件以避免僵尸后端进程；并将控制台输出重定向至本地日志中。
+2. **渲染进程（Renderer Process）**：负责运行 React + Tailwind CSS 界面，并通过 `preload.ts` 暴露的安全 IPC 接口与主进程进行安全通信。
+
+### 8.2 步骤开发计划
+
+*   **Task 1: 前端 Tailwind CSS 环境配置**
+    在 `frontend/` 目录中安装 `tailwindcss`, `postcss`, `autoprefixer`，创建配置文件，并重写 `index.css` 引入指令。
+*   **Task 2: 前端 Shadcn UI 组件集成与定制**
+    运行 Shadcn UI 初始化，并根据项目拟定的 Glassmorphism 毛玻璃质感对基础 UI 组件进行圆角、阴影与半透磨砂的微改造。
+*   **Task 3: 集成 Electron 并改造 Vite 配置**
+    在 `frontend/package.json` 中配置 Electron 依赖，在 `vite.config.ts` 中引入 `vite-plugin-electron` 进行统一编译。
+*   **Task 4: 编写 Electron 主进程与预加载脚本**
+    创建并实现主进程 `electron/main.ts`（处理 Sidecar 容错拉起与退出拦截）和 `electron/preload.ts`（封装 IPC 安全通道）。
+*   **Task 5: 根目录启动脚本对齐**
+    更新 root `package.json` 的 npm 脚本，支持 `dev:desktop` 与 `build:desktop`。
+*   **Task 6: 自动打包验证与分发**
+    使用 `electron-builder` 进行打包，最终生成 Windows 平台下的 EXE 安装包与免安装绿色 ZIP 包（详见 [packaging_guide.md](file:///c:/Users/lisky/Desktop/projectEL/docs/packaging_guide.md)）。
+
+---
+
+## 9. 一键绿色包打包 (批处理传统分发)
+
+除了 Electron 桌面端包装外，系统还提供了一种传统的批处理免安装打包方案（详见 [packaging_guide.md](file:///c:/Users/lisky/Desktop/projectEL/docs/packaging_guide.md) 方案三），可生成自带嵌入式 Node.js 运行时的绿色版包：
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-onekey-package.ps1
+```
+打包脚本会自动完成编译前后端源码、拷贝 Pi SDK、NapCat 模块，并生成根目录 `start.bat` 一键双击运行。
+
+---
+
+## 10. 智能体预设系统
 
 `skills/agent-presets.json` 中预置了两个智能体角色：
 
@@ -588,39 +367,68 @@ NapCatQQ (独立模式, 内嵌 Node.js)
 | `xaihi` | Xaihi | DeepSeek V4 Flash | High | 通过追问启发思考，不直接给答案 |
 | `coder` | 代码专家 | DeepSeek V4 Pro | X-High | 高质量代码、架构设计与安全审查 |
 
-预设支持自定义 System Prompt、绑定知识库上下文文档 (contextDocs)、关联技能工作流 (linkedSkills)。在侧边栏中可一键创建带预设的新会话。
+---
+
+## 11. API 参考
+
+### 11.1 核心 API 路由汇总
+
+| 方法 | 路径 | 说明 |
+| :--- | :--- | :--- |
+| **会话管理** | `GET /api/sessions` | 列出所有会话 |
+| | `POST /api/sessions/create` | 创建新会话 (可选 presetId) |
+| | `POST /api/sessions/switch` | 切换到指定会话 |
+| | `DELETE /api/sessions/:id` | 删除会话 |
+| **预设管理** | `GET /api/agents` | 获取所有智能体预设 |
+| | `POST /api/agents` | 创建预设 |
+| | `PUT /api/agents/:id` | 更新预设 |
+| | `DELETE /api/agents/:id` | 删除预设 |
+| **模型管理** | `GET /api/models` | 获取所有模型 / 激活模型状态 |
+| | `POST /api/models/configure` | 配置 Provider 凭证 (API Key / Base URL) |
+| | `POST /api/models/select` | 切换激活模型与思考等级 |
+| **工作流** | `GET /api/workflow/:id` | 获取技能的可视化工作流 JSON |
+| | `POST /api/workflow/:id` | 保存并编译工作流 → SKILL.md + 热重载 |
+| **知识库** | `GET /api/knowledge/cards` | 列出所有 Wiki 概念卡片 |
+| | `POST /api/knowledge/cards` | 创建卡片 |
+| | `POST /api/knowledge/notes/:id/review` | 对整理笔记进行 SM-2 复习评分 |
+| | `POST /api/knowledge/archive/execute` | 执行低置信度卡片归档与重写 |
+| **QQ Bot 服务** | `GET /api/qq/status` | 连接状态 + 在线账号列表 |
+| | `POST /api/qq/start` | 启动 QQ 服务 (拉起 NapCat 进程) |
+| | `POST /api/qq/stop` | 停止 QQ 服务 |
+| | `GET /api/qq/report/weekly` | 获取个人学习分析周报 |
 
 ---
 
-## 项目文档
+## 12. 项目文档
 
 项目的所有设计、架构及开发文档已整理至 [docs/](./docs/) 目录下：
-
-* **[开发者与进度指南 (plan—develop.md)](./docs/plan—develop.md)**：记录了当前开发进度、技术栈、双轨知识库机制及下一步开发指引。
-* **[WebUI 设计与方向规划白皮书 (webui.md)](./docs/webui.md)**：包含系统的视觉设计规范（2D 粒子拓扑图谱）及开发迁移阶段。
-* **[智能融合知识库架构白皮书 (knowledge_base_architecture_v2.md)](./docs/knowledge_base_architecture_v2.md)**：描述了时间维度的遗忘曲线算法、指数衰减模型、SM-2 间隔重复及归档审查 Veto 机制。
-* **[智能体内核与编排架构设计 (learning_agent_architecture.md)](./docs/learning_agent_architecture.md)**：详细拆解了 React Flow 低代码画布与 Pi SDK 编译热重载的闭环机制。
+* **[开发者与进度指南 (plan—develop.md)](./docs/plan—develop.md)**：开发细节、重构技术栈与步骤图。
+* **[WebUI 设计与方向规划白皮书 (webui.md)](./docs/webui.md)**：系统视觉设计规范与渐进重构阶段。
+* **[桌面客户端设计与实现 spec (desktop-ui.md)](./docs/desktop-ui.md)**：Electron 客户端包装、Tailwind/Shadcn 基础配置与进程控制规范。
+* **[EXE 打包与分发部署指南 (packaging_guide.md)](./docs/packaging_guide.md)**：Electron 打包参数配置、Pkg 及绿色包制作方案。
+* **[智能融合知识库架构白皮书 (knowledge_base_architecture_v2.md)](./docs/knowledge_base_architecture_v2.md)**：时间置信度模型与 SM-2 计算原理。
+* **[QQ Bot 自适应部署指南 (napcat-deployment.md)](./docs/napcat-deployment.md)**：NapCat 独立版部署及版本同步对齐细节。
 
 ---
 
-## Roadmap
+## 13. Roadmap
 
 - [x] **QQ Bot 适配**: NapCat QQ 框架 WebSocket 桥接，AI 智能回复，Quiz 测验推送与答题反馈
 - [x] **WebUI QQ 服务启停**: 前端一键启动/停止 NapCat 进程，扫码登录状态提示
 - [ ] **视觉重构**: Neo-Brutalist → Apple Glassmorphism (CSS 变量体系 + 弥散流光背景)
 - [ ] **2D 知识图谱**: 粒子力导向拓扑网络渲染 `[[双链]]` 关系
 - [ ] **子代理编排**: Sub-Agent 抽象层 (Chain/Parallel/Supervisor/Router)
+- [ ] **桌面端封装**: 基于 Electron 对前端/后端进行侧边进程（Sidecar）整合与打包分发
 
 ---
 
-## 开源许可与版权声明
+## 14. 开源许可与版权声明
 
 本项目基于多个优秀的开源软件和组件构建，并完全遵守其各自的开源许可协议：
-
 * **Snapshot Pi** (本项目): [MIT License](https://opensource.org/licenses/MIT)
 * **Pi Agent SDK**: [MIT License](https://opensource.org/licenses/MIT)
-* **NapCatQQ** (QQNT 机器人协议端): [混合开源协议 (非商业学习交流用途)](https://github.com/NapNeko/NapCatQQ)
-* **React Flow** (可视化画布): [MIT License](https://opensource.org/licenses/MIT)
+* **NapCatQQ**: [混合开源协议 (非商业学习交流用途)](https://github.com/NapNeko/NapCatQQ)
+* **React Flow**: [MIT License](https://opensource.org/licenses/MIT)
 * **Express & Socket.io**: [MIT License](https://opensource.org/licenses/MIT)
-* **KaTeX** (数学公式渲染): [MIT License](https://opensource.org/licenses/MIT)
-* **Puppeteer** (无头浏览器内核): [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+* **KaTeX**: [MIT License](https://opensource.org/licenses/MIT)
+* **Puppeteer**: [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)

@@ -1007,6 +1007,14 @@ async function startServer() {
         modelsConfig.providers[provider].api = api;
       }
 
+      if (apiKey !== undefined) {
+        if (apiKey.trim() === "") {
+          delete modelsConfig.providers[provider].apiKey;
+        } else {
+          modelsConfig.providers[provider].apiKey = apiKey;
+        }
+      }
+
       if (models !== undefined) {
         modelsConfig.providers[provider].models = models;
       }
