@@ -17,9 +17,8 @@
 ### 待实现（根据 docs/）
 | 文档 | 未实现内容 |
 |------|-----------|
-| webui.md | Glassmorphism 视觉重构、Markdown 渲染、会话侧栏、命令联想、智能体预设工厂、知识图谱、QQ Bot、仪表盘 |
-| learning_agent_architecture.md | trigger_quiz 测验工具、XP/等级仪表盘 |
-| knowledge_base_architecture_v2.md | 核心引擎已实现，缺 2D 图谱可视化 |
+| ui_and_desktop_guide.md | Glassmorphism 视觉重构、Markdown 渲染、会话侧栏、命令联想、智能体预设工厂、知识图谱、QQ Bot、仪表盘 |
+| developer_guide.md | 核心算法（SM-2 / 置信度衰减）已集成，缺前端 2D 力导向知识图谱可视化 |
 
 ### 架构痛点
 | 问题 | 影响 |
