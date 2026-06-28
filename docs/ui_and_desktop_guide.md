@@ -65,6 +65,18 @@
 2.  **中部主工作区 (Chat Workspace - 60% 宽度)**：包括会话列表与对话流。底部采用高度自适应的 **输入胶囊 (Input Capsule)**，集成 Token 实时统计及多模态图片拖拽/粘贴拦截（由识图子智能体静默解析文字注入上下文）。
 3.  **右侧常驻参数面板 (AgentSettingsCard - 30% 宽度)**：提供 System Prompt（系统指令）编辑框、大模型切换以及 Temperature（0.0 至 2.0）、Max Output Tokens、Safety Settings 滑块；支持一键挂载 Canvas 画布技能或本地参考文档。
 
+### 2.4 聊天框 Slash Command (/) 与 Skill 激活机制
+为提升交互效率并实现类似 Antigravity 的操作体验，系统在输入胶囊上方集成了 Slash Command 联想功能：
+*   **唤起与联想面板**：当用户在输入框键入 `/` 时（或首字母为 `/`），输入框上方会弹出一个悬浮式毛玻璃卡片联想菜单（基于 Shadcn `Command` Primitives 原理）。
+*   **选项列表与检索**：
+    *   **系统命令 (Commands)**：提供基础快捷操作，如 `/clear`（清空会话）与 `/help`（显示帮助）。
+    *   **画布技能 (Skills/Workflows)**：动态请求后端 `/api/workflows` 接口，列出所有已保存或编译的技能（如 `/skill socratic-quiz`、`/skill ai-news-briefing`），支持全文拼音过滤与键盘/鼠标选取。
+*   **执行与激活行为**：
+    *   **选中系统命令**：直接触发前端/后端业务（如 `/clear` 直接触发清空 Socket 会话历史）。
+    *   **选中技能命令**：自动在输入框中补全 `/skill <skillId> ` 并直接提交。后端解析出 `skillId` 后，会读取对应编译出的 `SKILL.md` 规则，作为 System Context 前缀隐式注入大模型会话，从而完成技能挂载。
+*   **激活状态反馈 (Skill Badge)**：
+    *   当技能被激活时，聊天视窗右上角将高亮渲染一个磨砂透光的**活动技能状态徽章**（例如：`Active Skill: daily-briefing (x)`）。用户点击 `(x)` 可以发出退载事件，清理当前挂载的技能规则，重置对话环境。
+
 ---
 
 ## 3. Tailwind CSS & Shadcn UI 基础集成规范
