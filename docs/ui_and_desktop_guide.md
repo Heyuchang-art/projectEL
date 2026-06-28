@@ -37,33 +37,20 @@
 
 ---
 
-## 2. UI 布局系统：Google AI Studio 风格分栏
+## 2. UI 布局系统：专注模式与多栏工作区自适应
 
-主界面采用三栏式协同布局：
+为了兼顾“Google AI Studio 风格的单会话深度调整”与“并排编辑画布/查阅知识库的多窗协同”，系统采用**自适应联动布局系统**，通过左侧边栏的活动卡片状态（`activeCards`）进行智能切换。
 
-```text
-+-----------------+----------------------------------------+-------------------+
-|  L              |                 Center                 |         R         |
-|  E              |               Workspace                |         I         |
-|  F              |              (60% Width)               |         G         |
-|  T              |                                        |         H         |
-|                 | +------------------------------------+ |         T         |
-|  S              | |                                    | |  Parameter Panel  |
-|  I              | |        Chat Message Stream         | |    (30% Width)    |
-|  D              | |                                    | |                   |
-|  E              | |                                    | | [System Prompts]  |
-|  B              | +------------------------------------+ |  Write core instructions|
-|  A              |                                        |  here in real-time  |
-|  R              | +------------------------------------+ |                   |
-|                 | | [ / Suggestion Popover ]           | | [Model Settings]  |
-|  (10% Width)    | | [Input Capsule             Token#] | |  - Temp Sliders   |
-|                 | +------------------------------------+ |  - Max Tokens     |
-+-----------------+----------------------------------------+-------------------+
-```
+### 2.1 专注模式 (Focus Mode)
+当左侧边栏仅启用了 `chat` 卡片时（`activeCards` 长度为 1 且仅含 `chat`），系统自动进入专注模式。布局锁定为标准的 **Google AI Studio 三栏布局**，此时屏蔽多窗拖拽的拖拽条：
+*   **左栏 (Sidebar - 10% 宽度)**：超窄悬浮磨砂玻璃条，提供核心功能的开关切换。
+*   **中栏 (Chat Workspace - 60% 宽度)**：包括会话列表与对话流主视窗。底部采用高度自适应的 **输入胶囊 (Input Capsule)**，集成 Token 统计及多模态图片上传。
+*   **右栏 (Parameter Panel - 30% 宽度)**：常驻显示 **Session 参数调节面板**（AgentSettingsCard），提供 System Instructions、模型切换以及 Temperature 等滑块。
 
-1.  **左侧全局导航栏 (Sidebar - 10% 宽度)**：超窄悬浮磨砂玻璃条，提供 💬 聊天、⚙️ 画布、📚 图谱、🤖 QQ 监控、⚙️ 设置等功能开关。
-2.  **中部主工作区 (Chat Workspace - 60% 宽度)**：包括会话列表与对话流。底部采用高度自适应的 **输入胶囊 (Input Capsule)**，集成 Token 实时统计及多模态图片拖拽/粘贴拦截（由识图子智能体静默解析文字注入上下文）。
-3.  **右侧常驻参数面板 (AgentSettingsCard - 30% 宽度)**：提供 System Prompt（系统指令）编辑框、大模型切换以及 Temperature（0.0 至 2.0）、Max Output Tokens、Safety Settings 滑块；支持一键挂载 Canvas 画布技能或本地参考文档。
+### 2.2 工作区模式 (Workspace Mode)
+当启用了 `chat` 以外的任何卡片时（例如并排开启 `chat` 与 `canvas` 画布），系统无缝切换到 **Workspace 多列拖拽分栏布局**：
+*   **主工作区**：[Workspace.tsx](file:///c:/Users/lisky/Desktop/projectEL/frontend/src/components/Workspace.tsx) 占据剩余全部宽度，各卡片以列为单位排列，允许用户自由拖拽、关闭及调整列宽。
+*   **卡片内参数抽屉**：为了避免挤占多栏分栏的宝贵宽度，原本常驻在右侧的 30% 参数面板会在屏幕主页面上隐藏。相反，在 [ChatCard.tsx](file:///c:/Users/lisky/Desktop/projectEL/frontend/src/components/ChatCard.tsx) 的标题栏右侧会增加一个 🎚️ **“参数”** 展开按钮。点击后，直接在 `ChatCard` 内部右侧滑出一个**卡片内侧面板抽屉 (Inside-Card Drawer)**，供用户就地配置当前会话。
 
 ### 2.4 聊天框 Slash Command (/) 与 Skill 激活机制
 为提升交互效率并实现类似 Antigravity 的操作体验，系统在输入胶囊上方集成了 Slash Command 联想功能：
