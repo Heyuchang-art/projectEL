@@ -34,3 +34,7 @@ napcat/
 # Custom (non-preset) skills under skills/ and .pi/skills/
 skills/*/
 .pi/skills/*/
+
+# Git worktrees
+.worktrees/
+worktrees/
