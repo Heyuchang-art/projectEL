@@ -1,21 +1,21 @@
 :root {
-  --bg-color: #000000;
-  --panel-bg: #0c0c0c;
-  --panel-border: #222222;
-  --panel-border-active: #d1d5db;
-  --text-main: #d1d5db;
-  --text-muted: #7f7f7f;
+  --bg-color: #0a0a0a;
+  --panel-bg: rgba(255, 255, 255, 0.03);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-border-active: rgba(255, 255, 255, 0.15);
+  --text-main: #ededed;
+  --text-muted: #888888;
   
-  /* Neo-Brutalist Vibrant Accent Colors */
-  --primary: #daff3c;      /* Neon lime/yellow */
-  --secondary: #00f2fe;    /* Neon cyan */
-  --accent: #ff007f;       /* Neon pink/magenta */
-  --success: #39ff14;      /* Neon green */
-  --error: #ff073a;        /* Neon red */
+  /* Modern Softer Accent Colors */
+  --primary: #c9ff00;      /* Softer lime */
+  --secondary: #00d5ff;    /* Softer cyan */
+  --accent: #ff3399;       /* Softer magenta */
+  --success: #22c55e;      /* Modern green */
+  --error: #ef4444;        /* Modern red */
   
-  --neo-shadow: 5px 5px 0px #000000;
-  --neo-shadow-hover: 9px 9px 0px #000000;
-  --neo-shadow-active: 1px 1px 0px #000000;
+  --modern-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --modern-shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --modern-shadow-active: 0 2px 12px rgba(0, 0, 0, 0.3);
 
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Fira Code", monospace;
   --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
@@ -34,11 +34,10 @@ body {
   overflow: hidden;
   height: 100vh;
   width: 100vw;
-  /* Grid pattern instead of gradients */
   background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 #root {
@@ -46,55 +45,54 @@ body {
   width: 100%;
 }
 
-/* ================= Neo-Brutalist Cards & Panels ================= */
+/* ================= Modern Cards & Panels ================= */
 
-/* Keep the class name glass-panel to avoid breaking styles, but make it Neo-Brutalist */
 .glass-panel {
   background: var(--panel-bg);
-  border: 3px solid var(--panel-border);
-  border-radius: 0px; /* Sharp corners */
-  box-shadow: var(--neo-shadow);
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), 
-              box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.15s ease;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  box-shadow: var(--modern-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, 
+              box-shadow 0.2s ease,
+              border-color 0.2s ease;
 }
 
 .glass-panel:hover {
   border-color: var(--panel-border-active);
-  box-shadow: var(--neo-shadow-hover);
-  transform: translate(-4px, -4px);
+  box-shadow: var(--modern-shadow-hover);
+  transform: translateY(-2px);
 }
 
-/* Gradient Titles - Neo brutalist high-contrast style */
+/* Gradient Titles - Modern subtle style */
 .gradient-text {
-  font-family: var(--font-mono);
-  font-weight: 900;
-  text-transform: uppercase;
-  color: #d1d5db;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: #ffffff;
   background: none;
   -webkit-text-fill-color: initial;
   background-clip: initial;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.2px;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - Modern Mac style */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #000000;
-  border-left: 2px solid var(--panel-border);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--panel-border);
-  border: 2px solid #000000;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* ================= Buttons ================= */
@@ -104,34 +102,35 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: var(--primary);
-  color: #000000;
-  border: 2px solid #000000;
-  padding: 10px 18px;
-  border-radius: 0px; /* Sharp */
-  font-family: var(--font-mono);
-  font-weight: 800;
-  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  box-shadow: 3px 3px 0px #000000;
-  transition: all 0.1s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
 }
 
 .btn-premium:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0px #000000;
-  background: #e6ff66; /* Slightly lighter neon yellow */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-premium:active {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0px #000000;
+  transform: translateY(1px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
 .btn-premium:disabled {
-  background: #222222;
+  background: rgba(255, 255, 255, 0.02);
   color: #666666;
-  border-color: #333333;
+  border-color: rgba(255, 255, 255, 0.05);
   box-shadow: none;
   transform: none;
   cursor: not-allowed;
@@ -139,33 +138,34 @@ body {
 
 /* Secondary Button variant */
 .btn-secondary {
-  background: #000000;
-  color: #d1d5db;
-  border: 2px solid var(--panel-border);
-  box-shadow: 3px 3px 0px #1a1a1a;
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--panel-border);
+  box-shadow: none;
 }
 .btn-secondary:hover {
-  border-color: #d1d5db;
-  background: #111111;
-  box-shadow: 5px 5px 0px #222222;
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* ================= Inputs ================= */
 
 .input-premium {
-  background: #000000;
-  border: 2px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--panel-border);
   color: var(--text-main);
-  padding: 12px 16px;
-  border-radius: 0px; /* Sharp */
+  padding: 10px 14px;
+  border-radius: 8px;
   outline: none;
-  font-family: var(--font-mono);
-  transition: all 0.15s ease;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  transition: all 0.2s ease;
 }
 
 .input-premium:focus {
-  border-color: var(--secondary);
-  box-shadow: 3px 3px 0px var(--secondary);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* ================= XP Progress Bar ================= */
@@ -191,54 +191,57 @@ body {
 /* ================= React Flow Canvas styling ================= */
 
 .react-flow__background {
-  background-color: #000000 !important;
+  background-color: var(--bg-color) !important;
 }
 
 .react-flow__minimap {
-  background-color: #0c0c0c !important;
-  border: 2px solid #222222 !important;
-  border-radius: 0px !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid var(--panel-border) !important;
+  border-radius: 8px !important;
 }
 
 .react-flow__controls {
-  box-shadow: 3px 3px 0px #000000 !important;
-  border: 2px solid #222222 !important;
+  box-shadow: var(--modern-shadow) !important;
+  border: 1px solid var(--panel-border) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
 }
 
 .react-flow__controls-button {
-  background: #0c0c0c !important;
+  background: rgba(255, 255, 255, 0.05) !important;
   color: var(--text-main) !important;
-  border-bottom: 2px solid #222222 !important;
+  border-bottom: 1px solid var(--panel-border) !important;
   fill: var(--text-main) !important;
   border-radius: 0px !important;
 }
 
 .react-flow__controls-button:hover {
-  background: var(--primary) !important;
-  color: #000000 !important;
-  fill: #000000 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 .react-flow__edge-path {
-  stroke-width: 3 !important;
-  stroke: #d1d5db !important;
+  stroke-width: 2 !important;
+  stroke: rgba(255, 255, 255, 0.3) !important;
 }
 
 /* Custom React Flow Node styling */
 .flow-node {
-  padding: 12px 16px;
-  border-radius: 0px;
-  background: #0c0c0c;
-  border: 3px solid #d1d5db;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(30, 30, 30, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-border);
   color: var(--text-main);
-  min-width: 200px;
-  font-family: var(--font-mono);
-  box-shadow: 4px 4px 0px #000000;
-  transition: all 0.15s ease;
+  min-width: 220px;
+  font-family: var(--font-sans);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
 }
 
 .flow-node.active {
-  box-shadow: 6px 6px 0px var(--primary);
+  box-shadow: 0 0 0 2px var(--primary), 0 8px 32px rgba(0, 0, 0, 0.4);
+  border-color: transparent;
 }
 
 .flow-node-header {
@@ -246,16 +249,16 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 600;
   margin-bottom: 8px;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   text-transform: uppercase;
-  border-bottom: 2px solid var(--panel-border);
-  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
 }
 
 .flow-node-body {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
   word-break: break-all;
   max-height: 50px;
@@ -266,29 +269,29 @@ body {
 .flow-node-handle {
   width: 10px !important;
   height: 10px !important;
-  background: #d1d5db !important;
-  border: 2px solid #000000 !important;
-  border-radius: 0px !important; /* Sharp handles */
+  background: #ffffff !important;
+  border: 2px solid rgba(0,0,0,0.5) !important;
+  border-radius: 50% !important;
 }
 
 /* React Flow Nodes borders colors */
-.node-bash { border: 3px solid var(--secondary); }
-.node-llm { border: 3px solid var(--primary); }
-.node-write { border: 3px solid var(--accent); }
+.node-bash { border-top: 3px solid var(--secondary); }
+.node-llm { border-top: 3px solid var(--primary); }
+.node-write { border-top: 3px solid var(--accent); }
 
-.node-bash.active { box-shadow: 5px 5px 0px var(--secondary); }
-.node-llm.active { box-shadow: 5px 5px 0px var(--primary); }
-.node-write.active { box-shadow: 5px 5px 0px var(--accent); }
+.node-bash.active { box-shadow: 0 0 0 2px var(--secondary), 0 8px 32px rgba(0, 0, 0, 0.4); }
+.node-llm.active { box-shadow: 0 0 0 2px var(--primary), 0 8px 32px rgba(0, 0, 0, 0.4); }
+.node-write.active { box-shadow: 0 0 0 2px var(--accent), 0 8px 32px rgba(0, 0, 0, 0.4); }
 
 .flow-handle-label {
   position: absolute;
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  color: #d1d5db;
-  font-family: var(--font-mono);
-  font-size: 8px;
-  font-weight: 900;
+  color: rgba(255,255,255,0.7);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
   pointer-events: none;
   white-space: nowrap;
   text-transform: uppercase;
@@ -298,8 +301,8 @@ body {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 130px minmax(320px, 1fr) 280px;
-  background: #050505;
+  grid-template-columns: 160px minmax(320px, 1fr) 280px;
+  background: transparent;
 }
 
 .workflow-template-bar {
@@ -307,34 +310,35 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
-  border-bottom: 3px solid var(--panel-border);
-  background: #080808;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .workflow-template-copy {
   min-width: 0;
-  display: grid;
-  gap: 2px;
-  font-family: var(--font-mono);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-sans);
 }
 
 .workflow-template-copy span {
   color: var(--text-muted);
-  font-size: 9px;
-  font-weight: 900;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
 .workflow-template-copy strong {
-  color: var(--primary);
-  font-size: 12px;
-  font-weight: 900;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .workflow-template-copy em {
-  color: #d1d5db;
-  font-size: 10px;
+  color: #a3a3a3;
+  font-size: 12px;
   font-style: normal;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -344,22 +348,21 @@ body {
 .workflow-palette,
 .workflow-inspector {
   min-width: 0;
-  background: #0c0c0c;
+  background: rgba(255, 255, 255, 0.02);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   overflow: auto;
 }
 
 .workflow-palette {
-  border-right: 3px solid var(--panel-border);
-  padding: 10px 8px;
-  gap: 8px !important;
+  border-right: 1px solid var(--panel-border);
+  padding: 14px 10px;
 }
 
 .workflow-inspector {
-  border-left: 3px solid var(--panel-border);
-  padding: 14px;
+  border-left: 1px solid var(--panel-border);
+  padding: 16px;
 }
 
 .workflow-flow-area {
@@ -375,60 +378,62 @@ body {
 }
 
 .workflow-group-label {
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 900;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  border-bottom: 2px solid var(--panel-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 5px;
 }
 
 .workflow-palette-item {
   width: 100%;
-  min-height: 32px;
+  min-height: 36px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: #000000;
-  color: #d1d5db;
-  border: 2px solid var(--panel-border);
-  box-shadow: 3px 3px 0px #000000;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 900;
-  text-transform: uppercase;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  padding: 6px 8px;
+  padding: 8px 10px;
+  transition: all 0.2s ease;
 }
 
 .workflow-palette-item:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #000000;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .workflow-palette-item:active {
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0px #000000;
+  transform: translateY(1px);
 }
 
 .workflow-icon-button {
-  width: 26px;
-  height: 26px;
-  background-color: #000000;
-  border: 2px solid #222222;
+  width: 28px;
+  height: 28px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
   color: #d1d5db;
   display: inline-flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .workflow-icon-button:hover {
-  border-color: var(--secondary);
-  color: var(--secondary);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
 .workflow-icon-button.danger:hover {
@@ -440,7 +445,8 @@ body {
   position: absolute;
   inset: 0;
   z-index: 50;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -449,13 +455,14 @@ body {
 
 .workflow-modal {
   width: min(420px, 100%);
-  background: #050505;
-  border: 3px solid var(--panel-border);
-  box-shadow: 6px 6px 0 #000000;
-  padding: 16px;
+  background: rgba(25, 25, 25, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .workflow-modal-header {
@@ -463,32 +470,33 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  border-bottom: 2px solid var(--panel-border);
-  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
 }
 
 .workflow-modal-header p {
   margin: 6px 0 0;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
   color: var(--text-muted);
 }
 
 .workflow-modal-warning {
-  border: 2px solid var(--error);
-  background: rgba(255, 64, 129, 0.08);
-  color: #d1d5db;
-  font-family: var(--font-mono);
-  font-size: 10px;
+  border: 1px solid var(--error);
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 12px;
   line-height: 1.6;
-  padding: 9px 10px;
+  padding: 12px;
 }
 
 .workflow-modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  padding-top: 4px;
+  gap: 10px;
+  padding-top: 8px;
 }
 
 .workflow-empty-state,
@@ -501,47 +509,51 @@ body {
 .workflow-validation-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--panel-border);
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .workflow-validation-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .workflow-validation-item {
-  padding: 7px 8px;
-  background: #000000;
-  border: 2px solid #333333;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 1.45;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.5;
   color: #d1d5db;
 }
 
 .workflow-validation-item.error {
-  border-color: var(--error);
-  color: var(--error);
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.05);
+  color: #fca5a5;
 }
 
 .workflow-validation-item.warning {
-  border-color: #f59e0b;
-  color: #facc15;
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.05);
+  color: #fcd34d;
 }
 
 .workflow-validation-item.success {
-  border-color: var(--success);
-  color: var(--success);
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.05);
+  color: #86efac;
 }
 
 .workflow-empty-state p,
 .workflow-inspector-header p {
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-sans);
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -550,8 +562,8 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
-  border-bottom: 2px solid var(--panel-border);
-  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
 }
 
 .workflow-field {
@@ -561,10 +573,10 @@ body {
 }
 
 .workflow-field span {
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 900;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
 }
 
@@ -604,16 +616,17 @@ body {
   align-items: center;
   gap: 6px;
   max-width: 220px;
-  background: #000000;
-  border: 2px solid #222222;
-  color: #d1d5db;
-  font-family: var(--font-mono);
-  font-size: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #e5e7eb;
+  font-family: var(--font-sans);
+  font-size: 12px;
 }
 
 .chat-upload-file {
   min-height: 48px;
-  padding: 7px 9px;
+  padding: 8px 12px;
 }
 
 .chat-upload-file span,
@@ -636,7 +649,7 @@ body {
 }
 
 .chat-attachment-chip {
-  padding: 5px 8px;
+  padding: 6px 10px;
   color: var(--secondary);
 }
 
@@ -656,35 +669,37 @@ body {
 .markdown-message h2,
 .markdown-message h3,
 .markdown-message h4 {
-  margin: 12px 0 8px;
-  color: #d1d5db;
-  font-family: var(--font-mono);
-  font-weight: 900;
-  line-height: 1.25;
+  margin: 16px 0 8px;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .markdown-message h1 { font-size: 18px; }
 .markdown-message h2 { font-size: 16px; }
-.markdown-message h3 { font-size: 14px; }
-.markdown-message h4 { font-size: 13px; }
+.markdown-message h3 { font-size: 15px; }
+.markdown-message h4 { font-size: 14px; }
 
 .markdown-message p {
-  margin: 0 0 9px;
+  margin: 0 0 10px;
+  line-height: 1.6;
 }
 
 .markdown-message ul,
 .markdown-message ol {
-  margin: 8px 0 10px 18px;
+  margin: 8px 0 12px 20px;
   padding: 0;
 }
 
 .markdown-message li {
   margin: 4px 0;
+  line-height: 1.6;
 }
 
 .markdown-message strong {
   color: var(--primary);
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .markdown-message a {
@@ -694,21 +709,23 @@ body {
 }
 
 .markdown-message code {
-  background: #000000;
-  border: 1px solid #333333;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
   color: var(--secondary);
   font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 1px 4px;
+  font-size: 12px;
+  padding: 2px 6px;
 }
 
 .markdown-message pre {
-  margin: 10px 0;
-  padding: 12px;
+  margin: 12px 0;
+  padding: 14px;
   overflow: auto;
-  background: #000000;
-  border: 2px solid #333333;
-  box-shadow: 3px 3px 0px #000000;
+  background: rgba(10, 10, 10, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .markdown-message pre code {
@@ -716,44 +733,45 @@ body {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #d1d5db;
+  color: #e5e7eb;
   white-space: pre;
 }
 
 .markdown-message blockquote {
-  margin: 10px 0;
-  padding: 8px 10px;
+  margin: 12px 0;
+  padding: 10px 14px;
   border-left: 3px solid var(--primary);
-  background: #080808;
-  color: #d8d8d8;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0 8px 8px 0;
+  color: #c9c9c9;
 }
 
 .markdown-message table {
   width: 100%;
   border-collapse: collapse;
-  margin: 10px 0;
-  font-size: 11px;
-  font-family: var(--font-mono);
+  margin: 12px 0;
+  font-size: 13px;
+  font-family: var(--font-sans);
 }
 
 .markdown-message th,
 .markdown-message td {
-  border: 2px solid #333333;
-  padding: 7px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 12px;
   text-align: left;
   vertical-align: top;
 }
 
 .markdown-message th {
-  background: #000000;
+  background: rgba(255, 255, 255, 0.05);
   color: var(--primary);
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .markdown-message hr {
   border: 0;
-  border-top: 2px solid #333333;
-  margin: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 16px 0;
 }
 
 /* ================= Resizable Workspace Columns & Drag Drop ================= */
@@ -763,7 +781,7 @@ body {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: #000000;
+  background: var(--bg-color);
 }
 
 .workspace-column {
@@ -777,11 +795,11 @@ body {
 }
 
 .column-resizer {
-  width: 4px;
+  width: 2px;
   height: 100%;
   cursor: col-resize;
-  background: #111111;
-  transition: background 0.15s ease;
+  background: rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease, width 0.15s ease;
   position: relative;
   z-index: 50;
   flex-shrink: 0;
@@ -789,6 +807,7 @@ body {
 
 .column-resizer:hover, .column-resizer.resizing {
   background: var(--secondary);
+  width: 4px;
 }
 
 /* Draggable Card Header */
@@ -803,17 +822,18 @@ body {
 
 /* Drop-zone overlays */
 .drop-indicator {
-  height: 6px;
+  height: 4px;
   background: var(--primary);
-  margin: -3px 0;
-  border-radius: 0px;
+  margin: -2px 0;
+  border-radius: 4px;
   transition: opacity 0.15s ease;
-  box-shadow: 0px 0px 8px var(--primary);
+  box-shadow: 0px 0px 8px rgba(201, 255, 0, 0.5);
 }
 
 .column-drop-zone-active {
-  border: 2px dashed var(--primary) !important;
-  background: rgba(218, 255, 60, 0.02) !important;
+  border: 1px dashed var(--primary) !important;
+  background: rgba(201, 255, 0, 0.05) !important;
+  border-radius: 12px !important;
 }
 
 /* ================= Slide Drawer ================= */
@@ -824,25 +844,25 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
-  backdrop-filter: none; /* Neo-brutalist: no blur */
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   justify-content: flex-end;
 }
 
 .slide-drawer-content {
-  width: 450px;
+  width: 480px;
   height: 100%;
-  background: #0c0c0c;
-  border-left: 3px solid var(--panel-border);
-  box-shadow: -6px 0px 0px #000000;
+  background: rgba(20, 20, 20, 0.95);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -8px 0px 32px rgba(0, 0, 0, 0.5);
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   transform: translateX(100%);
-  animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes slideIn {
@@ -854,10 +874,10 @@ body {
 /* General Layout utilities */
 .typing-cursor {
   display: inline-block;
-  width: 3px;
-  height: 15px;
+  width: 2px;
+  height: 16px;
   background: var(--secondary);
-  margin-left: 2px;
+  margin-left: 4px;
   animation: blink 0.8s infinite;
 }
 
@@ -872,8 +892,8 @@ body {
 /* ================= Compact Markdown for Knowledge Cards ================= */
 .wiki-markdown {
   white-space: normal;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.6;
   color: #dddddd;
   user-select: text;
   -webkit-user-select: text;
@@ -886,90 +906,93 @@ body {
 .wiki-markdown h2,
 .wiki-markdown h3,
 .wiki-markdown h4 {
-  margin: 10px 0 6px;
-  color: #d1d5db;
-  font-family: var(--font-mono);
-  font-weight: 900;
-  line-height: 1.25;
+  margin: 12px 0 8px;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.3;
 }
-.wiki-markdown h1 { font-size: 15px; }
-.wiki-markdown h2 { font-size: 13.5px; }
-.wiki-markdown h3 { font-size: 12px; }
-.wiki-markdown h4 { font-size: 11.5px; }
+.wiki-markdown h1 { font-size: 16px; }
+.wiki-markdown h2 { font-size: 15px; }
+.wiki-markdown h3 { font-size: 14px; }
+.wiki-markdown h4 { font-size: 13px; }
 
-.wiki-markdown p { margin: 0 0 8px; }
+.wiki-markdown p { margin: 0 0 10px; }
 
 .wiki-markdown ul,
 .wiki-markdown ol {
-  margin: 6px 0 8px 16px;
+  margin: 8px 0 10px 18px;
   padding: 0;
 }
-.wiki-markdown li { margin: 3px 0; }
+.wiki-markdown li { margin: 4px 0; }
 
 .wiki-markdown strong {
   color: var(--primary);
-  font-weight: 800;
+  font-weight: 600;
 }
 .wiki-markdown a {
   color: var(--secondary);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 .wiki-markdown code {
-  background: #000000;
-  border: 1px solid #333333;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
   color: var(--secondary);
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  padding: 0px 3px;
+  font-size: 11px;
+  padding: 2px 4px;
 }
 .wiki-markdown pre {
-  margin: 8px 0;
-  padding: 8px 10px;
+  margin: 10px 0;
+  padding: 12px;
   overflow: auto;
-  background: #000000;
-  border: 2px solid #333333;
-  box-shadow: 2px 2px 0px #000000;
+  background: rgba(10, 10, 10, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
 }
 .wiki-markdown pre code {
   display: block;
   padding: 0;
   border: 0;
   background: transparent;
-  color: #d1d5db;
+  color: #e5e7eb;
   white-space: pre;
-  font-size: 10.5px;
+  font-size: 11px;
 }
 .wiki-markdown blockquote {
-  margin: 8px 0;
-  padding: 6px 8px;
-  border-left: 2px solid var(--primary);
-  background: #080808;
-  color: #d8d8d8;
+  margin: 10px 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--primary);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0 6px 6px 0;
+  color: #c9c9c9;
 }
 .wiki-markdown table {
   width: 100%;
   border-collapse: collapse;
-  margin: 8px 0;
-  font-size: 10.5px;
-  font-family: var(--font-mono);
+  margin: 10px 0;
+  font-size: 12px;
+  font-family: var(--font-sans);
 }
 .wiki-markdown th,
 .wiki-markdown td {
-  border: 2px solid #333333;
-  padding: 5px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 10px;
   text-align: left;
   vertical-align: top;
 }
 .wiki-markdown th {
-  background: #000000;
+  background: rgba(255, 255, 255, 0.05);
   color: var(--primary);
-  font-weight: 800;
+  font-weight: 600;
 }
 .wiki-markdown hr {
   border: 0;
-  border-top: 2px solid #333333;
-  margin: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 12px 0;
 }
 
 /* Custom Delete Button for Canvas Flow Nodes */

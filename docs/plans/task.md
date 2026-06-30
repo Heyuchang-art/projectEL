@@ -1,9 +1,3 @@
-# Task Tracker
-
-| Task ID | Task Description | Status |
-|---|---|---|
-| Task 1 | Consolidate Theme A into developer_guide.md and delete merged files | [x] |
-| Task 2 | Consolidate Theme B into qq_bot_handbook.md and delete merged files | [x] |
-| Task 3 | Consolidate Theme C into ui_and_desktop_guide.md and delete merged files | [x] |
-| Task 4 | Archive setup-fixes.md and superpowers/ folder to docs/archive/ | [x] |
-| Task 5 | Commit changes to git and verify docs structure | [x] |
+- `[x]` Task 1: Initialize Next.js Project
+- `[x]` Task 2: Install and Configure Tailwind & Shadcn UI
+- `[x]` Task 3: Implement Main Layout (Focus Mode Shell)
