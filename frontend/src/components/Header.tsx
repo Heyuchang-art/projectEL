@@ -141,7 +141,7 @@ export default function Header() {
           }}
         >
           {libraries.map(lib => (
-            <option key={lib} value={lib}>
+            <option key={lib} value={lib} style={{ backgroundColor: '#0a0a0a', color: '#d1d5db' }}>
               {lib === 'default' ? 'default (默认库)' : lib}
             </option>
           ))}

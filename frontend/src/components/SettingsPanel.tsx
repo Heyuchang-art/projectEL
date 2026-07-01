@@ -867,9 +867,9 @@ export default function SettingsPanel() {
                   className="input-premium"
                   style={{ width: '100%', fontSize: '12px', cursor: 'pointer' }}
                 >
-                  <option value="openai-completions">openai-completions (OpenAI 兼容)</option>
-                  <option value="anthropic-messages">anthropic-messages (Anthropic 兼容)</option>
-                  <option value="google-generative">google-generative (Google 兼容)</option>
+                  <option value="openai-completions" style={{ backgroundColor: '#0a0a0a', color: '#ededed' }}>openai-completions (OpenAI 兼容)</option>
+                  <option value="anthropic-messages" style={{ backgroundColor: '#0a0a0a', color: '#ededed' }}>anthropic-messages (Anthropic 兼容)</option>
+                  <option value="google-generative" style={{ backgroundColor: '#0a0a0a', color: '#ededed' }}>google-generative (Google 兼容)</option>
                 </select>
               </div>
 

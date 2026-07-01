@@ -49,6 +49,41 @@ export default function ChatCard() {
   const [renameValue, setRenameValue] = React.useState('');
   const renameInputRef = React.useRef<HTMLInputElement | null>(null);
 
+  // Slash command state
+  const [availableSkills, setAvailableSkills] = React.useState<any[]>([]);
+  const [showSlashMenu, setShowSlashMenu] = React.useState(false);
+  const [slashFilter, setSlashFilter] = React.useState('');
+  const [slashSelectedIndex, setSlashSelectedIndex] = React.useState(0);
+
+  // Fetch available skills on mount
+  useEffect(() => {
+    fetch('/api/workflows')
+      .then(res => res.json())
+      .then(data => setAvailableSkills(Array.isArray(data) ? data : (data.workflows || [])))
+      .catch(err => console.error("Failed to load skills for slash commands:", err));
+  }, []);
+
+  // Control slash menu visibility based on input
+  useEffect(() => {
+    if (inputText.startsWith('/')) {
+      const parts = inputText.split(' ');
+      if (parts.length > 1) {
+        setShowSlashMenu(false);
+      } else {
+        setShowSlashMenu(true);
+        setSlashFilter(inputText.slice(1).toLowerCase());
+        setSlashSelectedIndex(0);
+      }
+    } else {
+      setShowSlashMenu(false);
+    }
+  }, [inputText]);
+
+  const filteredSkills = availableSkills.filter(skill => 
+    skill.id.toLowerCase().includes(slashFilter) || 
+    (skill.name && skill.name.toLowerCase().includes(slashFilter))
+  );
+
   // Close popover on outside click
   React.useEffect(() => {
     if (!showNewSessionPopover) return;
@@ -73,6 +108,41 @@ export default function ChatCard() {
   };
 
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Escape 关闭 Slash Menu
+    if (showSlashMenu && event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      setShowSlashMenu(false);
+      return;
+    }
+
+    if (showSlashMenu && filteredSkills.length > 0) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setSlashSelectedIndex((prev) => (prev + 1) % filteredSkills.length);
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setSlashSelectedIndex((prev) => (prev - 1 + filteredSkills.length) % filteredSkills.length);
+        return;
+      }
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        const selected = filteredSkills[slashSelectedIndex];
+        setInputText(`/${selected.id} `);
+        setShowSlashMenu(false);
+        return;
+      }
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        const selected = filteredSkills[slashSelectedIndex];
+        setInputText(`/${selected.id} `);
+        setShowSlashMenu(false);
+        return;
+      }
+    }
+
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       submitChat();
@@ -380,9 +450,9 @@ export default function ChatCard() {
               cursor: 'pointer'
             }}
           >
-            <option value="">(无预设)</option>
+            <option value="" style={{ backgroundColor: '#0a0a0a', color: '#d1d5db' }}>(无预设)</option>
             {presets.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
+              <option key={p.id} value={p.id} style={{ backgroundColor: '#0a0a0a', color: '#d1d5db' }}>{p.name}</option>
             ))}
           </select>
           
@@ -454,7 +524,7 @@ export default function ChatCard() {
                 }}
               >
                 {sessions.map((s: any) => (
-                  <option key={s.id} value={s.id}>{s.name || s.id}</option>
+                  <option key={s.id} value={s.id} style={{ backgroundColor: '#0a0a0a', color: '#d1d5db' }}>{s.name || s.id}</option>
                 ))}
               </select>
               <button
@@ -555,9 +625,9 @@ export default function ChatCard() {
                       flex: 1
                     }}
                   >
-                    <option value="">(无预设)</option>
+                    <option value="" style={{ backgroundColor: '#0a0a0a', color: '#d1d5db' }}>(无预设)</option>
                     {presets.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <option key={p.id} value={p.id} style={{ backgroundColor: '#0a0a0a', color: '#d1d5db' }}>{p.name}</option>
                     ))}
                   </select>
                 </div>
@@ -748,9 +818,59 @@ export default function ChatCard() {
           display: 'flex', 
           flexDirection: 'column', 
           gap: '8px',
-          backgroundColor: '#000000'
+          backgroundColor: '#000000',
+          position: 'relative'
         }}
       >
+        {/* Slash Command Menu Popover */}
+        {showSlashMenu && filteredSkills.length > 0 && (
+          <div style={{
+            position: 'absolute',
+            bottom: '100%',
+            left: '16px',
+            marginBottom: '16px',
+            width: 'calc(100% - 32px)',
+            maxHeight: '200px',
+            overflowY: 'auto',
+            backgroundColor: '#0c0c0c',
+            border: '2px solid #222222',
+            boxShadow: '4px 4px 0px #000000',
+            zIndex: 100,
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div style={{ padding: '8px 12px', borderBottom: '1px solid #222222', fontSize: '10px', color: 'var(--secondary)', fontWeight: 'bold' }}>
+              ✦ 联想技能 (Slash Commands)
+            </div>
+            {filteredSkills.map((skill, index) => (
+              <div 
+                key={skill.id}
+                onClick={() => {
+                  setInputText(`/${skill.id} `);
+                  setShowSlashMenu(false);
+                  textInputRef.current?.focus();
+                }}
+                style={{
+                  padding: '10px 12px',
+                  cursor: 'pointer',
+                  backgroundColor: index === slashSelectedIndex ? '#222222' : 'transparent',
+                  color: index === slashSelectedIndex ? '#ffffff' : '#d1d5db',
+                  borderBottom: '1px solid #1a1a1a',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px'
+                }}
+                onMouseEnter={() => setSlashSelectedIndex(index)}
+              >
+                <div style={{ fontSize: '12px', fontWeight: 'bold', fontFamily: 'var(--font-mono)' }}>
+                  /{skill.id}
+                </div>
+                {skill.name && <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{skill.name}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Upload previews */}
         {selectedAttachments.length > 0 && (
           <div className="chat-upload-preview">

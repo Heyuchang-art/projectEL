@@ -240,7 +240,7 @@ export default function Workspace({ activeCards, cardLayout, onUpdateLayout, ren
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
-                overflowY: 'auto',
+                overflowY: 'hidden',
                 gap: '8px',
                 padding: '0 8px'
               }}
@@ -275,12 +275,11 @@ export default function Workspace({ activeCards, cardLayout, onUpdateLayout, ren
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      flexShrink: 0,
-                      // For cards, we let them grow naturally or expand:
-                      // If only 1 card in column, let it take full remaining space
-                      flexGrow: col.cards.length === 1 ? 1 : 0,
-                      height: col.cards.length === 1 ? '100%' : 'auto',
-                      minHeight: '200px'
+                      flexShrink: 1,
+                      flexGrow: 1,
+                      flexBasis: '0%',
+                      minHeight: '200px',
+                      overflow: 'hidden'
                     }}
                   >
                     {renderCard(item.id, () => handleCloseCard(item.id))}

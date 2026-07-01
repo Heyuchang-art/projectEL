@@ -86,9 +86,9 @@ export default function WikiFormView({ cardId, kb, onSaved, onCancel }: Props) {
             className="input-premium"
             style={{ width: '100%', fontSize: '12px', padding: '8px 10px', color: '#d1d5db', backgroundColor: '#000' }}
           >
-            <option value="immortal">永生 (永不衰减)</option>
-            <option value="standard">标准 (半衰期 180天)</option>
-            <option value="decay_fast">快速衰减 (半衰期 14天)</option>
+            <option value="immortal" style={{ backgroundColor: '#0a0a0a', color: '#d1d5db' }}>永生 (永不衰减)</option>
+            <option value="standard" style={{ backgroundColor: '#0a0a0a', color: '#d1d5db' }}>标准 (半衰期 180天)</option>
+            <option value="decay_fast" style={{ backgroundColor: '#0a0a0a', color: '#d1d5db' }}>快速衰减 (半衰期 14天)</option>
           </select>
         </div>
 

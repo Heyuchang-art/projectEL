@@ -136,7 +136,7 @@ function FieldEditor({
         style={inputStyle}
       >
         {field.options?.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={option.value} style={{ backgroundColor: '#0a0a0a', color: '#ededed' }}>
             {option.label}
           </option>
         ))}
@@ -362,7 +362,7 @@ function CanvasCardInner() {
           style={{ width: '230px', padding: '7px 10px', fontSize: '11px' }}
         >
           {workflowOptions.map((workflow) => (
-            <option key={workflow.id} value={workflow.id}>
+            <option key={workflow.id} value={workflow.id} style={{ backgroundColor: '#0a0a0a', color: '#ededed' }}>
               {workflow.source === 'template' ? '' : workflow.source === 'saved' ? '已保存 · ' : '草稿 · '}
               {workflow.name}
             </option>
@@ -511,7 +511,7 @@ function CanvasCardInner() {
                   style={inputStyle}
                 >
                   {edgeModeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
+                    <option key={option.value} value={option.value} style={{ backgroundColor: '#0a0a0a', color: '#ededed' }}>
                       {option.label}
                     </option>
                   ))}

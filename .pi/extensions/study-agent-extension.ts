@@ -37,6 +37,25 @@ export default function (pi: ExtensionAPI) {
     let images = event.images || [];
     let transformed = false;
 
+    // 0. Slash Command 主动触发技能拦截
+    if (text.trim().startsWith("/")) {
+      const match = text.trim().match(/^\/([\w-]+)(?:\s+(.*))?$/);
+      if (match) {
+        const skillId = match[1];
+        const restText = match[2] || "";
+        const skillPath = path.join(ctx.cwd, ".pi", "skills", skillId, "SKILL.md");
+        
+        try {
+          if (await fs.pathExists(skillPath)) {
+            text = `[系统强制指令]\n用户显式调用了 /${skillId} 技能。\n请你立刻查阅并按照名为 "${skillId}" 的技能说明书严格执行对应的操作流程。不要找借口拒绝，也不要解释，直接开始执行第一步。\n\n[用户的附加输入]\n${restText}`;
+            transformed = true;
+          }
+        } catch (err) {
+          console.error("Error checking skill path for slash command:", err);
+        }
+      }
+    }
+
     // 1. 识图逻辑 (如果上传了图片，且当前主模型不支持多模态输入)
     const activeModelSupportsVision = ctx.model?.input?.includes("image");
     if (images.length > 0 && !activeModelSupportsVision) {

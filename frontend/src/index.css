@@ -168,6 +168,26 @@ body {
   background: rgba(255, 255, 255, 0.05);
 }
 
+/* ================= Select & Option Dark Theme ================= */
+
+select {
+  background-color: #0a0a0a;
+  color: var(--text-main);
+}
+
+select option {
+  background-color: #0a0a0a;
+  color: var(--text-main);
+}
+
+select option:checked {
+  background-color: #1a1a1a;
+}
+
+select option:hover {
+  background-color: #1a1a1a;
+}
+
 /* ================= XP Progress Bar ================= */
 
 .progress-bar-container {
@@ -269,7 +289,7 @@ body {
 .flow-node-handle {
   width: 10px !important;
   height: 10px !important;
-  background: #ffffff !important;
+  background: #d1d5db !important;
   border: 2px solid rgba(0,0,0,0.5) !important;
   border-radius: 50% !important;
 }
