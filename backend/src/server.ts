@@ -388,7 +388,28 @@ async function startServer() {
     const proc = spawn(napcatScript, [], {
       cwd: napcatDir,
       shell: true,
-      stdio: 'inherit',
+      stdio: 'pipe',
+    });
+
+    // 解析 NapCat stdout，提取二维码 URL 和图片路径
+    proc.stdout?.on('data', (d: Buffer) => {
+      const text = d.toString();
+      // 提取二维码解谜 URL
+      const urlMatch = text.match(/二维码解谜URL:\s*(https?:\/\/\S+)/);
+      if (urlMatch) {
+        const qrcodeUrl = urlMatch[1];
+        console.log(`[QQ] QR code URL: ${qrcodeUrl}`);
+        // 通知前端
+        io.emit('napcat:qrcode', { url: qrcodeUrl });
+      }
+      // 输出日志（过滤控制台颜色编码）
+      for (const line of text.split('\n').filter(Boolean)) {
+        const clean = line.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '').trim();
+        if (clean) console.log(`[NapCat] ${clean}`);
+      }
+    });
+    proc.stderr?.on('data', (d: Buffer) => {
+      console.error(`[NapCat:stderr] ${d.toString().trim()}`);
     });
 
 
@@ -535,6 +556,16 @@ async function startServer() {
       res.type('text/plain').send(reportGen.formatReportForQQ(report, groupId));
     } catch (err: any) {
       res.status(500).send(err.message);
+    }
+  });
+
+  // 提供二维码图片（serve qrcode.png）
+  app.get('/api/qq/qrcode', (_req, res) => {
+    const qrcodePath = path.join(workspaceCwd, 'napcat', 'napcat', 'cache', 'qrcode.png');
+    if (fs.existsSync(qrcodePath)) {
+      res.sendFile(qrcodePath);
+    } else {
+      res.status(404).json({ error: 'QR code not available yet', hint: 'Start QQ service first' });
     }
   });
 
