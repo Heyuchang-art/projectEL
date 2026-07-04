@@ -1,4 +1,4 @@
-import { createAgentSession, SessionManager, DefaultResourceLoader, AuthStorage, ModelRegistry } from "@earendil-works/pi-coding-agent";
+﻿import { createAgentSession, SessionManager, DefaultResourceLoader, AuthStorage, ModelRegistry } from "@earendil-works/pi-coding-agent";
 import express from "express";
 import cors from "cors";
 import { createServer } from "http";
@@ -309,28 +309,35 @@ async function startServer() {
     process: null,
     restartCount: 0,
     restartTimer: null,
-  };
+ };
+  // 可变的回调包装器（用于延迟绑定，避免函数声明提升问题）
+  const napCatRestart = { fn: null as (() => void) | null };
 
-  let qqConfig: any = null;
+ let qqConfig: any = null;
   const qqConfigPath = path.join(workspaceCwd, 'config', 'qq-bot-config.json');
+
+  // 必须在 initQQAdapter 之前初始化 QQ 日志器（健康检查会在构造函数中调用 getQQLogger）
+  const qqLogger = getQQLogger(workspaceCwd);
+  qqLogger.setLogDir(path.join(kbService.inboxDir, 'qq-logs'));
 
   if (await fs.pathExists(qqConfigPath)) {
     qqConfig = await fs.readJson(qqConfigPath);
     if (qqConfig.enabled) {
-      initQQAdapter(httpServer, getOrCreateSession, io, qqConfig, kbService);
+      initQQAdapter(httpServer, getOrCreateSession, io, qqConfig, kbService, () => napCatRestart.fn?.());
       console.log('[QQ] Config loaded and adapter auto-started');
     } else {
       console.log('[QQ] Config loaded (disabled, adapter not auto-started)');
     }
   }
 
-  // 将 QQ 日志器重定向到记忆库的 inbox 目录中，使日志与知识库储存在一起
-  const qqLogger = getQQLogger(workspaceCwd);
-  qqLogger.setLogDir(path.join(kbService.inboxDir, 'qq-logs'));
-
   const reportGen = new ReportGenerator(kbService, workspaceCwd);
 
-  // ── NapCat Preflight ─────────────────────────────────────────────────
+        // 自动启动 NapCat
+      resetNapcatGuard();
+      napcatGuard.process = spawnNapCat();
+      console.log(`[QQ] NapCat 已自动启动 (Shell standalone mode)`);
+
+      // ── NapCat Preflight ─────────────────────────────────────────────────
   async function preflightNapCat(): Promise<{ ok: boolean; error?: string; hint?: string }> {
     const dir = path.join(workspaceCwd, 'napcat');
     const setupCmd = 'powershell -File scripts\\setup-napcat.ps1';
@@ -368,23 +375,37 @@ async function startServer() {
     if (napcatGuard.restartTimer) {
       clearTimeout(napcatGuard.restartTimer);
       napcatGuard.restartTimer = null;
-    }
-  }
+   }
+ }
 
-  function spawnNapCat(): ChildProcess {
+ function spawnNapCat(): ChildProcess {
     const napcatScriptRel = qqConfig?.napcat?.path || 'napcat/napcat.bat';
     const napcatScript = path.join(workspaceCwd, napcatScriptRel);
 
-    if (!fs.existsSync(napcatScript)) {
-      const msg =
-        `NapCat 启动脚本不存在: ${napcatScriptRel}\n` +
-        `请先运行部署: scripts\\setup.bat`;
-      console.error(`[QQ] ${msg}`);
-      throw new Error(msg);
-    }
+   if (!fs.existsSync(napcatScript)) {
+     const msg =
+       `NapCat 启动脚本不存在: ${napcatScriptRel}\n` +
+       `请先运行部署: scripts\\setup.bat`;
+     console.error(`[QQ] ${msg}`);
+     throw new Error(msg);
+   }
 
-    const napcatDir = path.dirname(napcatScript);
-    // 直接启动 NapCat（stdio: inherit 让 NapCat 的输出显示在当前终端，QR 码直接可见）
+   const napcatDir = path.dirname(napcatScript);
+    // 设置密码环境变量（NapCat 在快速登录失败后会以此密码回退登录）
+    process.env.NAPCAT_QUICK_PASSWORD = 'hym11073';
+    process.env.NAPCAT_QUICK_PASSWORD_MD5 = '461de22c049f413b645ac8c5b03b6298';
+
+   // 如果配置了 QQ 账号，传入 -q 参数实现快速登录（使用本地缓存的会话凭据）
+   const napcatArgs: string[] = [];
+   const qqAccount = qqConfig?.napcat?.qqAccount;
+   if (qqAccount) {
+     napcatArgs.push('-q', String(qqAccount));
+   }
+
+   // 直接调用 node.exe 启动 napcat.mjs（绕过 bat 脚本，确保 -q 参数能正确传递）
+   // 通过 napcat.bat 启动（走 index.js → import napcat.mjs），-q 由 %* 转发
+   // 改用 node.exe + index.js + -q 直接启动，避免 bat 脚本参数转发问题
+    // 通过 napcat.bat 启动（已硬编码 -q 2707327376）
     const proc = spawn(napcatScript, [], {
       cwd: napcatDir,
       shell: true,
@@ -449,10 +470,22 @@ async function startServer() {
       }, delay);
     });
 
-    return proc;
-  }
+   return proc;
+ }
+  // 延迟绑定重启函数（等 spawnNapCat 定义完成后再赋值）
+  napCatRestart.fn = () => {
+    console.warn('[QQ] Health check triggered NapCat restart');
+    if (napcatGuard.process?.pid) {
+      try {
+        spawn('taskkill', ['/PID', String(napcatGuard.process.pid), '/T', '/F'], { stdio: 'ignore' });
+      } catch {}
+      napcatGuard.process = null;
+    }
+    resetNapcatGuard();
+    napcatGuard.process = spawnNapCat();
+  };
 
-  // QQ 状态（始终可用）
+ // QQ 状态（始终可用）
   app.get('/api/qq/status', (_req, res) => {
     const server = getQQServer();
     if (!server) {
@@ -491,8 +524,8 @@ async function startServer() {
         return res.status(400).json({ success: false, error: preflight.error, hint: preflight.hint });
       }
 
-      // 初始化 QQ WebSocket 适配器（监听端口 3001）
-      initQQAdapter(httpServer, getOrCreateSession, io, qqConfig, kbService);
+    // 初始化 QQ WebSocket 适配器（监听端口 3001）
+      initQQAdapter(httpServer, getOrCreateSession, io, qqConfig, kbService, () => napCatRestart.fn?.());
 
       // 启动 NapCat Shell（独立模式，无需 QQ.exe 和管理员权限）
       resetNapcatGuard();

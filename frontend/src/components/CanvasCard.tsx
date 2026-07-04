@@ -1,10 +1,10 @@
-import React, { DragEvent, useCallback, useMemo, useRef } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Background,
   Controls,
   Edge,
   Handle,
-  MiniMap,
+
   Node,
   Position,
   ReactFlow,
@@ -158,20 +158,22 @@ function FieldEditor({
   );
 }
 
-function PaletteItem({ definition, onClick }: { definition: WorkflowNodeDefinition; onClick: () => void }) {
+function PaletteItem({ definition }: { definition: WorkflowNodeDefinition }) {
   const Icon = definition.icon;
 
   return (
-    <button
-      onClick={onClick}
+    <div
+      onPointerDown={(e) => {
+                document.body.setAttribute('data-drag-type', definition.type);
+        document.body.classList.add('is-dragging-from-palette');
+      }}
       className="workflow-palette-item"
       title={definition.description}
-      type="button"
-      style={{ borderColor: definition.color, cursor: 'pointer' }}
+      style={{ borderColor: definition.color, cursor: 'grab', userSelect: 'none' }}
     >
       <Icon size={15} style={{ color: definition.color, flexShrink: 0 }} />
       <span>{definition.label}</span>
-    </button>
+    </div>
   );
 }
 function CanvasCardInner() {
@@ -237,20 +239,94 @@ function CanvasCardInner() {
     setSelectedEdge(null);
   }, [setSelectedNode, setSelectedEdge]);
 
-  const handlePaletteClick = useCallback(
-    (type: WorkflowNodeType) => {
-      const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
-      const centerX = reactFlowBounds ? reactFlowBounds.width / 2 : 300;
-      const centerY = reactFlowBounds ? reactFlowBounds.height / 2 : 200;
-      const position = screenToFlowPosition({
-        x: (reactFlowBounds?.left ?? 0) + centerX,
-        y: (reactFlowBounds?.top ?? 0) + centerY
-      });
-      addNode(type, position);
-    },
-    [addNode, screenToFlowPosition]
-  );
 
+
+
+
+
+  // Drag & drop using Pointer Events with visual ghost feedback
+  useEffect(() => {
+    const el = reactFlowWrapper.current;
+    if (!el) return;
+
+    let ghostEl: HTMLDivElement | null = null;
+
+    const getOrCreateGhost = (type: string): HTMLDivElement => {
+      if (ghostEl) return ghostEl;
+      const def = getNodeDefinition(type);
+      const g = document.createElement('div');
+      g.className = 'drag-ghost';
+      g.textContent = def.label;
+      g.style.cssText = `
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: rgba(12, 12, 12, 0.95);
+        border: 2px solid ${def.color};
+        color: #e5e7eb;
+        font-family: var(--font-sans, sans-serif);
+        font-size: 13px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        opacity: 0.85;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+      `;
+      document.body.appendChild(g);
+      ghostEl = g;
+      return g;
+    };
+
+    const removeGhost = () => {
+      if (ghostEl) {
+        ghostEl.remove();
+        ghostEl = null;
+      }
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      const type = document.body.getAttribute('data-drag-type');
+      if (!type) return;
+      const ghost = getOrCreateGhost(type);
+      ghost.style.left = e.clientX + 'px';
+      ghost.style.top = e.clientY + 'px';
+      document.body.style.cursor = 'grabbing';
+    };
+
+    const onPointerUp = (e: PointerEvent) => {
+      removeGhost();
+      document.body.style.cursor = '';
+      document.body.classList.remove('is-dragging-from-palette');
+
+      const type = document.body.getAttribute('data-drag-type');
+      if (!type) return;
+      document.body.removeAttribute('data-drag-type');
+
+      // Check if pointer is over the flow area
+      const rect = el.getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right &&
+          e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        const position = screenToFlowPosition({
+          x: e.clientX,
+          y: e.clientY
+        });
+        addNode(type as WorkflowNodeType, position);
+      }
+    };
+
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp, { capture: true });
+
+    return () => {
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      removeGhost();
+    };
+  }, [addNode, screenToFlowPosition]);
+
+  // Recalculate error/warning counts
   const errorCount = validation.items.filter((item) => item.level === 'error').length;
   const warningCount = validation.items.filter((item) => item.level === 'warning').length;
 
@@ -377,7 +453,7 @@ function CanvasCardInner() {
             <div key={group} className="workflow-palette-group">
               <div className="workflow-group-label">{group}</div>
               {definitions.map((definition) => (
-                <PaletteItem key={definition.type} definition={definition} onClick={() => handlePaletteClick(definition.type)} />
+                <PaletteItem key={definition.type} definition={definition} />
               ))}
             </div>
           ))}
@@ -407,7 +483,7 @@ function CanvasCardInner() {
             }}
             fitView
           >
-            <MiniMap zoomable pannable />
+
             <Controls />
             <Background color="#000000" gap={16} size={1} />
           </ReactFlow>

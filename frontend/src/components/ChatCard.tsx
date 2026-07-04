@@ -58,7 +58,7 @@ export default function ChatCard() {
 
   // Fetch available skills on mount
   useEffect(() => {
-    fetch('/api/workflows')
+    fetch('http://localhost:3000/api/workflows')
       .then(res => res.json())
       .then(data => setAvailableSkills(Array.isArray(data) ? data : (data.workflows || [])))
       .catch(err => console.error("Failed to load skills for slash commands:", err));
@@ -240,6 +240,7 @@ export default function ChatCard() {
         backgroundColor: '#0c0c0c',
         border: '3px solid #222222',
         boxShadow: '4px 4px 0px #000000',
+        borderRadius: '12px',
         transform: 'none' // Override hover translation for the full workspace layout stability
       }}
     >
@@ -800,6 +801,7 @@ export default function ChatCard() {
                     : isTool 
                       ? '2px dashed #333333'
                       : '2px solid #222222',
+                  borderRadius: '8px',
                   boxShadow: isUser 
                     ? '3px 3px 0px var(--secondary)' 
                     : isTool 
@@ -811,7 +813,7 @@ export default function ChatCard() {
                 }}
               >
                 {m.role === 'assistant' ? <MarkdownMessage text={m.text} /> : m.text}
-                {isStreaming && !isUser && m.role === 'assistant' && <span className="typing-cursor"></span>}
+                {isStreaming && !isUser && m.role === 'assistant' && (messages.filter(m => m.role === 'assistant').pop()?.id === m.id) && <span className="typing-cursor"></span>}
                 
                 {/* User Attachment Images */}
                 {isUser && m.images && m.images.length > 0 && (
