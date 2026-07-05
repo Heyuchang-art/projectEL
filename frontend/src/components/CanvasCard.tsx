@@ -158,13 +158,16 @@ function FieldEditor({
   );
 }
 
+// Module-level drag type (avoids DOM attribute quirks)
+let _dragType: string | null = null;
+
 function PaletteItem({ definition }: { definition: WorkflowNodeDefinition }) {
   const Icon = definition.icon;
 
   return (
     <div
       onPointerDown={(e) => {
-                document.body.setAttribute('data-drag-type', definition.type);
+                _dragType = definition.type;
         document.body.classList.add('is-dragging-from-palette');
       }}
       className="workflow-palette-item"
@@ -287,7 +290,7 @@ function CanvasCardInner() {
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      const type = document.body.getAttribute('data-drag-type');
+      const type = _dragType;
       if (!type) return;
       const ghost = getOrCreateGhost(type);
       ghost.style.left = e.clientX + 'px';
@@ -300,9 +303,9 @@ function CanvasCardInner() {
       document.body.style.cursor = '';
       document.body.classList.remove('is-dragging-from-palette');
 
-      const type = document.body.getAttribute('data-drag-type');
+      const type = _dragType;
       if (!type) return;
-      document.body.removeAttribute('data-drag-type');
+      _dragType = null;
 
       // Check if pointer is over the flow area
       const rect = el.getBoundingClientRect();

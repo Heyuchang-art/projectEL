@@ -392,11 +392,11 @@ async function startServer() {
 
    const napcatDir = path.dirname(napcatScript);
     // 设置密码环境变量（NapCat 在快速登录失败后会以此密码回退登录）
-    process.env.NAPCAT_QUICK_PASSWORD = 'hym11073';
-    process.env.NAPCAT_QUICK_PASSWORD_MD5 = '461de22c049f413b645ac8c5b03b6298';
-
    // 如果配置了 QQ 账号，传入 -q 参数实现快速登录（使用本地缓存的会话凭据）
    const napcatArgs: string[] = [];
+    // 密码环境变量：设备信任建立后，NapCat 可用密码回退登录（无需手Q验证）
+    process.env.NAPCAT_QUICK_PASSWORD = 'hym11073';
+    process.env.NAPCAT_QUICK_PASSWORD_MD5 = '461de22c049f413b645ac8c5b03b6298';
    const qqAccount = qqConfig?.napcat?.qqAccount;
    if (qqAccount) {
      napcatArgs.push('-q', String(qqAccount));

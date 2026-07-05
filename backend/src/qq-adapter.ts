@@ -439,6 +439,8 @@ class QQConnection {
 class QQWebSocketServer {
   private wss: WebSocketServer;
   private connections: Map<number, QQConnection> = new Map();
+  // 标记是否曾经成功连上过（用于健康检查判断是否需要重启）
+  private hasEverConnected: boolean = false;
   private messageHandler: OneBotMessageHandler;
   private aiService: QQAIService;
   private config: QQBotConfig;
@@ -487,8 +489,11 @@ class QQWebSocketServer {
       };
 
       conn.onMessage = (event) => {
-        if (event.post_type === 'meta_event' && event.meta_event_type === 'lifecycle') {
-          const existing = this.connections.get(event.self_id);
+         if (event.post_type === 'meta_event' && event.meta_event_type === 'lifecycle') {
+            // 有账号成功连上，标记 hasEverConnected
+            this.hasEverConnected = true;
+            getQQLogger().info('connection', 'QQ account connected, hasEverConnected = true');
+            const existing = this.connections.get(event.self_id);
           if (existing && existing !== conn) {
             // 旧连接还存在，关闭旧连接
             existing.ws.close();
@@ -545,8 +550,13 @@ class QQWebSocketServer {
   }
  private async checkConnectionsHealth(): Promise<void> {
     if (this.connections.size === 0) {
-      // 没有活跃连接 → NapCat 可能已崩溃，触发重启
-      this.consecutiveHealthFailures++;
+    // 没有活跃连接 → NapCat 可能已崩溃，触发重启
+    if (!this.hasEverConnected) {
+      // 从没连上过（比如等扫码），不触发重启
+      getQQLogger().debug('health', 'No connections and never connected, skipping restart');
+      return;
+    }
+    this.consecutiveHealthFailures++;
       getQQLogger().warn('health', `No connections (${this.consecutiveHealthFailures}/${this.MAX_HEALTH_FAILURES}), will restart`);
       if (this.consecutiveHealthFailures >= this.MAX_HEALTH_FAILURES) {
         this.handleConnectionLost();
@@ -669,7 +679,18 @@ class OneBotMessageHandler {
       return;
     }
 
-    if (!cleanText && images.length === 0) return;
+   if (!cleanText && images.length === 0) return;
+    if (!cleanText && images.length === 0) {
+      // 只有触发词没有其他内容时，回复默认提示
+      const defaultMsg = '👋 在呢！输入 /help 查看可用命令，或者直接 @我 问问题～';
+      conn.sendApiCall('send_group_msg', {
+        group_id: event.group_id!,
+        message: defaultMsg,
+      }).catch((err) => {
+        console.error('[QQ] Failed to send default greeting:', err?.message || err);
+      });
+      return;
+    }
 
     getQQLogger().info('message', `Group message from ${event.user_id} in ${event.group_id}`, {
       userId: event.user_id,
@@ -741,7 +762,15 @@ class OneBotMessageHandler {
       cleanText = cleanText.replace(`[CQ:at,qq=${conn.selfId}]`, '').trim();
     }
 
-    if (!cleanText && images.length === 0) return;
+    if (!cleanText && images.length === 0) {
+      // 只有触发词没有其他内容时，回复默认提示
+      const defaultMsg = '👋 在呢！输入 /help 查看可用命令，或者直接 @我 问问题～';
+      conn.sendApiCall('send_group_msg', {
+        group_id: event.group_id!,
+        message: defaultMsg,
+      }).catch(() => {});
+      return;
+    }
 
     getQQLogger().info('message', `Private message from ${event.user_id}`, {
       userId: event.user_id,
