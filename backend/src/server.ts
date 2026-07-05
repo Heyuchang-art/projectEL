@@ -394,9 +394,14 @@ async function startServer() {
     // 设置密码环境变量（NapCat 在快速登录失败后会以此密码回退登录）
    // 如果配置了 QQ 账号，传入 -q 参数实现快速登录（使用本地缓存的会话凭据）
    const napcatArgs: string[] = [];
-    // 密码环境变量：设备信任建立后，NapCat 可用密码回退登录（无需手Q验证）
-    process.env.NAPCAT_QUICK_PASSWORD = 'hym11073';
-    process.env.NAPCAT_QUICK_PASSWORD_MD5 = '461de22c049f413b645ac8c5b03b6298';
+    // QQ 快速登录密码（可选）：从环境变量 QQ_BOT_PASSWORD 读取，用于自动回退登录
+    const qqPassword = process.env.QQ_BOT_PASSWORD;
+    if (qqPassword) {
+      const crypto = require('crypto');
+      const md5 = crypto.createHash('md5').update(qqPassword).digest('hex');
+      process.env.NAPCAT_QUICK_PASSWORD = qqPassword;
+      process.env.NAPCAT_QUICK_PASSWORD_MD5 = md5;
+    }
    const qqAccount = qqConfig?.napcat?.qqAccount;
    if (qqAccount) {
      napcatArgs.push('-q', String(qqAccount));
@@ -406,7 +411,7 @@ async function startServer() {
    // 通过 napcat.bat 启动（走 index.js → import napcat.mjs），-q 由 %* 转发
    // 改用 node.exe + index.js + -q 直接启动，避免 bat 脚本参数转发问题
     // 通过 napcat.bat 启动（已硬编码 -q 2707327376）
-    const proc = spawn(napcatScript, [], {
+    const proc = spawn(napcatScript, napcatArgs, {
       cwd: napcatDir,
       shell: true,
       stdio: 'pipe',

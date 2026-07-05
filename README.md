@@ -1,4 +1,4 @@
-# Snapshot Pi - 基于 Pi Agent 内核的辅助学习智能体系统
+﻿# Snapshot Pi - 基于 Pi Agent 内核的辅助学习智能体系统
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-blue.svg)](https://nodejs.org/)
@@ -100,6 +100,63 @@ start.bat
 ---
 
 ## 4. 使用指南
+### 3.6 QQ Bot 移动端部署
+
+#### 3.6.1 前置条件
+- NapCat 已通过 scripts\setup.bat 自动部署（首次部署会自动完成）
+- 一个可用的 QQ 账号（建议使用小号）
+
+#### 3.6.2 配置 QQ 账号
+编辑 config/qq-bot-config.json：
+
+\`\`\`json
+{
+  "enabled": true,
+  "napcat": {
+    "path": "napcat/napcat.bat",
+    "templateDir": "config/napcat-templates",
+    "qqAccount": 123456789
+  },
+  "triggerKeywords": ["@bot", "/ai", "/ask"],
+  "groupSync": {
+    "enabled": true,
+    "allowedGroupIds": [111111]
+  }
+}
+\`\`\`
+
+> qqAccount 和 allowedGroupIds 需要换成你自己的值。qqAccount 可选，不填也能用。
+
+#### 3.6.3 首次登录
+1. 启动系统（start.bat 或 npm run dev）
+2. 打开浏览器访问 http://localhost:3000
+3. 进入 QQ Bot 选项卡，点击启动
+4. 页面显示二维码后，用手机 QQ 扫码授权
+5. 授权成功后状态变为 healthy，即可在群内通过 @bot 或 /ai 触发
+
+#### 3.6.4 自动恢复（可选）
+设置环境变量后，NapCat 可在会话过期时自动用密码重新登录：
+
+\`\`\`
+# Windows CMD
+set QQ_BOT_PASSWORD=你的QQ密码
+
+# Windows PowerShell
+\$env:QQ_BOT_PASSWORD = "你的QQ密码"
+\`\`\`
+
+> 首次仍需扫码登录建立设备信任，后续重启会话过期时可自动恢复。
+
+#### 3.6.5 群聊配置
+在 config/qq-bot-config.json 的 allowedGroupIds 中添加群号即可让 Bot 响应群消息。
+
+#### 3.6.6 登录逻辑
+\`\`\`
+启动 -> spawn 传 -q QQ号 -> bat %%* 转发 -> node.exe
+  +-- 缓存会话有效 -> 快速登录成功
+  +-- 会话过期 -> NAPCAT_QUICK_PASSWORD -> 登录成功
+  +-- 都失败 -> 弹二维码等待扫码
+\`\`\`
 
 ### 4.1 Web UI 核心功能卡片
 系统主页包含四个核心工作区卡片，您可以通过左侧边栏自由切换和拖拽布局：
