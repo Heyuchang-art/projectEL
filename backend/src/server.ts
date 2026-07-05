@@ -411,9 +411,11 @@ async function startServer() {
    // 通过 napcat.bat 启动（走 index.js → import napcat.mjs），-q 由 %* 转发
    // 改用 node.exe + index.js + -q 直接启动，避免 bat 脚本参数转发问题
     // 通过 napcat.bat 启动（已硬编码 -q 2707327376）
-    const proc = spawn(napcatScript, napcatArgs, {
+    // 直接跑 node.exe index.js -q QQ号（绕过 bat 文件，避免 gitignore 问题）
+    const nodeExe = path.join(napcatDir, 'node.exe');
+    const indexJs = path.join(napcatDir, 'index.js');
+    const proc = spawn(nodeExe, [indexJs, ...napcatArgs], {
       cwd: napcatDir,
-      shell: true,
       stdio: 'pipe',
     });
 
